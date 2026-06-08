@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #05050A;
+  color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  overscroll-behavior: none;
+}
+
+/* Selection */
+::selection {
+  background: #00F0FF;
+  color: #05050A;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,240,255,0.4); }
+
+/* Utility: hide caret on read-only fields */
+.no-caret { caret-color: transparent; }
+
+/* Grid background overlay */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Scanline / noise overlay (subtle) */
+.noise::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+  z-index: 1;
+}
+
+/* LED pulse */
+@keyframes led-pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px currentColor; }
+  50% { opacity: 0.45; box-shadow: 0 0 2px currentColor; }
+}
+.led-pulse { animation: led-pulse 1.6s ease-in-out infinite; }
+
+/* Scan beam */
+@keyframes scan-beam {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 0.9; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+.scan-beam { animation: scan-beam 2.2s linear infinite; }
+
+/* Marquee for hashes */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee 18s linear infinite; }
+
+/* Tracing bracket corners */
+.bracket-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: #00F0FF;
+}
+
+/* Subtle entry fade */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.35s ease-out both; }
+
+input, button, textarea, select { font-family: 'JetBrains Mono', monospace; }
