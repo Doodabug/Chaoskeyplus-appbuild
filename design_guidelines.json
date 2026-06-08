@@ -1,0 +1,81 @@
+{
+  "theme": "dark",
+  "archetype": "Archetype 7: Electric & Neon",
+  "mood": "Hardware Ops, Cyberpunk, Computational, High-End Terminal",
+  "typography": {
+    "headings": "Unbounded",
+    "body": "JetBrains Mono",
+    "rules": [
+      "NO Inter, Roboto, or generic sans-serif fonts.",
+      "Headings must use Unbounded with tight tracking (tracking-tight).",
+      "Body and data (hashes, keys, signatures) must use JetBrains Mono for absolute precision.",
+      "Overlines and labels must be uppercase, tiny, with wide spacing (tracking-[0.2em]).",
+      "Limit heading sizes; maximum is text-4xl on mobile."
+    ]
+  },
+  "colors": {
+    "background": "#05050A",
+    "surface": "rgba(255, 255, 255, 0.03)",
+    "surface_glass": "rgba(255, 255, 255, 0.05)",
+    "primary": "#00F0FF",
+    "success": "#00FF41",
+    "danger": "#FF003C",
+    "text_primary": "#FFFFFF",
+    "text_secondary": "rgba(255, 255, 255, 0.6)",
+    "border_dim": "rgba(255, 255, 255, 0.1)",
+    "rules": [
+      "Never use pure black (#000000). Always use the tinted #05050A background.",
+      "Primary color (Cyan) is for pure entropy/action triggers only.",
+      "Success color (Green) is for passed health tests only.",
+      "Ensure minimum 4.5:1 contrast for text."
+    ]
+  },
+  "layout_and_spacing": {
+    "philosophy": "Control Room Grid (Dense, structural, pure utility, Mobile-first)",
+    "mobile_padding": "p-4",
+    "component_padding": "p-6",
+    "border_radius": "rounded-none",
+    "gap": "gap-4",
+    "rules": [
+      "Mobile-first responsive grids.",
+      "Containers with borders MUST have internal padding (p-6).",
+      "No generic soft shadows. Use sharp 1px borders for definition."
+    ]
+  },
+  "components": {
+    "cards": "Glass-tech ops: bg-white/5 backdrop-blur-xl border border-white/10. Flat, no drop shadows.",
+    "buttons": "Flat background with 1px border. Hover state MUST explicitly change text color and lighten border (e.g., hover:border-cyan-500 hover:text-cyan-400 hover:bg-white/10).",
+    "bottom_nav": "Fixed at bottom. backdrop-blur-2xl bg-black/80, with a 1px top border border-white/10.",
+    "ledger_chain": "Vertical timeline layout. Blocks connected by a 1px vertical line (border-l border-white/20). Hash data overflows should truncate with ellipsis.",
+    "camera_harvest": "Overlay the camera feed with a 'Tracing Beam' style scanner bracket. Use a semi-transparent dark overlay to ensure entropy data overlay is readable."
+  },
+  "motion": {
+    "microinteractions": "Controlled glow and status-led transitions. Use Framer Motion for subtle entry fades.",
+    "hover": "Increase border opacity, explicitly define text color changes."
+  },
+  "media": {
+    "image_urls": [
+      {
+        "url": "https://images.unsplash.com/photo-1579567761406-4684ee0c75b6?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2ODh8MHwxfHNlYXJjaHwxfHxkYXJrJTIwYWJzdHJhY3QlMjBuZXR3b3JrJTIwbm9kZXN8ZW58MHx8fHwxNzgwOTU4NzY4fDA&ixlib=rb-4.1.0&q=85",
+        "category": "universe_simulation_background",
+        "description": "Abstract glowing nodes for the Digital Universe simulation background to provide depth behind the chart."
+      },
+      {
+        "url": "https://images.pexels.com/photos/30766684/pexels-photo-30766684.png?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "category": "device_identity_hero",
+        "description": "3D geometric structure representing the crypto hardware ledger/device signature. Use as a header banner in the Device Identity tab."
+      }
+    ]
+  },
+  "iconography": "Phosphor Icons for a technical, crisp look. Command for main agent: yarn add @phosphor-icons/react",
+  "instructions_to_main_agent": [
+    "Build a mobile-first responsive React PWA.",
+    "Implement bottom tab bar for navigation (Camera/Harvest, Ledger, Universe, Device).",
+    "For the Universe Simulation, use a transparent background chart overlaying the universe_simulation_background image.",
+    "Use JetBrains Mono heavily for all hashes, signatures, and entropy bits. Truncate long strings where necessary.",
+    "All interactive elements and key informational elements MUST include `data-testid` attributes (e.g., `data-testid='harvest-button'`, `data-testid='ledger-block-0'`).",
+    "Ensure hover states use explicit text colors to maintain contrast.",
+    "Use standard React / JS ecosystem (no TypeScript).",
+    "Avoid Shadcn Cards if they feel too standard; use raw div/section with the defined border/glassmorphism utility classes to achieve the Control Room aesthetic."
+  ]
+}
