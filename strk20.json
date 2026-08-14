@@ -1,0 +1,114 @@
+{
+  "project_name": "ChaosKey+ Mobile",
+  "team_name": "Doodabug",
+  "team_size": 1,
+  "description": "A privacy-first mobile application for managing cryptographic identities and transactions on Starknet",
+  
+  "submission_step": "04_READY_TO_SUBMIT",
+  
+  "repository": {
+    "url": "https://github.com/doodabug/Chaoskeyplus-appbuild",
+    "branch": "main",
+    "public": false
+  },
+  
+  "contact": {
+    "telegram_username": "",
+    "email": "",
+    "discord_handle": ""
+  },
+  
+  "demo": {
+    "video_url": "",
+    "video_duration_seconds": 0,
+    "live_demo_url": "",
+    "demo_instructions": "Instructions for accessing the live demo",
+    "estimated_demo_time_minutes": 5
+  },
+  
+  "smart_contracts": {
+    "contract_address": "0x",
+    "contract_name": "ChaosKeyPlus",
+    "network": "mainnet",
+    "deployment_transaction": "0x",
+    "deployment_block": 0,
+    "contract_language": "Cairo",
+    "verified": false
+  },
+  
+  "test_transactions": [
+    {
+      "transaction_hash": "0x",
+      "transaction_type": "approve",
+      "timestamp": "2026-08-13T00:00:00Z",
+      "status": "completed"
+    },
+    {
+      "transaction_hash": "0x",
+      "transaction_type": "transfer",
+      "timestamp": "2026-08-13T00:00:00Z",
+      "status": "completed"
+    },
+    {
+      "transaction_hash": "0x",
+      "transaction_type": "demo_transaction",
+      "timestamp": "2026-08-13T00:00:00Z",
+      "status": "completed"
+    }
+  ],
+  
+  "tech_stack": {
+    "frontend": [
+      "React 18",
+      "Tailwind CSS",
+      "Framer Motion",
+      "React Router",
+      "Axios"
+    ],
+    "backend": [
+      "FastAPI",
+      "Python 3.9+",
+      "MongoDB",
+      "Motor (async driver)"
+    ],
+    "blockchain": [
+      "Cairo",
+      "Starknet",
+      "OpenZeppelin Contracts"
+    ]
+  },
+  
+  "features": {
+    "01_apply": {
+      "status": "completed",
+      "description": "Repository registration with Telegram integration",
+      "completion_date": "2026-08-13"
+    },
+    "02_build_in_public": {
+      "status": "in_progress",
+      "description": "Live public repository with 30-minute refresh cycle",
+      "completion_date": "2026-08-20"
+    },
+    "03_ship_to_mainnet": {
+      "status": "in_progress",
+      "description": "Smart contracts deployed with live pool testing",
+      "completion_date": "2026-08-25"
+    },
+    "04_submission_ready": {
+      "status": "in_progress",
+      "description": "Final submission with video, contracts, and transactions",
+      "completion_date": "2026-08-31"
+    }
+  },
+  
+  "metrics": {
+    "lines_of_code": 0,
+    "test_coverage_percent": 0,
+    "git_commits": 0,
+    "development_days": 90
+  },
+  
+  "submission_date": "2026-08-31",
+  "submission_deadline": "2026-08-31T23:59:59Z",
+  "status": "DRAFT"
+}
