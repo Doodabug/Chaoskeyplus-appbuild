@@ -1,5 +1,7 @@
 # STRK20 Privacy Plan — public-safe
 
+**Superseded 2026-08-15.** On-chain privacy for this app is specified in `../STRK20_INTEGRATION_PLAN.md` (Wallet API via starknet.js). The text below is leftover generic mempool/HSM advice and is not the STRK20 pool model.
+
 Purpose
 
 This document summarizes the privacy strategy for STRK20 interactions performed by the ChaosKey+ submission. It is intentionally high‑level and omits any proprietary implementation details or secrets.

@@ -4,11 +4,13 @@ import {
   Stack,
   Planet,
   IdentificationCard,
+  ShieldCheck,
 } from "@phosphor-icons/react";
 import HarvestScreen from "./screens/HarvestScreen";
 import LedgerScreen from "./screens/LedgerScreen";
 import UniverseScreen from "./screens/UniverseScreen";
 import DeviceScreen from "./screens/DeviceScreen";
+import PrivacyScreen from "./screens/PrivacyScreen";
 import { getStatus } from "./lib/api";
 
 const TABS = [
@@ -16,6 +18,7 @@ const TABS = [
   { id: "ledger", label: "Ledger", Icon: Stack, Comp: LedgerScreen },
   { id: "universe", label: "Universe", Icon: Planet, Comp: UniverseScreen },
   { id: "device", label: "Device", Icon: IdentificationCard, Comp: DeviceScreen },
+  { id: "pool", label: "Pool", Icon: ShieldCheck, Comp: PrivacyScreen },
 ];
 
 function TopBar({ status }) {
@@ -61,7 +64,7 @@ function BottomNav({ active, onChange }) {
       className="fixed bottom-0 inset-x-0 z-30 backdrop-blur-2xl bg-black/80 border-t border-white/10"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {TABS.map(({ id, label, Icon }) => {
           const isActive = id === active;
           return (
