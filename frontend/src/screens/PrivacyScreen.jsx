@@ -1,19 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ArrowUpRight, Eye, LinkSimple, Plugs, ShieldCheck } from "@phosphor-icons/react";
 import { Btn, HashLine, Overline, Panel, StatLine } from "../components/ui";
-import {
-  connectWallet,
-  disconnectWallet,
-  fetchPoolFee,
-  fetchShieldedBalances,
-  getSession,
-  initWalletStore,
-  refreshMaturity,
-  shieldAmount,
-  subscribeSession,
-  transferAmount,
-  unshieldAmount,
-} from "../lib/starknetWallet";
+import { useStarknet } from "../providers/StarknetProvider";
 import {
   NOTE_MATURITY_BLOCKS,
   SEPOLIA_CHAIN_ID,
@@ -38,7 +26,7 @@ function onSepolia(chainId) {
 }
 
 export default function PrivacyScreen() {
-  const [session, setSession] = useState(getSession);
+  const starknet = useStarknet();
   const [shieldAmt, setShieldAmt] = useState("1");
   const [xferAmt, setXferAmt] = useState("");
   const [xferTo, setXferTo] = useState("");
@@ -51,26 +39,21 @@ export default function PrivacyScreen() {
   const [balance, setBalance] = useState(null);
 
   useEffect(() => {
-    initWalletStore();
-    return subscribeSession(setSession);
-  }, []);
-
-  useEffect(() => {
     let live = true;
-    fetchPoolFee().then((f) => {
+    starknet.fetchFee().then((f) => {
       if (live) setFee(f);
     });
     return () => {
       live = false;
     };
-  }, [session.pool, session.address]);
+  }, [starknet.pool, starknet.address, starknet.fetchFee]);
 
   useEffect(() => {
-    if (!session.lastShieldBlock || session.maturityLeft <= 0) return undefined;
+    if (!starknet.lastShieldBlock || starknet.maturityLeft <= 0) return undefined;
     let live = true;
     const tick = async () => {
       if (!live) return;
-      await refreshMaturity();
+      await starknet.refreshMaturity();
     };
     tick();
     const id = setInterval(tick, 8000);
@@ -78,13 +61,13 @@ export default function PrivacyScreen() {
       live = false;
       clearInterval(id);
     };
-  }, [session.lastShieldBlock, session.maturityLeft]);
+  }, [starknet.lastShieldBlock, starknet.maturityLeft, starknet.refreshMaturity]);
 
   async function onConnect(wallet) {
     setError("");
     setBusy("connect");
     try {
-      await connectWallet(wallet);
+      await starknet.connect(wallet);
     } catch (e) {
       setError(e?.message || "Connect failed.");
     } finally {
@@ -96,7 +79,7 @@ export default function PrivacyScreen() {
     setError("");
     setResult(null);
     setBalance(null);
-    await disconnectWallet();
+    await starknet.disconnect();
   }
 
   async function runAction(kind, fn) {
@@ -117,7 +100,7 @@ export default function PrivacyScreen() {
     setError("");
     setBusy("balance");
     try {
-      const b = await fetchShieldedBalances();
+      const b = await starknet.fetchBalances();
       setBalance(b);
     } catch (e) {
       setError(e?.message || "Balance read failed.");
@@ -131,10 +114,10 @@ export default function PrivacyScreen() {
     setter(maxSpendHuman(balance.raw, fee?.raw ?? 0n));
   }
 
-  const connected = !!session.address;
-  const capable = session.capable;
-  const sepolia = onSepolia(session.chainId);
-  const locked = session.maturityLeft > 0;
+  const connected = !!starknet.address;
+  const capable = starknet.capable;
+  const sepolia = onSepolia(starknet.chainId);
+  const locked = starknet.maturityLeft > 0;
   const spendDisabled = !!busy || locked;
 
   return (
@@ -156,7 +139,7 @@ export default function PrivacyScreen() {
               Connect Ready on Starknet Sepolia. The wallet holds keys, notes, and
               proofs — this app never sees them.
             </p>
-            {session.wallets.length === 0 && (
+            {starknet.wallets.length === 0 && (
               <div
                 data-testid="pool-no-wallets"
                 className="text-[11px] font-mono text-white/45 uppercase tracking-[0.18em] py-4 text-center"
@@ -165,7 +148,7 @@ export default function PrivacyScreen() {
               </div>
             )}
             <ul className="space-y-2">
-              {session.wallets.map((w) => (
+              {starknet.wallets.map((w) => (
                 <li
                   key={w.id || w.name}
                   className="flex items-center justify-between gap-3 border border-white/10 px-3 py-2"
@@ -192,18 +175,18 @@ export default function PrivacyScreen() {
           <>
             <StatLine
               label="Wallet"
-              value={session.walletName}
+              value={starknet.walletName}
               valueClass="text-cyan-300"
               testid="pool-wallet-name"
             />
             <StatLine
               label="Address"
-              value={shortAddr(session.address)}
+              value={shortAddr(starknet.address)}
               testid="pool-address"
             />
             <StatLine
               label="Network"
-              value={sepolia ? "Sepolia" : session.chainId || "—"}
+              value={sepolia ? "Sepolia" : starknet.chainId || "—"}
               valueClass={sepolia ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-network"
             />
@@ -284,7 +267,7 @@ export default function PrivacyScreen() {
             <Btn
               intent="primary"
               testid="pool-shield-btn"
-              onClick={() => runAction("shield", () => shieldAmount(shieldAmt))}
+              onClick={() => runAction("shield", () => starknet.shield(shieldAmt))}
               disabled={!!busy || !shieldAmt}
               className="w-full"
             >
@@ -299,8 +282,8 @@ export default function PrivacyScreen() {
               className="border border-cyan-400/30 bg-cyan-400/5 px-3 py-2 text-[11px] font-mono text-cyan-200"
             >
               Freshly shielded notes mature in ~{NOTE_MATURITY_BLOCKS} blocks.
-              Transfer and unshield locked for {session.maturityLeft} more
-              {session.maturityLeft === 1 ? " block" : " blocks"}.
+              Transfer and unshield locked for {starknet.maturityLeft} more
+              {starknet.maturityLeft === 1 ? " block" : " blocks"}.
             </div>
           )}
 
@@ -346,7 +329,7 @@ export default function PrivacyScreen() {
             <Btn
               intent="primary"
               testid="pool-transfer-btn"
-              onClick={() => runAction("transfer", () => transferAmount(xferAmt, xferTo))}
+              onClick={() => runAction("transfer", () => starknet.transfer(xferAmt, xferTo))}
               disabled={spendDisabled || !xferAmt || !xferTo}
               className="w-full"
             >
@@ -367,7 +350,7 @@ export default function PrivacyScreen() {
                 type="text"
                 value={withdrawTo}
                 onChange={(e) => setWithdrawTo(e.target.value)}
-                placeholder={session.address || "0x…"}
+                placeholder={starknet.address || "0x…"}
                 className={inputClass}
               />
             </label>
@@ -399,7 +382,7 @@ export default function PrivacyScreen() {
               testid="pool-unshield-btn"
               onClick={() =>
                 runAction("unshield", () =>
-                  unshieldAmount(withdrawAmt, withdrawTo || session.address)
+                  starknet.unshield(withdrawAmt, withdrawTo || starknet.address)
                 )
               }
               disabled={spendDisabled || !withdrawAmt}

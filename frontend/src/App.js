@@ -12,6 +12,7 @@ import UniverseScreen from "./screens/UniverseScreen";
 import DeviceScreen from "./screens/DeviceScreen";
 import PrivacyScreen from "./screens/PrivacyScreen";
 import { getStatus } from "./lib/api";
+import { useStarknet } from "./providers/StarknetProvider";
 
 const TABS = [
   { id: "harvest", label: "Harvest", Icon: Aperture, Comp: HarvestScreen },
@@ -21,8 +22,14 @@ const TABS = [
   { id: "pool", label: "Pool", Icon: ShieldCheck, Comp: PrivacyScreen },
 ];
 
-function TopBar({ status }) {
+function shortAddr(addr) {
+  if (!addr) return "";
+  return addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr;
+}
+
+function TopBar({ status, onOpenPool }) {
   const ok = status?.chain_intact;
+  const { address, capable } = useStarknet();
   return (
     <header className="sticky top-0 z-20 backdrop-blur-2xl bg-[#05050A]/80 border-b border-white/10">
       <div className="px-4 py-3 flex items-center justify-between">
@@ -51,6 +58,20 @@ function TopBar({ status }) {
           >
             {ok ? "▣ CHAIN OK" : "▣ CHAIN ✗"}
           </span>
+          <button
+            type="button"
+            data-testid="topbar-wallet"
+            onClick={onOpenPool}
+            className={`border px-2 py-[3px] ${
+              address
+                ? capable
+                  ? "border-cyan-400/50 text-cyan-300"
+                  : "border-[#FF6B8A]/50 text-[#FF6B8A]"
+                : "border-white/15 text-white/55 hover:text-white/80"
+            }`}
+          >
+            {address ? shortAddr(address) : "Connect"}
+          </button>
         </div>
       </div>
     </header>
@@ -124,7 +145,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen text-white grid-bg noise relative">
-      <TopBar status={status} />
+      <TopBar status={status} onOpenPool={() => setActive("pool")} />
       <main
         data-testid="app-main"
         className="max-w-md mx-auto px-4 py-4 pb-28 relative z-10"
