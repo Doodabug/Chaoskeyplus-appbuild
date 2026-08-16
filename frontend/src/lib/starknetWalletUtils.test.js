@@ -45,6 +45,9 @@ describe("sameAddress", () => {
       )
     ).toBe(true);
     expect(sameAddress("0x1", "0x2")).toBe(false);
+    expect(
+      sameAddress("0x534e5f5345504f4c4941", "0x0534e5f5345504f4c4941")
+    ).toBe(true);
   });
 });
 

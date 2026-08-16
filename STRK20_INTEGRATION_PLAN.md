@@ -87,11 +87,11 @@ Shipped and still present:
 4. Capability helpers + unit tests in `starknetWalletUtils.js` / `.test.js`.
 5. `StarknetProvider` in `frontend/src/index.js`.
 
-The original shield UI that this phase handed off is **gone**. Restore it in Phase 2b, do not re-install packages.
+Pool UI lives in Phase 2b (`PrivacyScreen.jsx`). Do not re-install packages.
 
 ## 6. Phase 2 — feature integration ✅ done 2026-08-15 (library + docs)
 
-Status: library and docs done 2026-08-15; **UI not in the tree** — see Phase 2b.
+Status: library and docs done 2026-08-15; Pool UI in Phase 2b.
 
 Still present:
 
@@ -170,7 +170,7 @@ Re-check (2026-08-16, execute attempt):
 - Pool fee (`get_fee_amount`) and whether wallet-sponsored gas still excludes the pool fee — copy says gas may be sponsored, pool fee is not. Re-check if paymaster design lands.
 - Shadow-account Wallet API: **blocked 2026-08-16** (execute requested, criteria still fail). types-js latest still 0.10.3 (no shadow action); spec latest stable v0.10.3; v0.10.4-rc.1 is a pre-release rename only. Preview: WalletAccount *next* docs + `packages/shadow_account_anonymizer`. Do not bump to an RC; do not take the SDK route.
 - Fee / paymaster design for shielded-token fee payment.
-- `docs/mainnet-transaction-plan.md` still describes deploying a token contract. Rewrite or mark superseded when Phase 2b ships so reviewers do not follow it.
+- `docs/mainnet-transaction-plan.md` marked superseded 2026-08-16 (wrong token-deploy model).
 
 ## 11. Links
 

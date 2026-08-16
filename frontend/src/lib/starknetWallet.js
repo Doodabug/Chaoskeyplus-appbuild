@@ -18,6 +18,7 @@ import {
   isFeltAddress,
   isStrk20Capable,
   maturityRemaining,
+  sameAddress,
   walletDisplayName,
 } from "./starknetWalletUtils";
 
@@ -177,7 +178,7 @@ export async function connectWallet(wallet) {
   const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
   try {
     const writeId = await walletV6.requestChainId(wallet);
-    if (String(writeId).toLowerCase() !== SEPOLIA_CHAIN_ID.toLowerCase()) {
+    if (!sameAddress(writeId, SEPOLIA_CHAIN_ID)) {
       await account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
     }
   } catch (_) {

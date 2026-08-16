@@ -27,13 +27,13 @@ function onSepolia(chainId) {
 
 export default function PrivacyScreen() {
   const starknet = useStarknet();
-  const [shieldAmt, setShieldAmt] = useState("1");
+  const [shieldAmt, setShieldAmt] = useState("");
   const [xferAmt, setXferAmt] = useState("");
   const [xferTo, setXferTo] = useState("");
   const [withdrawAmt, setWithdrawAmt] = useState("");
   const [withdrawTo, setWithdrawTo] = useState("");
   const [busy, setBusy] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [fee, setFee] = useState(null);
   const [balance, setBalance] = useState(null);
@@ -64,46 +64,46 @@ export default function PrivacyScreen() {
   }, [starknet.lastShieldBlock, starknet.maturityLeft, starknet.refreshMaturity]);
 
   async function onConnect(wallet) {
-    setError("");
+    setError(null);
     setBusy("connect");
     try {
       await starknet.connect(wallet);
     } catch (e) {
-      setError(e?.message || "Connect failed.");
+      setError({ kind: e?.kind || "unknown", message: e?.message || "Connect failed." });
     } finally {
       setBusy("");
     }
   }
 
   async function onDisconnect() {
-    setError("");
+    setError(null);
     setResult(null);
     setBalance(null);
     await starknet.disconnect();
   }
 
   async function runAction(kind, fn) {
-    setError("");
+    setError(null);
     setResult(null);
     setBusy(kind);
     try {
       const r = await fn();
       setResult({ ...r, kind });
     } catch (e) {
-      setError(e?.message || "Action failed.");
+      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
     } finally {
       setBusy("");
     }
   }
 
   async function onShowBalance() {
-    setError("");
+    setError(null);
     setBusy("balance");
     try {
       const b = await starknet.fetchBalances();
       setBalance(b);
     } catch (e) {
-      setError(e?.message || "Balance read failed.");
+      setError({ kind: e?.kind || "unknown", message: e?.message || "Balance read failed." });
     } finally {
       setBusy("");
     }
@@ -196,6 +196,21 @@ export default function PrivacyScreen() {
               valueClass={capable ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-capability"
             />
+            {!sepolia && (
+              <div className="mt-3 space-y-2">
+                <p className="text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
+                  Pool actions are Sepolia-only. Switch the wallet network, then retry.
+                </p>
+                <Btn
+                  intent="primary"
+                  testid="pool-switch-sepolia-btn"
+                  onClick={() => onConnect(starknet.wallet)}
+                  disabled={!!busy || !starknet.wallet}
+                >
+                  Switch to Sepolia
+                </Btn>
+              </div>
+            )}
           </>
         )}
       </Panel>
@@ -210,7 +225,7 @@ export default function PrivacyScreen() {
         </Panel>
       )}
 
-      {connected && capable && (
+      {connected && capable && sepolia && (
         <>
           <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
@@ -260,8 +275,8 @@ export default function PrivacyScreen() {
               </p>
               <p className="text-[11px] font-mono text-white/55 leading-relaxed">
                 {fee?.available
-                  ? `A flat pool fee of ${fee.human} STRK applies per private operation. Gas may be sponsored; the pool fee is not.`
-                  : "A flat pool fee applies per private operation. Gas may be sponsored; the pool fee is not."}
+                  ? `Pool fee ${fee.human} STRK per private operation. Subtracted from MAX. Separate from network gas.`
+                  : "Pool fee unavailable until REACT_APP_STRK20_POOL is set. Separate from network gas."}
               </p>
             </div>
             <Btn
@@ -397,9 +412,12 @@ export default function PrivacyScreen() {
       {error && (
         <div
           data-testid="pool-error"
-          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A]"
+          data-kind={error.kind}
+          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed"
         >
-          ERR :: {error}
+          {error.kind === "screening"
+            ? error.message
+            : `ERR :: ${error.message}`}
         </div>
       )}
 

@@ -1,5 +1,9 @@
 # Mainnet Transaction Plan
 
+**Superseded 2026-08-16.** This app does not deploy an STRK20 token. On-chain privacy is the Wallet API pool route in `../STRK20_INTEGRATION_PLAN.md`. There is no token-contract deploy, distribution, or pause switch in this repo. Testnet (Sepolia) only until an explicit mainnet go.
+
+The leftover text below is the old token-deploy checklist and must not be followed.
+
 This plan outlines the high-level steps, safety checks, and contingency measures for publishing the STRK20 contract and performing critical token operations on mainnet. It is a guideline for operators and reviewers.
 
 Pre-deployment checklist
