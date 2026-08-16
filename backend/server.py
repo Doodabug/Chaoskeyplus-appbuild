@@ -51,8 +51,10 @@ KEY_DIR.mkdir(exist_ok=True)
 DEVICE_KEY_PATH = KEY_DIR / "device_ed25519_private.pem"
 DEVICE_PUB_PATH = KEY_DIR / "device_ed25519_public.pem"
 
-MONGO_URL = os.environ["MONGO_URL"]
-DB_NAME = os.environ["DB_NAME"]
+MONGO_URL = os.environ.get("MONGO_URL") or os.environ.get("MONGODB_URL")
+if not MONGO_URL:
+    raise RuntimeError("Set MONGO_URL (or MONGODB_URL) in backend/.env")
+DB_NAME = os.environ.get("DB_NAME") or os.environ.get("DATABASE_NAME") or "chaoskey_db"
 
 # =========================
 # Device keypair (Ed25519)
@@ -316,6 +318,7 @@ class LedgerBlockOut(BaseModel):
     prev_block_hash_hex: str
     signature_hex: str
     context: str = ""
+    output_len: Optional[int] = None
 
 class UniverseSimRequest(BaseModel):
     steps: int = Field(default=30, ge=1, le=80)
@@ -348,11 +351,16 @@ class UniverseSimResponse(BaseModel):
 # =========================
 app = FastAPI(title="ChaosKey+ M3", lifespan=lifespan)
 
-# CORS — must be enabled BEFORE the api router for preflight
+# CORS — must be enabled BEFORE the api router for preflight.
+# Browsers reject Allow-Origin: * together with Allow-Credentials: true.
+_cors_origins = [
+    o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",") if o.strip()
+]
+_cors_wildcard = _cors_origins == ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=not _cors_wildcard,
     allow_methods=["*"],
     allow_headers=["*"],
 )

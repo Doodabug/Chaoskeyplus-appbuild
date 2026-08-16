@@ -9,13 +9,22 @@ import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
 if not BASE_URL:
-    # fallback: read from frontend/.env
     from pathlib import Path
-    env_path = Path("/app/frontend/.env")
-    if env_path.exists():
+    candidates = [
+        Path("/app/frontend/.env"),
+        Path(__file__).resolve().parents[2] / "frontend" / ".env",
+        Path(__file__).resolve().parents[2] / ".env",
+    ]
+    keys = ("REACT_APP_BACKEND_URL=", "REACT_APP_API_URL=")
+    for env_path in candidates:
+        if not env_path.exists():
+            continue
         for line in env_path.read_text().splitlines():
-            if line.startswith("REACT_APP_BACKEND_URL="):
-                BASE_URL = line.split("=", 1)[1].strip().rstrip("/")
+            if line.startswith(keys):
+                BASE_URL = line.split("=", 1)[1].strip().strip('"').rstrip("/")
+                break
+        if BASE_URL:
+            break
 
 API = f"{BASE_URL}/api"
 

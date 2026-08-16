@@ -40,8 +40,8 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Start development server
-uvicorn main:app --reload --port 8000
+# Start development server (this repo's app is server.py, not main.py)
+uvicorn server:app --reload --port 8000
 ```
 
 **Backend will be available at**: `http://localhost:8000`
