@@ -1,36 +1,44 @@
 # STRK20 Privacy Integration Plan — ChaosKey+ M3 (`Chaoskeyplus-appbuild`)
 
-Generated 2026-08-15 by the strk20-privacy-integration skill. Statuses below were current at generation time — re-verify the "coming soon" items and the Open items section before building.
+Generated 2026-08-15 by the strk20-privacy-integration skill. **Updated in place 2026-08-16** — prior interview decisions kept; snapshot and phases rewritten against the code that is in the tree today. Statuses below were current at this update — re-verify the "coming soon" items and the Open items section before building.
 
-This file supersedes `docs/privacy-plan.md` for on-chain privacy. That document is generic mempool/HSM advice. The existing `strk20.json` + `docs/integration.md` treat STRK20 as a public token ABI (`transfer` / `approve` / `balanceOf`); that is not the STRK20 privacy pool. Leave those files in place until Phase 2 rewrites them so reviewers are not following the wrong interface.
+This file supersedes `docs/privacy-plan.md` for on-chain privacy. That document is generic mempool/HSM advice. `strk20.json` + `docs/integration.md` already point at the Wallet API route. `docs/mainnet-transaction-plan.md` still describes deploying a token contract and is leftover wrong model — do not follow it.
+
+### What changed 2026-08-16
+
+- Snapshot was stale: it said no wallet-connect code existed. The Wallet API layer is now in the repo.
+- Phase 1–2 library, docs, and tab chrome are still done. Phase 2b restored `PrivacyScreen.jsx` (2026-08-16 execute).
+- Shadow accounts remain **blocked** on the Wallet API (stable spec / types-js / pinned starknet). Next-docs preview is not an entry-criterion pass.
+- Freshness re-check (2026-08-16): types-js latest still `0.10.3`; wallet-api spec latest stable still `v0.10.3` (`v0.10.4-rc.1` in flight); get-starknet npm `next` is `6.0.4` (keep pin `6.0.3` unless execute-time re-check says otherwise); `packages/sub_account_anonymizer` is gone, `packages/shadow_account_anonymizer` exists.
 
 ## 1. Project snapshot
 
-- Stack: React 18 CRA (`react-scripts@5.0.1`) mobile-first PWA in `frontend/`; FastAPI + MongoDB entropy/identity backend in `backend/server.py`; Ed25519 device keys at `backend/keys/`. No `starknet`, get-starknet, Cairo, Scarb, or wallet-connect code exists today.
+- Stack: React 18 CRA (`react-scripts@5.0.1`) mobile-first PWA in `frontend/`; FastAPI + MongoDB entropy/identity backend in `backend/server.py`; Ed25519 device keys at `backend/keys/`. Wallet layer: `starknet@10.4.0`, `@starknet-io/get-starknet-discovery@6.0.3`, `@starknet-io/get-starknet-wallet-standard@6.0.3`, `@starknet-io/types-js@0.10.3`. No Cairo, Scarb, or anonymizer contracts.
 - Relevant code:
-  - Wallet connection: **does not exist**. Closest identity surface is `frontend/src/screens/DeviceScreen.jsx` (Ed25519 PEM + QR via `getPubKey()` in `frontend/src/lib/api.js:13`).
-  - Transaction layer: **does not exist**. All frontend I/O is axios to FastAPI (`frontend/src/lib/api.js`). `scripts/prepare_strk20_tx.sh` is a public-transfer echo template and must not be used for pool actions.
-  - Navigation: `frontend/src/App.js:14-19` — four tabs (Harvest, Ledger, Universe, Device). No privacy surface.
+  - Wallet connection: `frontend/src/lib/starknetWallet.js:115-188` (`createStore` + `WalletAccountV6.connect`) via `frontend/src/providers/StarknetProvider.jsx`, wrapped in `frontend/src/index.js:9-11`.
+  - Transaction layer: `frontend/src/lib/starknetWallet.js` — `shieldAmount` (318), `transferAmount` (335), `unshieldAmount` (354), `fetchShieldedBalances` (374), capability via `walletV6.supportedWalletApi` (127). Pure helpers + tests: `frontend/src/lib/starknetWalletUtils.js` + `.test.js`.
+  - Navigation: `frontend/src/App.js:17-23` — five tabs (Harvest, Ledger, Universe, Device, Pool). Top-bar "Connect" (`App.js:61-74`) only switches to the Pool tab.
+  - Pool UI: `frontend/src/screens/PrivacyScreen.jsx` — `useStarknet()` (no props). Connect picker, Sepolia prompt, capability degrade, shield / transfer / unshield, consent-gated balances, fee + maturity, explorer result.
   - Entropy ledger (not chain activity): `frontend/src/screens/LedgerScreen.jsx` ← `GET /api/ledger` (`backend/server.py:419`).
-  - Device signing: `backend/server.py:60-78` (`load_or_create_device_keys`). These keys are **not** Starknet keys and must never be treated as a viewing key.
-- Privacy goal (from interview): hide who pays whom and transfer amounts; show the user their own shielded balances; later hide the public user↔account link (shadow accounts).
-- Environment: Starknet **testnet (Sepolia) first**, Ready extension. Users do not have a Starknet wallet wired into this app today.
+  - Device identity: `frontend/src/screens/DeviceScreen.jsx` (Ed25519 PEM + QR via `getPubKey()` in `frontend/src/lib/api.js:12`). Device PEM at `backend/server.py:60-78` is **not** a Starknet key and must never be treated as a viewing key.
+- Privacy goal (from interview, confirmed 2026-08-16): hide who pays whom and transfer amounts; show the user their own shielded balances; later hide the public user↔account link (shadow accounts).
+- Environment: Starknet **testnet (Sepolia) first**, Ready extension. Pool tab is wired; Ready manual check is still on the developer.
 
 ## 2. Chosen route: Privacy Wallet API via starknet.js
 
-Normal dapp: the user connects Ready; the app asks the wallet to shield, privately transfer, unshield, and (when we choose to show it) read shielded balances. The wallet holds the viewing key, notes, and proofs. ChaosKey+'s FastAPI backend stays an entropy/identity service and never sees pool secrets.
+Normal dapp: the user connects Ready; the app asks the wallet to shield, privately transfer, unshield, and (when the user asks) read shielded balances. The wallet holds the viewing key, notes, and proofs. ChaosKey+'s FastAPI backend stays an entropy/identity service and never sees pool secrets.
 
 **The rule this follows:** this app never touches viewing keys — the user's wallet acts on its behalf via starknet.js `WalletAccountV6`.
 
-Shadow accounts (unlinkable on-chain identity) are **not** in Phase 1–2. Official by-example still lists the Wallet API route as pending; the starknet.js *next* WalletAccount guide already documents a `shadow_account_invoke` action, and the SDK monorepo renamed sub-accounts → shadow accounts in `0.14.3-RC.5` (`packages/shadow_account_anonymizer`). Phase 3 tracks that split and only builds after the Open-items re-check.
+Shadow accounts (unlinkable on-chain identity) are **not** in Phase 1–2b. Official by-example still lists the Wallet API route as pending; the starknet.js *next* WalletAccount guide documents `shadow_account_invoke` + `strk20ShadowAccountCommitment`, and the SDK monorepo has `packages/shadow_account_anonymizer`. Phase 3 tracks that split and only builds after the Open-items re-check.
 
-React convenience: [useStrk20 hooks](https://strk20-by-example.org/starknet-wallet-api/starknet-start-hook) exist, but this repo is CRA without a Starknet provider. Phase 1 wires `WalletAccountV6` directly in a new `frontend/src/lib/starknetWallet.js` so capability detection stays explicit. Do not add starknet-react / starknetkit unless their current npm release is confirmed to hand the app a `WalletAccountV6`.
+React convenience: [useStrk20 hooks](https://strk20-by-example.org/starknet-wallet-api/starknet-start-hook) exist, but this repo already owns connection in `starknetWallet.js`. Do not add starknet-react / starknetkit unless their current npm release is confirmed to hand the app a `WalletAccountV6`. Keep wiring on `useStarknet()` from `StarknetProvider.jsx`.
 
 ## 3. What this delivers — hidden vs visible
 
 | Private (inside the pool) | Public (visible onchain) |
 |---|---|
-| Sender and receiver of a private transfer from the new Privacy tab | Shield (deposit) and unshield (withdraw) amounts — the public ERC-20 legs |
+| Sender and receiver of a private transfer from the Pool tab | Shield (deposit) and unshield (withdraw) amounts — the public ERC-20 legs |
 | Transfer amounts and token type | The fact that the connected address interacted with the pool, and when |
 | Which notes were spent | Device Ed25519 identity, entropy ledger, harvest/universe activity (unchanged, off-pool) |
 | Shielded balances, once the wallet consents to `strk20Balances` | Relayer address on the transaction envelope (same for every user) |
@@ -43,27 +51,16 @@ Any future "what did this user do" UI (history, rewards, analytics) must read th
 
 ## 4. Prerequisites & versions
 
-Pin explicitly. `latest` on these packages is the wrong major.
+Pin explicitly. `latest` on these packages is the wrong major. Already installed in `frontend/package.json` — do not reinstall unpinned.
 
-- `starknet@10.4.0` (minimum for `WalletAccountV6`; npm `next` was `10.7.0` on 2026-08-15 — later 10.x is fine if it still exports the same STRK20 actions; do not install unpinned `starknet`)
-- `@starknet-io/get-starknet-discovery@6.0.3`, `@starknet-io/get-starknet-wallet-standard@6.0.3` (skill-verified pair; npm `next` drifted to **6.0.4** on 2026-08-15 — confirm 6.0.3 still resolves, otherwise pin 6.0.4 and re-check the WalletAccount guide)
-- `@starknet-io/types-js@0.10.3` (Wallet API spec v0.10.3; v0.10.4-rc.1 is in flight — do not pin an RC for Phase 1)
-- Test wallet: Ready extension
+- `starknet@10.4.0` (minimum for `WalletAccountV6`; npm `next` was `10.7.0` on 2026-08-16 — later 10.x is fine if it still exports the same STRK20 actions; do not install unpinned `starknet`)
+- `@starknet-io/get-starknet-discovery@6.0.3`, `@starknet-io/get-starknet-wallet-standard@6.0.3` (skill-verified pair; npm `next` is **6.0.4** — keep 6.0.3 unless execute-time re-check of the WalletAccount guide requires the bump)
+- `@starknet-io/types-js@0.10.3` (Wallet API spec v0.10.3; v0.10.4-rc.1 is in flight — do not pin an RC)
+- Test wallet: Ready extension (WalletAccount *next* guide also names Xverse as of 2026-08 — treat as re-check, not Phase 2b target)
 - RPC: a Sepolia `nodeUrl` via env (`REACT_APP_STARKNET_RPC`), never hardcoded secrets
-- No Cairo toolchain in this repo. None required for Phase 1–2.
+- No Cairo toolchain in this repo. None required for Phase 1–2b.
 
-Install from `frontend/`:
-
-```sh
-npm install starknet@10.4.0 \
-  @starknet-io/get-starknet-discovery@6.0.3 \
-  @starknet-io/get-starknet-wallet-standard@6.0.3 \
-  @starknet-io/types-js@0.10.3
-```
-
-API to implement against (fetch again at execute time, do not guess): [WalletAccount + get-starknet v6](https://starknet-js.com/docs/next/guides/account/walletAccount/#with-get-starknet-v6).
-
-Verified connect shape (2026-08-15 guide):
+Existing connect shape (already in `starknetWallet.js`; matches the 2026-08-16 WalletAccount guide):
 
 ```js
 import { createStore } from "@starknet-io/get-starknet-discovery";
@@ -74,58 +71,68 @@ const selected = /* wallet the user picked from store.getWallets() */;
 const account = await WalletAccountV6.connect({ nodeUrl }, selected);
 ```
 
-Import the wallet type from `@starknet-io/get-starknet-wallet-standard/features` (package root does not re-export it).
+The *next* guide also shows `@starknet-io/get-starknet/discovery` — that is a different package name. Keep the pinned `@starknet-io/get-starknet-discovery` import already in this repo.
+
+API to implement against (fetch again at execute time, do not guess): [WalletAccount + get-starknet v6](https://starknet-js.com/docs/next/guides/account/walletAccount/#with-get-starknet-v6).
 
 ## 5. Phase 1 — first shielded flow ✅ done 2026-08-15
 
 Status: done 2026-08-15 (manual Ready wallet check still on the developer)
 
-1. Add the pinned packages to `frontend/package.json` (CRA JS; no TypeScript migration).
-2. New `frontend/src/lib/starknetWallet.js`:
-   - `createStore()` + custom picker UI (match existing `Panel` / `Btn` in `frontend/src/components/ui.jsx`).
-   - `WalletAccountV6.connect({ nodeUrl: process.env.REACT_APP_STARKNET_RPC }, selectedWallet)`.
-   - Capability detect with `walletV6.supportedWalletApi(wallet)` (or `supportedSpecs`); treat Wallet API `>= 0.10` as STRK20-capable.
-   - **Never** call `strk20Balances` to feature-detect (that is a consent-gated balance read).
-   - Subscribe to account/network change and reconstruct `WalletAccountV6` on change (guide recommendation).
-   - `waitForTransaction` raced against a timeout; timeout = "submitted" + explorer link, not a hang.
-3. New `frontend/src/screens/PrivacyScreen.jsx` + fifth tab in `frontend/src/App.js:14-19` (label e.g. "Pool"). Device tab stays Ed25519 hardware identity; do not overload it.
-4. First flow: **shield only** — `strk20InvokeTransaction([{ type: "deposit", token, amount }])`.
-   - UI names both wallet prompts: public ERC-20 `approve`, then the private deposit. A deposit is two transactions.
-   - Amounts in the token's smallest unit. Compare addresses with `BigInt(a) === BigInt(b)`.
-   - Read pool fee via `get_fee_amount`; subtract it from any MAX prefills. Do not invent a fee-sponsorship UX.
-   - Surface screening decline as a declined deposit, not a generic tx error.
-5. Graceful degradation: if the connected wallet is not Ready (or Wallet API `< 0.10`), hide shield/transfer/unshield and show "needs a STRK20-capable wallet (Ready)". Braavos / Privy / other embedded wallets are unsupported.
-6. Verify on Sepolia against the Ready extension and [wallet test dapp](https://starknet-wallet-account.vercel.app/). Pure local devnet does not exercise wallet proving.
+Shipped and still present:
 
-Manual check at phase end: connect Ready → unsupported wallet hidden → shield STRK (or the chosen Sepolia ERC-20) → approve then deposit both shown → explorer shows a pool interaction; amount of the deposit is public.
+1. Pinned packages in `frontend/package.json`.
+2. `frontend/src/lib/starknetWallet.js` — `createStore()`, `WalletAccountV6.connect`, `walletV6.supportedWalletApi` (never `strk20Balances` for feature-detect), `onChange` reconstruct, `waitForTransaction` raced against a timeout, `strk20InvokeTransaction([{ type: "deposit", … }])`.
+3. Fifth tab in `frontend/src/App.js:17-23` (Pool). Device tab stays Ed25519 hardware identity.
+4. Capability helpers + unit tests in `starknetWalletUtils.js` / `.test.js`.
+5. `StarknetProvider` in `frontend/src/index.js`.
 
-## 6. Phase 2 — feature integration ✅ done 2026-08-15
+The original shield UI that this phase handed off is **gone**. Restore it in Phase 2b, do not re-install packages.
 
-Status: done 2026-08-15 (manual Ready wallet check still on the developer)
+## 6. Phase 2 — feature integration ✅ done 2026-08-15 (library + docs)
 
-- **Private transfer** on `PrivacyScreen.jsx`: `{ type: "transfer", token, amount, recipient }`. Recipient must already be registered (Ready does this on first use). Do not compose with a same-tx deposit.
-- **Unshield**: `{ type: "withdraw", token, amount, recipient }`. Label the amount as public.
-- **Shielded balances** (requested): call `account.strk20Balances([token])` only from the Privacy tab, after the user is connected and STRK20-capable. Copy must say the wallet will ask to share shielded balances. Skip this call on Harvest / Ledger / Universe / Device.
-- **Note maturity**: after a shield, disable spend until ~10 blocks (or show the wait). Do not immediately offer transfer of the just-shielded amount.
-- **Honest labels** on `PrivacyScreen.jsx`: "private transfer (sender, receiver, amount hidden)" vs "shield / unshield (amount public)".
-- **Do not** hang private-tx history off `LedgerScreen.jsx`. That screen is the entropy hash chain (`GET /api/ledger`). A later activity list, if wanted, is a new panel that indexes pool `Deposit` events by topic1.
-- **Backend stays out.** `backend/server.py` does not gain viewing keys, notes, proofs, or relayer credentials. Device PEM at `backend/keys/` remains entropy-signing only.
-- **Doc repair** (same phase, so the public submission stops contradicting the pool):
-  - Rewrite `strk20.json` as a pointer at the pool + this plan, not an ERC-20 ABI.
-  - Rewrite `docs/integration.md` to the Wallet API recipe.
-  - Mark `docs/privacy-plan.md` superseded.
-  - Retire or relabel `scripts/prepare_strk20_tx.sh` / `scripts/demo_private_relay.sh` so they cannot be mistaken for pool transfers.
-- Re-check fee / paymaster UX at build time before writing copy about who pays gas vs the pool fee.
+Status: library and docs done 2026-08-15; **UI not in the tree** — see Phase 2b.
 
-## 7. Phase 3 — shadow accounts ⛔ blocked 2026-08-15: Wallet API route still has no stable shadow-account method
+Still present:
 
-Status: blocked 2026-08-15 — re-verified, **not implemented**
+- `transferAmount` / `unshieldAmount` / `fetchShieldedBalances` / `spendLocked` (~10-block maturity) in `starknetWallet.js`.
+- Consent-gated balances: `strk20Balances` only via `fetchShieldedBalances` (docstring: Pool tab only).
+- Backend stays out. `backend/server.py` has no viewing keys, notes, proofs, or relayer credentials.
+- `strk20.json` is a pool pointer, not an ERC-20 ABI.
+- `docs/integration.md` is the Wallet API recipe.
+- `docs/privacy-plan.md` marked superseded.
+- `scripts/prepare_strk20_tx.sh` / `scripts/demo_private_relay.sh` retired.
 
-Re-check (2026-08-15):
-- Wallet API spec latest **stable** is still **v0.10.3**; **v0.10.4-rc.1** is in flight (not an entry-criterion pass).
-- `@starknet-io/types-js@0.10.3` `STRK20_ACTION` is only `deposit | withdraw | transfer | invoke` — no `shadow_account_invoke`.
-- Pinned `starknet@10.4.0` `WalletAccountV6` has no `strk20ShadowAccountCommitment` / shadow-account method (grep clean).
+Pool tab UI restored in Phase 2b.
+
+## 6b. Phase 2b — restore the Pool tab ✅ done 2026-08-16
+
+Status: done 2026-08-16 (manual Ready wallet check still on the developer)
+
+Rewrite `frontend/src/screens/PrivacyScreen.jsx` against `useStarknet()` from `StarknetProvider.jsx`. Match `Panel` / `Btn` / `Overline` in `frontend/src/components/ui.jsx`. `App.js` keeps rendering `<Active />` with no props.
+
+1. Wallet list from `session.wallets`, connect / disconnect, show address + chain. Prompt a Sepolia switch if `chainId` is not Sepolia (`starknetWallet.js` already tries).
+2. Capability degrade: if `capable` is false, hide shield / transfer / unshield / balances and show "needs a STRK20-capable wallet (Ready)". Detect only from the version query already stored on the session.
+3. **Shield** — `starknet.shield(amount)`. UI names both wallet prompts: public ERC-20 `approve`, then the private deposit. Amounts in the token's smallest unit (helpers already convert). Surface screening decline as a declined deposit (`classifyPoolError` kind `screening`).
+4. **Private transfer** — `starknet.transfer(amount, recipient)`. Do not compose with a same-tx deposit. Disable while `maturityLeft > 0` (or call `refreshMaturity` and honor `spendLocked`).
+5. **Unshield** — `starknet.unshield(amount, recipient)`. Label the amount as public.
+6. **Shielded balances** — only after a dedicated control on this tab (`starknet.fetchBalances`). Copy must say the wallet will ask to share shielded balances. Never call this from Harvest / Ledger / Universe / Device.
+7. Honest labels: "private transfer (sender, receiver, amount hidden)" vs "shield / unshield (amount public)".
+8. Pool fee via `starknet.fetchFee()`; subtract from any MAX prefills. If `REACT_APP_STRK20_POOL` is unset, degrade fee display (already returns `{ available: false }`). Do not invent a fee-sponsorship UX.
+9. After submit: explorer link from the wallet helper; timeout = "submitted", not a hang.
+
+Manual check at phase end: connect Ready → unsupported wallet hidden → shield STRK → approve then deposit both shown → wait ~10 blocks → private transfer → unshield. Deposit amount is public on the explorer; transfer sender/receiver/amount are not.
+
+## 7. Phase 3 — shadow accounts ⛔ blocked 2026-08-16: Wallet API route still has no stable shadow-account method
+
+Status: blocked 2026-08-16 — execute requested; re-verified again, **not implemented**
+
+Re-check (2026-08-16, execute attempt):
+- Wallet API spec latest **stable** is still **v0.10.3** ([Latest](https://github.com/starkware-libs/starknet-specs/releases/tag/v0.10.3)). **v0.10.4-rc.1** (13 Aug, pre-release) renames sub-accounts → shadow accounts — not an entry-criterion pass.
+- `@starknet-io/types-js` latest still **0.10.3**; `STRK20_ACTION` is only `deposit | withdraw | transfer | invoke` — no `shadow_account_invoke`.
+- Pinned `starknet@10.4.0` `WalletAccountV6` has `strk20InvokeTransaction` / `strk20Balances` / `strk20PrepareInvoke` — no `strk20ShadowAccountCommitment`.
 - By-example still says [Wallet API pending](https://strk20-by-example.org/builder-privacy-overview) for unlinkable accounts. SDK route exists (`packages/shadow_account_anonymizer`) but this app must not take it: a dapp never holds the viewing key.
+- The WalletAccount *next* guide documents `shadow_account_invoke` as a fifth action. Preview only — do not bump to an RC to unblock this dapp.
 - Criterion 3 (Ready on Sepolia) was not tested; it is moot until 1 and 2 pass.
 
 - Entry criterion (all of):
@@ -135,14 +142,14 @@ Re-check (2026-08-15):
 - Design-now (do not implement):
   - This app has no protocol calls yet. The candidate is a later "act on Starknet without publishing the Ready address" flow (e.g. a public receipt account), via `shadow_account_invoke` if that is the shipped name.
   - Shadow-account funds and txs are **public**; only the link to the main wallet is hidden. Do not label them as shielded balances.
-  - Naming drift to re-read first: SDK `0.14.3-RC.5` uses **shadow accounts**; older skill text says sub-accounts; `packages/sub_account_anonymizer` is gone, `packages/shadow_account_anonymizer` exists. The next WalletAccount guide already lists `shadow_account_invoke` + `strk20ShadowAccountCommitment` — treat that as a preview, not Phase 1 API.
+  - Naming: SDK / next docs use **shadow accounts**; older skill text says sub-accounts; `packages/sub_account_anonymizer` is gone, `packages/shadow_account_anonymizer` exists.
 - No anonymizer contract is in scope for ChaosKey+ M3 unless the product later adds its own vault/swap/lend. This skill will not generate Cairo. If that day comes, the team owns review, audit, deploy, and maintenance; start from `packages/ekubo_swap_anonymizer` / `packages/vesu_lending_anonymizer` in [starknet-privacy](https://github.com/starkware-libs/starknet-privacy).
 
 ## 8. Testing
 
 - Testnet (Sepolia) only until an explicit mainnet go.
 - Ready extension + [wallet test dapp](https://starknet-wallet-account.vercel.app/).
-- Headless: `cd frontend && npm test` / production build must stay green; add unit tests around capability detection in `starknetWallet.js` (version query, not balance probe).
+- Headless: `cd frontend && npm test` / production build must stay green; Phase 2b does not need new test framework — keep capability tests in `starknetWalletUtils.test.js`.
 - Existing backend pytest is out of scope for pool actions and must keep passing (`backend/tests/test_chaoskey.py`).
 - Do not promise a Katana/devnet loop for wallet proving; the public SDK monorepo is the place to re-check local-testing tooling later.
 
@@ -155,22 +162,24 @@ Re-check (2026-08-15):
 
 ## 10. Open items to re-verify at build time
 
-- get-starknet npm `next`: 6.0.3 (plan pin) vs 6.0.4 (current next as of 2026-08-15).
-- `starknet` npm `next`: 10.7.0; confirm `WalletAccountV6` + `strk20InvokeTransaction` + `STRK20_ACTION` still match the guide.
+- get-starknet npm `next`: 6.0.3 (plan pin) vs 6.0.4 (current next as of 2026-08-16).
+- `starknet` npm `next`: 10.7.0; confirm `WalletAccountV6` + `strk20InvokeTransaction` + `STRK20_ACTION` still match the guide on the pinned 10.4.0.
 - Wallet API spec: stay on v0.10.3 until 0.10.4 is stable; then re-read shadow-account support.
-- Ready + Xverse: Ready is the Phase 1 target; Xverse dapp-facing Wallet API was in progress as of mid-July 2026.
+- Ready + Xverse: Ready is the Phase 2b target. WalletAccount *next* guide now names both as STRK20 wallets (2026-08); confirm Xverse in a real Sepolia connect before advertising it.
 - Sepolia ERC-20 addresses: official STRK is the same address on Sepolia and mainnet (`0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d`). Sepolia **pool** address is still unset (`REACT_APP_STRK20_POOL`); fee display degrades until it is filled.
 - Pool fee (`get_fee_amount`) and whether wallet-sponsored gas still excludes the pool fee — copy says gas may be sponsored, pool fee is not. Re-check if paymaster design lands.
-- Shadow-account Wallet API: **blocked 2026-08-15**. types-js latest still 0.10.3 (no shadow action); spec 0.10.4 still RC; by-example still pending. Preview only: WalletAccount *next* docs + `packages/shadow_account_anonymizer`. Do not bump to an RC to unblock this dapp.
+- Shadow-account Wallet API: **blocked 2026-08-16** (execute requested, criteria still fail). types-js latest still 0.10.3 (no shadow action); spec latest stable v0.10.3; v0.10.4-rc.1 is a pre-release rename only. Preview: WalletAccount *next* docs + `packages/shadow_account_anonymizer`. Do not bump to an RC; do not take the SDK route.
 - Fee / paymaster design for shielded-token fee payment.
+- `docs/mainnet-transaction-plan.md` still describes deploying a token contract. Rewrite or mark superseded when Phase 2b ships so reviewers do not follow it.
 
 ## 11. Links
 
 - What STRK20 is: https://strk20-by-example.org/what-is-strk20
 - Wallet API overview: https://strk20-by-example.org/starknet-wallet-api/overview
 - starknet.js `WalletAccountV6`: https://strk20-by-example.org/starknet-wallet-api/starknet-js
-- React hooks (not Phase 1, optional later): https://strk20-by-example.org/starknet-wallet-api/starknet-start-hook
+- React hooks (not used; optional later): https://strk20-by-example.org/starknet-wallet-api/starknet-start-hook
 - Compliance / screening: https://strk20-by-example.org/compliance
+- Builder overview / unlinkable accounts: https://strk20-by-example.org/builder-privacy-overview
 - WalletAccount guide (current API): https://starknet-js.com/docs/next/guides/account/walletAccount/#with-get-starknet-v6
 - Wallet test dapp: https://starknet-wallet-account.vercel.app/
 - Privacy SDK monorepo (reference; this app does not import it): https://github.com/starkware-libs/starknet-privacy
