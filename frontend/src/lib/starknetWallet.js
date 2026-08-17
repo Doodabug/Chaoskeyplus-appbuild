@@ -364,7 +364,16 @@ async function invokeActions(actions) {
     const friendly = friendlyMissingApi(err);
     throw friendly || err;
   }
-  const result = await session.account.strk20InvokeTransaction(actions);
+  console.log("[strk20] invoke →", JSON.stringify(actions));
+  let result;
+  try {
+    result = await session.account.strk20InvokeTransaction(actions);
+    console.log("[strk20] invoke result →", result);
+  } catch (err) {
+    console.error("[strk20] invoke FAILED →", err);
+    // Preserve original error kind classification
+    throw err;
+  }
   const hash = result?.transaction_hash || "";
   const wait = await waitForTx(hash);
   return {
@@ -426,6 +435,60 @@ export async function shieldAmount(humanAmount) {
   } catch (err) {
     throw wrapPoolError(err, "Shield failed.");
   }
+}
+
+/**
+ * Public invoke of pool.register() — one-time first-use registration.
+ * The STRK20 privacy pool requires the caller to be registered before deposit;
+ * this calls that entrypoint via the wallet's standard Starknet execute path.
+ */
+export async function registerInPool() {
+  assertReady();
+  const pool = poolAddress();
+  if (!pool) {
+    throw new Error("REACT_APP_STRK20_POOL is not configured — cannot register.");
+  }
+  console.log("[strk20] register → pool:", pool);
+  let result;
+  try {
+    if (typeof session.account?.execute === "function") {
+      result = await session.account.execute({
+        contractAddress: pool,
+        entrypoint: "register",
+        calldata: [],
+      });
+    } else if (typeof session.account?.addInvokeTransaction === "function") {
+      // Fallback for wallets that only expose the low-level Wallet API method
+      result = await session.account.addInvokeTransaction({
+        calls: [{ contract_address: pool, entry_point: "register", calldata: [] }],
+      });
+    } else {
+      throw new Error("Wallet account has no execute/addInvokeTransaction method.");
+    }
+    console.log("[strk20] register result →", result);
+  } catch (err) {
+    console.error("[strk20] register FAILED →", err);
+    const msg = String(err?.message || err || "");
+    if (/USER_REFUSED|refused|reject/i.test(msg)) {
+      const wrapped = new Error("You declined the register signature in the wallet.");
+      wrapped.kind = "refused";
+      throw wrapped;
+    }
+    if (/already_registered|ALREADY_REGISTERED/i.test(msg)) {
+      const wrapped = new Error("This account is already registered in the pool.");
+      wrapped.kind = "already_registered";
+      throw wrapped;
+    }
+    const wrapped = new Error(`Register failed: ${msg}`);
+    wrapped.kind = "register_failed";
+    throw wrapped;
+  }
+  const hash = result?.transaction_hash || "";
+  const wait = await waitForTx(hash);
+  return {
+    ...wait,
+    explorer: explorerTxUrl(explorerBase(), hash),
+  };
 }
 
 export async function transferAmount(humanAmount, recipient) {

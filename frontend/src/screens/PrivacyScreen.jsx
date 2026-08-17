@@ -270,6 +270,24 @@ export default function PrivacyScreen() {
 
       {connected && sepolia && (
         <>
+          <Panel title="POOL REGISTRATION :: ONE-TIME" testid="pool-register-panel">
+            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
+              First-time users must register with the pool contract before
+              shielding. This is a public Starknet invoke on the pool's
+              <code className="text-cyan-300"> register()</code> entrypoint — one
+              signature, small gas fee. Skip if you're already registered.
+            </p>
+            <Btn
+              intent="primary"
+              testid="pool-register-btn"
+              onClick={() => runAction("register", () => starknet.register())}
+              disabled={!!busy}
+              className="w-full"
+            >
+              {busy === "register" ? "Awaiting wallet signature" : "Register with pool"}
+            </Btn>
+          </Panel>
+
           <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
               The wallet will ask to share your shielded STRK balance. This app

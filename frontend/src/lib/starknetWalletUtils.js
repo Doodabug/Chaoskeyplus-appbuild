@@ -53,7 +53,7 @@ export function sameAddress(a, b) {
   }
 }
 
-/** Human decimal string → base units as 0x-hex felt. */
+/** Human decimal string → base units as decimal-string FELT (per STRK20 spec). */
 export function humanToBaseHex(human, decimals = DEFAULT_TOKEN_DECIMALS) {
   const raw = String(human ?? "").trim();
   if (!raw || !/^\d+(\.\d+)?$/.test(raw)) {
@@ -66,7 +66,9 @@ export function humanToBaseHex(human, decimals = DEFAULT_TOKEN_DECIMALS) {
   const fracPadded = (fracPart + "0".repeat(decimals)).slice(0, decimals);
   const base = BigInt(wholePart || "0") * 10n ** BigInt(decimals) + BigInt(fracPadded || "0");
   if (base <= 0n) throw new Error("Enter a positive amount.");
-  return `0x${base.toString(16)}`;
+  // FELT accepts both hex and decimal per STRK20 spec; use decimal string —
+  // matches SDK examples and avoids wallets that reject unpadded hex felts.
+  return base.toString();
 }
 
 export function baseToHuman(base, decimals = DEFAULT_TOKEN_DECIMALS) {
@@ -94,7 +96,7 @@ export function classifyPoolError(err, fallback = "Pool action failed.") {
     return {
       kind: "not_registered",
       message:
-        "This account is not registered in the pool. Ready registers on first use — retry after the wallet finishes registration.",
+        "First-time use: Ready needs to register your account in the pool. This happens once, then Shield works. Follow the Ready wallet prompts.",
     };
   }
   if (code === 119 || /INSUFFICIENT_PRIVATE_BALANCE/i.test(msg)) {
