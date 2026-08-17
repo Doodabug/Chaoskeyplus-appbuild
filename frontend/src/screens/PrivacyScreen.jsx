@@ -103,6 +103,33 @@ export default function PrivacyScreen() {
   }, [pool, address, fetchFee]);
 
   useEffect(() => {
+    if (starknet.address) return undefined;
+    starknet.rescan();
+    return undefined;
+    // Pool open: poke Ready once. rescan identity is stable from the provider.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function onRescan() {
+    setError(null);
+    setBusy("rescan");
+    try {
+      const next = await starknet.rescan();
+      if (!next?.wallets?.length) {
+        setError({
+          kind: "unknown",
+          message:
+            "Still no Ready in this tab. Unlock the Ready icon here, set site access to On all sites, then scan again.",
+        });
+      }
+    } catch (e) {
+      setError({ kind: e?.kind || "unknown", message: e?.message || "Rescan failed." });
+    } finally {
+      setBusy("");
+    }
+  }
+
+  useEffect(() => {
     if (!lastShieldBlock || maturityLeft <= 0) return undefined;
     let live = true;
     const tick = async () => {
@@ -210,12 +237,9 @@ export default function PrivacyScreen() {
             </p>
             {starknet.wallets.length === 0 && (
               <EmptyWalletHint
-                scanning={starknet.scanning}
+                scanning={!!busy || starknet.scanning}
                 hints={starknet.injectedHints || []}
-                onRescan={() => {
-                  setError(null);
-                  starknet.rescan();
-                }}
+                onRescan={onRescan}
               />
             )}
             <ul className="space-y-2">

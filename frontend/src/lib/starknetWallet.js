@@ -230,10 +230,38 @@ export function initWalletStore() {
   return session.store;
 }
 
-export function rescanWallets() {
+async function wakeInjectedWallets() {
+  if (typeof window === "undefined") return;
+  for (const key of listStarknetWindowKeys(window)) {
+    let value;
+    try {
+      value = window[key];
+    } catch (_) {
+      continue;
+    }
+    if (!value || typeof value !== "object") continue;
+    try {
+      if (typeof value.enable === "function") {
+        await value.enable();
+      } else if (typeof value.request === "function") {
+        await value.request({
+          type: "wallet_requestAccounts",
+          params: { silent_mode: false },
+        });
+      }
+    } catch (_) {
+      /* locked, refused, or not a wallet */
+    }
+  }
+}
+
+/** Re-scan window.starknet* and ask Ready to inject/unlock if it is present. */
+export async function rescanWallets() {
   initWalletStore();
+  startWalletScan(20000);
+  await wakeInjectedWallets();
   pullWallets();
-  startWalletScan(12000);
+  if (session.wallets.length === 0) startWalletScan(20000);
   return getSession();
 }
 
