@@ -2,23 +2,28 @@
 // This module never reads viewing keys, notes, or proofs.
 
 import { createStore } from "@starknet-io/get-starknet-discovery";
+import { StarknetInjectedWallet } from "@starknet-io/get-starknet-wallet-standard";
 import { Contract, RpcProvider, WalletAccountV6, constants, walletV6 } from "starknet";
 import {
   DEFAULT_EXPLORER,
   DEFAULT_RPC,
   DEFAULT_TOKEN,
   DEFAULT_TOKEN_DECIMALS,
-  SEPOLIA_CHAIN_ID,
   NOTE_MATURITY_BLOCKS,
+  PLACEHOLDER_WALLET_ICON,
   TX_WAIT_MS,
   baseToHuman,
   classifyPoolError,
+  describeInjectedSlots,
   explorerTxUrl,
   humanToBaseHex,
   isFeltAddress,
+  isSepoliaChainId,
   isStrk20Capable,
+  listStarknetWindowKeys,
+  looksLikeInjectedWallet,
   maturityRemaining,
-  sameAddress,
+  prettyInjectedName,
   walletDisplayName,
 } from "./starknetWalletUtils";
 
@@ -51,6 +56,9 @@ const session = {
   changeUnsub: null,
   lastShieldBlock: null,
   currentBlock: null,
+  scanTimer: null,
+  focusUnsub: null,
+  injectedHints: [],
 };
 
 function emit() {
@@ -99,6 +107,8 @@ export function getSession() {
     explorerBase: explorerBase(),
     lastShieldBlock: session.lastShieldBlock,
     currentBlock: session.currentBlock,
+    scanning: !!session.scanTimer,
+    injectedHints: session.injectedHints,
     maturityLeft: maturityRemaining(
       session.currentBlock,
       session.lastShieldBlock,
@@ -113,16 +123,118 @@ export function subscribeSession(fn) {
   return () => listeners.delete(fn);
 }
 
+function walletIdentity(wallet) {
+  return String(wallet?.id || wallet?.name || "").toLowerCase();
+}
+
+function mergeWallets(primary, extra) {
+  const out = [];
+  const seen = new Set();
+  for (const wallet of [...primary, ...extra]) {
+    const id = walletIdentity(wallet);
+    if (id && seen.has(id)) continue;
+    if (id) seen.add(id);
+    if (wallet) out.push(wallet);
+  }
+  return out;
+}
+
+function wrapInjected(raw, key) {
+  if (!looksLikeInjectedWallet(raw) || typeof raw.request !== "function") return null;
+  const icon =
+    typeof raw.icon === "string" && raw.icon.startsWith("data:")
+      ? raw.icon
+      : raw.icon?.light && String(raw.icon.light).startsWith("data:")
+        ? raw.icon.light
+        : PLACEHOLDER_WALLET_ICON;
+  const swo = {
+    id: String(raw.id || key || "injected"),
+    name: String(raw.name || prettyInjectedName(key)),
+    version: String(raw.version || "0"),
+    icon,
+    request: (...args) => raw.request(...args),
+    on: typeof raw.on === "function" ? (...args) => raw.on(...args) : () => {},
+    off: typeof raw.off === "function" ? (...args) => raw.off(...args) : () => {},
+  };
+  try {
+    return new StarknetInjectedWallet(swo);
+  } catch (_) {
+    return null;
+  }
+}
+
+function collectInjectedWallets() {
+  if (typeof window === "undefined") return [];
+  const extras = [];
+  for (const key of listStarknetWindowKeys(window)) {
+    let value;
+    try {
+      value = window[key];
+    } catch (_) {
+      continue;
+    }
+    const wrapped = wrapInjected(value, key);
+    if (wrapped) extras.push(wrapped);
+  }
+  return extras;
+}
+
+function pullWallets() {
+  if (session.store) {
+    try {
+      session.store._refreshInjectedWallets();
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  const fromStore = session.store ? session.store.getWallets() : [];
+  session.wallets = mergeWallets(fromStore, collectInjectedWallets());
+  session.injectedHints =
+    typeof window === "undefined" ? [] : describeInjectedSlots(window);
+  emit();
+}
+
+function startWalletScan(ms = 20000) {
+  if (typeof window === "undefined") return;
+  if (session.scanTimer) {
+    clearInterval(session.scanTimer);
+    session.scanTimer = null;
+  }
+  const started = Date.now();
+  session.scanTimer = setInterval(() => {
+    pullWallets();
+    if (session.wallets.length > 0 || Date.now() - started > ms) {
+      clearInterval(session.scanTimer);
+      session.scanTimer = null;
+      emit();
+    }
+  }, 500);
+  emit();
+}
+
 export function initWalletStore() {
   if (session.store) return session.store;
   session.store = createStore();
-  const refresh = () => {
-    session.wallets = session.store.getWallets();
-    emit();
-  };
-  session.storeUnsub = session.store.subscribe(refresh);
-  refresh();
+  session.storeUnsub = session.store.subscribe(() => pullWallets());
+  pullWallets();
+  startWalletScan();
+  if (typeof window !== "undefined" && !session.focusUnsub) {
+    const onFocus = () => pullWallets();
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onFocus);
+    session.focusUnsub = () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onFocus);
+    };
+  }
   return session.store;
+}
+
+export function rescanWallets() {
+  initWalletStore();
+  pullWallets();
+  startWalletScan(12000);
+  return getSession();
 }
 
 export async function readWalletApiVersions(wallet) {
@@ -140,6 +252,25 @@ export async function readWalletApiVersions(wallet) {
   }
 }
 
+function resolveWallet(wallet) {
+  if (wallet) return wallet;
+  if (session.wallet) return session.wallet;
+  const fromAccount = session.account?.walletProvider;
+  if (fromAccount) return fromAccount;
+  const list = session.wallets || [];
+  if (list.length === 1) return list[0];
+  return null;
+}
+
+async function readWriteChainId(wallet) {
+  if (!wallet) return "";
+  try {
+    return await walletV6.requestChainId(wallet);
+  } catch (_) {
+    return "";
+  }
+}
+
 async function applyConnected(wallet, account) {
   if (session.changeUnsub) {
     try {
@@ -152,10 +283,15 @@ async function applyConnected(wallet, account) {
   session.wallet = wallet;
   session.account = account;
   session.address = account?.address || "";
-  try {
-    session.chainId = account ? await account.getChainId() : "";
-  } catch (_) {
-    session.chainId = "";
+  const writeId = await readWriteChainId(wallet);
+  if (writeId) {
+    session.chainId = writeId;
+  } else {
+    try {
+      session.chainId = account ? await account.getChainId() : "";
+    } catch (_) {
+      session.chainId = "";
+    }
   }
   session.apiVersions = await readWalletApiVersions(wallet);
   session.capable = isStrk20Capable(session.apiVersions);
@@ -172,19 +308,71 @@ async function applyConnected(wallet, account) {
   emit();
 }
 
+const SEPOLIA_SWITCH_IDS = [
+  constants.StarknetChainId.SN_SEPOLIA,
+  "SN_SEPOLIA",
+];
+
+async function requestSepoliaSwitch(wallet) {
+  let lastErr;
+  for (const id of SEPOLIA_SWITCH_IDS) {
+    try {
+      await walletV6.switchStarknetChain(wallet, id);
+      return;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (session.account?.switchStarknetChain) {
+    try {
+      await session.account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
+      return;
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  const detail = lastErr?.message || lastErr?.error?.message || "";
+  throw new Error(
+    detail
+      ? `Could not switch Ready to Sepolia. ${detail}`
+      : "Could not switch Ready to Sepolia. Approve the Ready popup, or open Ready → Network → Starknet Sepolia."
+  );
+}
+
+/** Ask Ready to write on Sepolia, then rebuild WalletAccountV6 on the new network. */
+export async function switchToSepolia(walletArg) {
+  const wallet = resolveWallet(walletArg);
+  if (!wallet) {
+    throw new Error("Connect Ready first, then switch to Sepolia.");
+  }
+  initWalletStore();
+  const current = await readWriteChainId(wallet);
+  if (!isSepoliaChainId(current)) {
+    await requestSepoliaSwitch(wallet);
+  }
+  const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
+  await applyConnected(wallet, account);
+  const writeId = await readWriteChainId(wallet);
+  if (writeId) {
+    session.chainId = writeId;
+    emit();
+  }
+  if (!isSepoliaChainId(session.chainId)) {
+    throw new Error(
+      "Ready is still not on Sepolia. Open Ready → Network → Starknet Sepolia, then tap Switch again."
+    );
+  }
+  return getSession();
+}
+
 export async function connectWallet(wallet) {
   if (!wallet) throw new Error("Pick a wallet.");
   initWalletStore();
   const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
-  try {
-    const writeId = await walletV6.requestChainId(wallet);
-    if (!sameAddress(writeId, SEPOLIA_CHAIN_ID)) {
-      await account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
-    }
-  } catch (_) {
-    /* wallet may refuse the switch; PrivacyScreen shows the chain */
-  }
   await applyConnected(wallet, account);
+  if (!isSepoliaChainId(session.chainId)) {
+    return switchToSepolia(wallet);
+  }
   return getSession();
 }
 

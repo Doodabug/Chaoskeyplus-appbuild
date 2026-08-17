@@ -1,16 +1,24 @@
 import {
+  MAINNET_CHAIN_ID,
+  SEPOLIA_CHAIN_ID,
   baseToHuman,
   classifyPoolError,
   classifyShieldError,
   compareApiVersion,
+  describeInjectedSlots,
   explorerTxUrl,
+  formatChainLabel,
   humanToBaseHex,
   isFeltAddress,
+  isSepoliaChainId,
   isStrk20Capable,
+  looksLikeInjectedWallet,
   maturityRemaining,
   maxSpendHuman,
   parseApiVersion,
+  prettyInjectedName,
   sameAddress,
+  stripChainPrefix,
 } from "./starknetWalletUtils";
 
 describe("parseApiVersion / isStrk20Capable", () => {
@@ -48,6 +56,30 @@ describe("sameAddress", () => {
     expect(
       sameAddress("0x534e5f5345504f4c4941", "0x0534e5f5345504f4c4941")
     ).toBe(true);
+  });
+});
+
+describe("isSepoliaChainId / formatChainLabel", () => {
+  test("accepts hex, name, and CAIP-2 forms", () => {
+    expect(isSepoliaChainId(SEPOLIA_CHAIN_ID)).toBe(true);
+    expect(isSepoliaChainId("0x0534e5f5345504f4c4941")).toBe(true);
+    expect(isSepoliaChainId("SN_SEPOLIA")).toBe(true);
+    expect(isSepoliaChainId("starknet:SN_SEPOLIA")).toBe(true);
+    expect(isSepoliaChainId("starknet:0x534e5f5345504f4c4941")).toBe(true);
+    expect(isSepoliaChainId("sepolia")).toBe(true);
+    expect(isSepoliaChainId(MAINNET_CHAIN_ID)).toBe(false);
+    expect(isSepoliaChainId("SN_MAIN")).toBe(false);
+    expect(isSepoliaChainId("")).toBe(false);
+    expect(isSepoliaChainId(null)).toBe(false);
+  });
+
+  test("labels mainnet vs sepolia instead of raw hex", () => {
+    expect(formatChainLabel(SEPOLIA_CHAIN_ID)).toBe("Sepolia");
+    expect(formatChainLabel("starknet:SN_SEPOLIA")).toBe("Sepolia");
+    expect(formatChainLabel(MAINNET_CHAIN_ID)).toBe("Mainnet");
+    expect(formatChainLabel("SN_MAIN")).toBe("Mainnet");
+    expect(formatChainLabel("")).toBe("—");
+    expect(stripChainPrefix("starknet:SN_SEPOLIA")).toBe("SN_SEPOLIA");
   });
 });
 
@@ -110,5 +142,27 @@ describe("explorerTxUrl", () => {
     expect(explorerTxUrl("https://sepolia.voyager.online/tx", "0xabc")).toBe(
       "https://sepolia.voyager.online/tx/0xabc"
     );
+  });
+});
+
+describe("injected wallet scan", () => {
+  test("treats window.starknet with request as Ready", () => {
+    const win = {
+      starknet: { name: "Ready Wallet", request: () => {} },
+    };
+    Object.defineProperty(win, "ignored", { value: 1 });
+    expect(describeInjectedSlots(win)).toEqual([
+      { key: "starknet", status: "ready", name: "Ready Wallet" },
+    ]);
+    expect(prettyInjectedName("starknet_argentX")).toBe("Ready");
+    expect(looksLikeInjectedWallet({ enable: () => {} })).toBe(true);
+    expect(looksLikeInjectedWallet({})).toBe(false);
+  });
+
+  test("flags a locked stub so the UI does not say install", () => {
+    const win = { starknet_argentX: { id: "argentX" } };
+    expect(describeInjectedSlots(win)).toEqual([
+      { key: "starknet_argentX", status: "stub", name: "Ready" },
+    ]);
   });
 });

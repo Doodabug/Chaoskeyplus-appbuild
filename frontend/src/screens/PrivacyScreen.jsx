@@ -4,7 +4,8 @@ import { Btn, HashLine, Overline, Panel, StatLine } from "../components/ui";
 import { useStarknet } from "../providers/StarknetProvider";
 import {
   NOTE_MATURITY_BLOCKS,
-  SEPOLIA_CHAIN_ID,
+  formatChainLabel,
+  isSepoliaChainId,
   maxSpendHuman,
 } from "../lib/starknetWalletUtils";
 
@@ -16,13 +17,58 @@ function shortAddr(addr) {
   return addr.length > 16 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr;
 }
 
-function onSepolia(chainId) {
-  if (!chainId) return false;
-  try {
-    return BigInt(chainId) === BigInt(SEPOLIA_CHAIN_ID);
-  } catch (_) {
-    return String(chainId).toLowerCase().includes("sepolia");
-  }
+function EmptyWalletHint({ scanning, hints, onRescan }) {
+  const stub = hints.find((h) => h.status === "stub");
+  const seen = hints.map((h) => h.name || h.key).filter(Boolean);
+  return (
+    <div
+      data-testid="pool-no-wallets"
+      className="border border-white/10 px-3 py-4 text-center space-y-3"
+    >
+      <p className="text-[11px] font-mono text-white/70 leading-relaxed">
+        {scanning
+          ? "Looking for Ready in this tab…"
+          : stub
+            ? "Ready is in this browser but locked or not injected yet. Unlock it, then scan again."
+            : "This tab cannot see Ready. You do not need to install it again if the extension is already in this Chrome."}
+      </p>
+      <ol className="text-left text-[11px] font-mono text-white/50 leading-relaxed space-y-1.5 px-1">
+        <li>1. Click the Ready puzzle-piece on this tab and unlock it.</li>
+        <li>2. Ready → site access → On all sites (localhost counts).</li>
+        <li>3. Stay on http://localhost:3000 in the same Chrome profile.</li>
+        <li>4. The phone / App Store Ready app will never appear here.</li>
+      </ol>
+      {seen.length > 0 && (
+        <p
+          data-testid="pool-injected-hints"
+          className="text-[10px] font-mono text-white/35"
+        >
+          this tab sees {seen.join(", ")}
+        </p>
+      )}
+      <Btn intent="primary" testid="pool-rescan-wallets" onClick={onRescan}>
+        {scanning ? "Scanning" : "I already have Ready — scan again"}
+      </Btn>
+      <a
+        data-testid="pool-install-ready"
+        href="https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb"
+        target="_blank"
+        rel="noreferrer"
+        className="block text-[10px] font-mono uppercase tracking-[0.18em] text-white/40 hover:text-cyan-200"
+      >
+        Only if this Chrome has no Ready extension
+      </a>
+      <a
+        data-testid="pool-wallet-test-dapp"
+        href="https://starknet-wallet-account.vercel.app/"
+        target="_blank"
+        rel="noreferrer"
+        className="block text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300/80 hover:text-cyan-200"
+      >
+        Wallet test dapp
+      </a>
+    </div>
+  );
 }
 
 export default function PrivacyScreen() {
@@ -90,6 +136,21 @@ export default function PrivacyScreen() {
     await starknet.disconnect();
   }
 
+  async function onSwitchSepolia() {
+    setError(null);
+    setBusy("switch");
+    try {
+      await starknet.switchToSepolia();
+    } catch (e) {
+      setError({
+        kind: e?.kind || "unknown",
+        message: e?.message || "Switch to Sepolia failed.",
+      });
+    } finally {
+      setBusy("");
+    }
+  }
+
   async function runAction(kind, fn) {
     setError(null);
     setResult(null);
@@ -124,7 +185,7 @@ export default function PrivacyScreen() {
 
   const connected = !!starknet.address;
   const capable = starknet.capable;
-  const sepolia = onSepolia(starknet.chainId);
+  const sepolia = isSepoliaChainId(starknet.chainId);
   const locked = starknet.maturityLeft > 0;
   const spendDisabled = !!busy || locked;
 
@@ -148,37 +209,14 @@ export default function PrivacyScreen() {
               proofs — this app never sees them.
             </p>
             {starknet.wallets.length === 0 && (
-              <div
-                data-testid="pool-no-wallets"
-                className="border border-white/10 px-3 py-4 text-center space-y-3"
-              >
-                <p className="text-[11px] font-mono text-white/55 leading-relaxed">
-                  No wallets detected in this browser. Pool needs the Ready X
-                  extension on Sepolia.
-                </p>
-                <a
-                  data-testid="pool-install-ready"
-                  href="https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center justify-center border border-cyan-400/60 text-cyan-300 hover:border-cyan-200 hover:text-cyan-100 hover:bg-cyan-400/10 px-4 py-2.5 font-mono text-xs uppercase tracking-[0.2em]"
-                >
-                  Install Ready X
-                </a>
-                <p className="text-[10px] font-mono text-white/40 leading-relaxed">
-                  Then hard-refresh this tab (Ctrl+Shift+R). Phone apps will not
-                  appear on localhost.
-                </p>
-                <a
-                  data-testid="pool-wallet-test-dapp"
-                  href="https://starknet-wallet-account.vercel.app/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300/80 hover:text-cyan-200"
-                >
-                  Wallet test dapp
-                </a>
-              </div>
+              <EmptyWalletHint
+                scanning={starknet.scanning}
+                hints={starknet.injectedHints || []}
+                onRescan={() => {
+                  setError(null);
+                  starknet.rescan();
+                }}
+              />
             )}
             <ul className="space-y-2">
               {starknet.wallets.map((w) => (
@@ -219,10 +257,18 @@ export default function PrivacyScreen() {
             />
             <StatLine
               label="Network"
-              value={sepolia ? "Sepolia" : starknet.chainId || "—"}
+              value={formatChainLabel(starknet.chainId)}
               valueClass={sepolia ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-network"
             />
+            {!sepolia && starknet.chainId ? (
+              <p
+                data-testid="pool-chain-raw"
+                className="text-[10px] font-mono text-white/35 break-all"
+              >
+                wallet chain {String(starknet.chainId)}
+              </p>
+            ) : null}
             <StatLine
               label="STRK20 API"
               value={capable ? "capable" : "unsupported"}
@@ -232,15 +278,17 @@ export default function PrivacyScreen() {
             {!sepolia && (
               <div className="mt-3 space-y-2">
                 <p className="text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
-                  Pool actions are Sepolia-only. Switch the wallet network, then retry.
+                  Pool actions are Sepolia-only. Approve the Ready popup for
+                  Starknet Sepolia. If nothing appears, open Ready → Network →
+                  Starknet Sepolia, then tap Switch again.
                 </p>
                 <Btn
                   intent="primary"
                   testid="pool-switch-sepolia-btn"
-                  onClick={() => onConnect(starknet.wallet)}
-                  disabled={!!busy || !starknet.wallet}
+                  onClick={onSwitchSepolia}
+                  disabled={!!busy}
                 >
-                  Switch to Sepolia
+                  {busy === "switch" ? "Switching" : "Switch to Sepolia"}
                 </Btn>
               </div>
             )}
