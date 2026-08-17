@@ -93,6 +93,14 @@ export default function PrivacyScreen() {
   async function runAction(kind, fn) {
     setError(null);
     setResult(null);
+    if (previewMode && ["shield", "transfer", "unshield"].includes(kind)) {
+      setError({
+        kind: "preview_mode",
+        message:
+          "Preview mode: STRK20 privacy is mainnet-only. Ready will predict failure on Sepolia. Flip REACT_APP_STARKNET_RPC to mainnet to execute this for real.",
+      });
+      return;
+    }
     setBusy(kind);
     try {
       const r = await fn();
@@ -160,9 +168,32 @@ export default function PrivacyScreen() {
       return true;
     }
   })();
+  // Preview mode = the app RPC targets Sepolia. STRK20 privacy is mainnet-only,
+  // so on-Sepolia actions cannot actually shield/transfer/unshield. We keep the
+  // UI wired so users see the full integration path; buttons soft-fail.
+  const previewMode = /sepolia/i.test(String(starknet.rpcUrl || ""));
 
   return (
     <div className="space-y-4">
+      {previewMode && (
+        <Panel title="PREVIEW MODE :: SEPOLIA" testid="pool-preview-banner">
+          <p className="text-[12px] font-mono text-[#FFB86B] leading-relaxed">
+            STRK20 privacy is live on{" "}
+            <span className="text-white/90">Starknet mainnet</span> only. This
+            preview shows the wallet-integration path — connect, capability
+            probe, action UX — without spending real STRK. Actual shield /
+            transfer / unshield needs a mainnet RPC.
+          </p>
+          <p className="text-[11px] font-mono text-white/55 leading-relaxed mt-2">
+            Ready to flip live? Set{" "}
+            <code className="text-cyan-300">REACT_APP_STARKNET_RPC</code> to a
+            mainnet endpoint (see{" "}
+            <span className="text-cyan-300">docs/mainnet-transaction-plan.md</span>
+            ), keep <code className="text-cyan-300">REACT_APP_STRK20_POOL</code>{" "}
+            at the mainnet pool, switch Ready to Mainnet, and reconnect.
+          </p>
+        </Panel>
+      )}
       <Panel
         title="WALLET"
         testid="pool-wallet-panel"
