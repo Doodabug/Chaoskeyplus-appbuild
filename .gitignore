@@ -1,7 +1,44 @@
+# Secrets and env
 .env
 .env.*
 *.env
+!.env.example
 credentials.json
+.credentials
 *.pem
 *.key
-.credentials
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build artifacts
+build/
+dist/
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Emergent internal
+.emergent/
+test_reports/
