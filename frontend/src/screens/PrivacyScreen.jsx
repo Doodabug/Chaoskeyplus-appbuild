@@ -3,9 +3,10 @@ import { ArrowUpRight, Eye, LinkSimple, Plugs, ShieldCheck } from "@phosphor-ico
 import { Btn, HashLine, Overline, Panel, StatLine } from "../components/ui";
 import { useStarknet } from "../providers/StarknetProvider";
 import {
+  NETWORKS,
   NOTE_MATURITY_BLOCKS,
-  SEPOLIA_CHAIN_ID,
   maxSpendHuman,
+  sameAddress,
 } from "../lib/starknetWalletUtils";
 
 const inputClass =
@@ -16,13 +17,9 @@ function shortAddr(addr) {
   return addr.length > 16 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr;
 }
 
-function onSepolia(chainId) {
-  if (!chainId) return false;
-  try {
-    return BigInt(chainId) === BigInt(SEPOLIA_CHAIN_ID);
-  } catch (_) {
-    return String(chainId).toLowerCase().includes("sepolia");
-  }
+function onExpectedChain(chainId, expectedChainId) {
+  if (!chainId || !expectedChainId) return false;
+  return sameAddress(chainId, expectedChainId);
 }
 
 export default function PrivacyScreen() {
@@ -153,28 +150,68 @@ export default function PrivacyScreen() {
 
   const connected = !!starknet.address;
   const capable = starknet.capable;
-  const sepolia = onSepolia(starknet.chainId);
+  const network = starknet.network || NETWORKS.sepolia;
+  const onExpected = onExpectedChain(starknet.chainId, network.chainId);
   const locked = starknet.maturityLeft > 0;
   const spendDisabled = !!busy || locked;
-  // The known mainnet privacy-pool address. If REACT_APP_STRK20_POOL matches this
-  // AND the wallet is on Sepolia, pool actions will predict failure.
-  const MAINNET_POOL_ADDR =
-    "0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a";
-  const poolAddressLooksSepolia = (() => {
-    if (!pool) return true; // Not configured — treat as OK; STRK20 wallet API doesn't need it for shield
-    try {
-      return BigInt(pool) !== BigInt(MAINNET_POOL_ADDR);
-    } catch (_) {
-      return true;
-    }
-  })();
-  // Preview mode = the app RPC targets Sepolia. STRK20 privacy is mainnet-only,
-  // so on-Sepolia actions cannot actually shield/transfer/unshield. We keep the
-  // UI wired so users see the full integration path; buttons soft-fail.
-  const previewMode = /sepolia/i.test(String(starknet.rpcUrl || ""));
+  // Preview mode = the current network doesn't have STRK20 live (Sepolia today).
+  const previewMode = !network.strk20Live;
 
   return (
     <div className="space-y-4">
+      <Panel title="NETWORK" testid="pool-network-toggle">
+        <p className="text-[11px] font-mono text-white/55 leading-relaxed mb-3">
+          STRK20 privacy is live on <span className="text-white/90">Starknet Mainnet</span>{" "}
+          only. Sepolia is preview-only (no live pool). Your selection is saved
+          locally.
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          {["sepolia", "mainnet"].map((key) => {
+            const n = NETWORKS[key];
+            const active = network.id === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                data-testid={`pool-net-${key}`}
+                disabled={!!busy}
+                onClick={async () => {
+                  if (network.id === key) return;
+                  setError(null);
+                  setResult(null);
+                  try {
+                    await starknet.setNetwork(key);
+                  } catch (e) {
+                    setError({
+                      kind: "network_switch_failed",
+                      message: e?.message || "Could not switch network.",
+                    });
+                  }
+                }}
+                className={`px-3 py-2 border font-mono text-[11px] uppercase tracking-[0.14em] transition-colors ${
+                  active
+                    ? key === "mainnet"
+                      ? "border-[#7AFF9B]/60 bg-[#7AFF9B]/10 text-[#7AFF9B]"
+                      : "border-cyan-400/60 bg-cyan-400/10 text-cyan-200"
+                    : "border-white/12 text-white/55 hover:text-white/85"
+                }`}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span>{n.label}</span>
+                  <span
+                    className={`text-[9px] tracking-normal ${
+                      n.strk20Live ? "text-[#7AFF9B]" : "text-[#FFB86B]"
+                    }`}
+                  >
+                    {n.strk20Live ? "LIVE" : "PREVIEW"}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </Panel>
+
       {previewMode && (
         <Panel title="PREVIEW MODE :: SEPOLIA" testid="pool-preview-banner">
           <p className="text-[12px] font-mono text-[#FFB86B] leading-relaxed">
@@ -182,15 +219,12 @@ export default function PrivacyScreen() {
             <span className="text-white/90">Starknet mainnet</span> only. This
             preview shows the wallet-integration path — connect, capability
             probe, action UX — without spending real STRK. Actual shield /
-            transfer / unshield needs a mainnet RPC.
+            transfer / unshield needs mainnet.
           </p>
           <p className="text-[11px] font-mono text-white/55 leading-relaxed mt-2">
-            Ready to flip live? Set{" "}
-            <code className="text-cyan-300">REACT_APP_STARKNET_RPC</code> to a
-            mainnet endpoint (see{" "}
-            <span className="text-cyan-300">docs/mainnet-transaction-plan.md</span>
-            ), keep <code className="text-cyan-300">REACT_APP_STRK20_POOL</code>{" "}
-            at the mainnet pool, switch Ready to Mainnet, and reconnect.
+            Ready to flip live? Tap <span className="text-cyan-300">Mainnet</span>{" "}
+            above, switch Ready to Mainnet, and reconnect. See{" "}
+            <span className="text-cyan-300">docs/mainnet-transaction-plan.md</span>.
           </p>
         </Panel>
       )}
@@ -258,8 +292,8 @@ export default function PrivacyScreen() {
             />
             <StatLine
               label="Network"
-              value={sepolia ? "Sepolia" : starknet.chainId || "—"}
-              valueClass={sepolia ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
+              value={onExpected ? network.label : starknet.chainId || "—"}
+              valueClass={onExpected ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-network"
             />
             <StatLine
@@ -268,19 +302,20 @@ export default function PrivacyScreen() {
               valueClass={capable ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-capability"
             />
-            {!sepolia && (
+            {!onExpected && (
               <div className="mt-3 space-y-2">
                 <p className="text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
-                  Pool actions are Sepolia-only. Switch the wallet network, then retry.
+                  Wallet is on a different chain than the app ({network.label}).
+                  Switch the wallet, then retry.
                 </p>
                 <Btn
                   intent="primary"
-                  testid="pool-switch-sepolia-btn"
+                  testid="pool-switch-chain-btn"
                   onClick={async () => {
                     setError(null);
                     setBusy("switch");
                     try {
-                      await starknet.switchToSepolia();
+                      await starknet.switchWalletChain();
                     } catch (e) {
                       setError({
                         kind: e?.kind || "switch_failed",
@@ -292,7 +327,9 @@ export default function PrivacyScreen() {
                   }}
                   disabled={!!busy || !starknet.wallet}
                 >
-                  {busy === "switch" ? "Waiting on wallet" : "Switch to Sepolia"}
+                  {busy === "switch"
+                    ? "Waiting on wallet"
+                    : `Switch to ${network.label}`}
                 </Btn>
               </div>
             )}
@@ -311,31 +348,8 @@ export default function PrivacyScreen() {
         </Panel>
       )}
 
-      {connected && sepolia && (
+      {connected && onExpected && (
         <>
-          {!poolAddressLooksSepolia && (
-            <Panel title="POOL ADDRESS :: WARNING" testid="pool-address-warning">
-              <p className="text-[12px] font-mono text-[#FFB86B] leading-relaxed mb-2">
-                Your <code className="text-cyan-300">REACT_APP_STRK20_POOL</code>
-                {" "}is the <span className="text-[#FF6B8A]">mainnet</span> address.
-                Ready is on Sepolia, so pool calls will predict failure ("Unable
-                to estimate transaction fees").
-              </p>
-              <p className="text-[11px] font-mono text-white/60 leading-relaxed">
-                Options:{" "}
-                <span className="text-white/85">
-                  (a) deploy or point to a Sepolia pool from starknet-privacy-toolkit,{" "}
-                  (b) switch this app to mainnet by setting{" "}
-                  <code className="text-cyan-300">REACT_APP_STARKNET_RPC</code>{" "}
-                  to a mainnet RPC and reconnecting your wallet on mainnet, or{" "}
-                  (c) try Shield without setting pool address — the STRK20 wallet
-                  API routes deposits internally and does not need the dapp to
-                  know the pool address.
-                </span>
-              </p>
-            </Panel>
-          )}
-
           <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
               The wallet will ask to share your shielded STRK balance. This app

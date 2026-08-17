@@ -8,7 +8,7 @@ import {
   DEFAULT_RPC,
   DEFAULT_TOKEN,
   DEFAULT_TOKEN_DECIMALS,
-  SEPOLIA_CHAIN_ID,
+  NETWORKS,
   NOTE_MATURITY_BLOCKS,
   TX_WAIT_MS,
   baseToHuman,
@@ -18,6 +18,7 @@ import {
   isFeltAddress,
   isStrk20Capable,
   maturityRemaining,
+  resolveNetwork,
   sameAddress,
   walletDisplayName,
 } from "./starknetWalletUtils";
@@ -36,7 +37,21 @@ const FEE_ABI = [
   },
 ];
 
+const NETWORK_STORAGE_KEY = "chaoskey.strk20.network";
+
 const listeners = new Set();
+
+function initialNetwork() {
+  if (typeof window !== "undefined") {
+    try {
+      const stored = window.localStorage?.getItem(NETWORK_STORAGE_KEY);
+      if (stored && NETWORKS[stored]) return NETWORKS[stored];
+    } catch (_) {
+      /* private mode / SSR */
+    }
+  }
+  return resolveNetwork(process.env.REACT_APP_STARKNET_RPC);
+}
 
 const session = {
   store: null,
@@ -51,6 +66,7 @@ const session = {
   changeUnsub: null,
   lastShieldBlock: null,
   currentBlock: null,
+  network: initialNetwork(),
 };
 
 function emit() {
@@ -59,10 +75,10 @@ function emit() {
 }
 
 function nodeUrl() {
-  return process.env.REACT_APP_STARKNET_RPC || DEFAULT_RPC;
+  return session.network?.rpc || process.env.REACT_APP_STARKNET_RPC || DEFAULT_RPC;
 }
 
-/** Sepolia RPC URL used by WalletAccountV6 / RpcProvider. */
+/** Starknet RPC URL used by WalletAccountV6 / RpcProvider (respects current network). */
 export function getRpcUrl() {
   return nodeUrl();
 }
@@ -73,15 +89,40 @@ export function getProvider() {
 }
 
 function tokenAddress() {
-  return process.env.REACT_APP_STRK20_TOKEN || DEFAULT_TOKEN;
+  return session.network?.token || process.env.REACT_APP_STRK20_TOKEN || DEFAULT_TOKEN;
 }
 
 function poolAddress() {
+  const fromNetwork = session.network?.pool;
+  if (fromNetwork) return fromNetwork.trim();
   return (process.env.REACT_APP_STRK20_POOL || "").trim();
 }
 
 function explorerBase() {
-  return process.env.REACT_APP_STARKNET_EXPLORER || DEFAULT_EXPLORER;
+  return session.network?.explorer || process.env.REACT_APP_STARKNET_EXPLORER || DEFAULT_EXPLORER;
+}
+
+/** Change the active network. Disconnects the current wallet if the chain changes. */
+export async function setNetwork(networkKey) {
+  const next = NETWORKS[networkKey];
+  if (!next) throw new Error(`Unknown network: ${networkKey}`);
+  if (session.network?.id === next.id) return getSession();
+  session.network = next;
+  if (typeof window !== "undefined") {
+    try {
+      window.localStorage?.setItem(NETWORK_STORAGE_KEY, next.id);
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  // Any prior wallet session references the old chain — clear it so the user
+  // is prompted to reconnect on the new network.
+  if (session.account || session.wallet) {
+    await disconnectWallet();
+  } else {
+    emit();
+  }
+  return getSession();
 }
 
 export function getSession() {
@@ -97,6 +138,8 @@ export function getSession() {
     token: tokenAddress(),
     pool: poolAddress(),
     explorerBase: explorerBase(),
+    rpcUrl: nodeUrl(),
+    network: session.network,
     lastShieldBlock: session.lastShieldBlock,
     currentBlock: session.currentBlock,
     maturityLeft: maturityRemaining(
@@ -217,10 +260,11 @@ export async function connectWallet(wallet) {
   initWalletStore();
   const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
   await applyConnected(wallet, account);
-  // Try auto-switch if we detected a non-Sepolia chain
-  if (session.chainId && !sameAddress(session.chainId, SEPOLIA_CHAIN_ID)) {
+  // Try auto-switch if we detected a chain mismatch vs the app's expected network
+  const expected = session.network?.chainId;
+  if (expected && session.chainId && !sameAddress(session.chainId, expected)) {
     try {
-      await switchToSepolia();
+      await switchWalletChain();
     } catch (_) {
       /* switch failed; user can retry from the UI, which will surface the error */
     }
@@ -228,15 +272,18 @@ export async function connectWallet(wallet) {
   return getSession();
 }
 
-/** Explicit switch attempt. Surfaces errors so the UI can show a red message. */
-export async function switchToSepolia() {
+/** Ask the wallet to switch to the network the app currently expects. Surfaces errors. */
+export async function switchWalletChain() {
   if (!session.wallet) throw new Error("Connect a wallet first.");
+  const target = session.network?.id === "mainnet"
+    ? constants.StarknetChainId.SN_MAIN
+    : constants.StarknetChainId.SN_SEPOLIA;
   try {
     // Prefer wallet-level switch (works even before WalletAccountV6 refreshes)
     if (typeof walletV6.switchStarknetChain === "function") {
-      await walletV6.switchStarknetChain(session.wallet, constants.StarknetChainId.SN_SEPOLIA);
+      await walletV6.switchStarknetChain(session.wallet, target);
     } else if (session.account?.switchStarknetChain) {
-      await session.account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
+      await session.account.switchStarknetChain(target);
     } else {
       throw new Error("Wallet does not expose switchStarknetChain.");
     }
@@ -247,8 +294,9 @@ export async function switchToSepolia() {
       wrapped.kind = "refused";
       throw wrapped;
     }
+    const label = session.network?.label || "the expected network";
     const wrapped = new Error(
-      `Could not switch to Sepolia — do it manually in your wallet. (${msg || "unknown error"})`
+      `Could not switch to ${label} — do it manually in your wallet. (${msg || "unknown error"})`
     );
     wrapped.kind = "switch_failed";
     throw wrapped;
@@ -263,6 +311,9 @@ export async function switchToSepolia() {
   }
   return getSession();
 }
+
+/** Alias kept for backwards compatibility with earlier iterations. */
+export const switchToSepolia = switchWalletChain;
 
 export async function disconnectWallet() {
   if (session.changeUnsub) {
