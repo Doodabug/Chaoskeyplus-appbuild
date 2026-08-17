@@ -17,6 +17,7 @@ import hashlib
 import secrets
 import base64
 import random
+import urllib.parse
 from pathlib import Path
 from typing import List, Optional, Literal
 from contextlib import asynccontextmanager
@@ -512,6 +513,180 @@ async def api_simulate_universe(req: UniverseSimRequest):
         trajectory=trajectory,
         emergence_summary=summary,
         note="Each entity's origin was derived from a fresh ChaosKey+ entropy block — no cloning, no replay. Every birth is ledgered and signed.",
+    )
+
+# =========================
+# Token generator
+# =========================
+BASE62 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+BASE32 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
+LOWER = "abcdefghijklmnopqrstuvwxyz"
+UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+DIGITS = "0123456789"
+SYMBOLS = "!@#$%^&*-_=+?"
+
+def _to_charset(entropy: bytes, alphabet: str, length: int) -> str:
+    n = len(alphabet)
+    out = []
+    # Extend entropy if needed via repeated hashing
+    stream = bytearray(entropy)
+    while len(stream) < length * 2:
+        stream += hashlib.sha512(bytes(stream)).digest()
+    # Rejection-sample-ish (mod bias is negligible for our alphabets of size ≤ 94)
+    for i in range(length):
+        out.append(alphabet[stream[i] % n])
+    return "".join(out)
+
+def _uuid4_from_entropy(entropy: bytes) -> str:
+    b = bytearray(entropy[:16])
+    # RFC 4122 v4
+    b[6] = (b[6] & 0x0F) | 0x40
+    b[8] = (b[8] & 0x3F) | 0x80
+    h = b.hex()
+    return f"{h[0:8]}-{h[8:12]}-{h[12:16]}-{h[16:20]}-{h[20:32]}"
+
+def _base32_secret(entropy: bytes, num_chars: int) -> str:
+    # Take (num_chars * 5) bits from entropy, produce base32 chars
+    need_bytes = (num_chars * 5 + 7) // 8
+    stream = bytearray(entropy)
+    while len(stream) < need_bytes:
+        stream += hashlib.sha512(bytes(stream)).digest()
+    bits = 0
+    val = 0
+    out = []
+    for byte in stream[:need_bytes]:
+        val = (val << 8) | byte
+        bits += 8
+        while bits >= 5 and len(out) < num_chars:
+            bits -= 5
+            out.append(BASE32[(val >> bits) & 0x1F])
+    return "".join(out)
+
+def _base64url(entropy: bytes, length: int) -> str:
+    stream = bytearray(entropy)
+    while len(stream) < length:
+        stream += hashlib.sha512(bytes(stream)).digest()
+    return base64.urlsafe_b64encode(bytes(stream[:length])).decode("ascii").rstrip("=")
+
+TokenType = Literal["bearer", "password", "uuid", "totp", "otp", "session"]
+
+class TokenRequest(BaseModel):
+    type: TokenType = "bearer"
+    # Common
+    prefix: Optional[str] = None
+    length: Optional[int] = None
+    # Password options
+    include_digits: bool = True
+    include_symbols: bool = True
+    include_upper: bool = True
+    include_lower: bool = True
+    # TOTP options
+    totp_label: Optional[str] = None
+    totp_issuer: str = "ChaosKey+"
+    # OTP options
+    otp_digits: int = 6
+    # Source
+    source: Literal["camera", "system"] = "system"
+    frame_diffs_b64: Optional[List[str]] = None
+
+class TokenResponse(BaseModel):
+    type: str
+    token: str
+    display_hint: str = ""
+    otpauth_uri: Optional[str] = None
+    length: int
+    block_id: int
+    health_state: str
+    signature_hex: str
+    mixed_hash_hex: str
+    timestamp: float
+    source: str
+
+def _default_length(t: str, req_len: Optional[int]) -> int:
+    if req_len is not None:
+        return max(4, min(256, req_len))
+    return {
+        "bearer": 40,
+        "password": 20,
+        "uuid": 36,
+        "totp": 32,
+        "otp": 6,
+        "session": 43,  # ~256 bits base64url
+    }.get(t, 32)
+
+@api.post("/generate_token", response_model=TokenResponse)
+async def api_generate_token(req: TokenRequest):
+    # Use existing entropy pipeline — every token gets a signed ledger block.
+    ctx = f"token:{req.type}"
+    if req.prefix:
+        ctx += f":{req.prefix[:32]}"
+    length = _default_length(req.type, req.length)
+
+    # Ask for at least 64 bytes of mixed output so we have plenty of entropy
+    out, block = await generate_block(
+        output_len=max(64, length),
+        context=ctx,
+        source=req.source,
+        frame_diffs_b64=req.frame_diffs_b64,
+    )
+
+    display_hint = ""
+    otpauth = None
+
+    if req.type == "bearer":
+        body = _to_charset(out, BASE62, length)
+        token = f"{(req.prefix or 'ck_live').strip()}_{body}"
+        display_hint = f"{length}-char base62 body, prefixed"
+    elif req.type == "password":
+        alphabet = ""
+        if req.include_lower: alphabet += LOWER
+        if req.include_upper: alphabet += UPPER
+        if req.include_digits: alphabet += DIGITS
+        if req.include_symbols: alphabet += SYMBOLS
+        if not alphabet:
+            alphabet = LOWER + UPPER + DIGITS
+        token = _to_charset(out, alphabet, length)
+        display_hint = f"{length} chars from |Σ|={len(alphabet)}"
+    elif req.type == "uuid":
+        token = _uuid4_from_entropy(out)
+        display_hint = "RFC 4122 v4 UUID"
+    elif req.type == "totp":
+        secret = _base32_secret(out, length)
+        token = secret
+        label = req.totp_label or "chaoskey-user"
+        issuer = req.totp_issuer or "ChaosKey+"
+        # RFC 6238 KeyURI format — issuer/label MUST be percent-encoded so
+        # characters like '+' aren't interpreted as spaces by authenticators.
+        label_enc = urllib.parse.quote(label, safe="")
+        issuer_enc = urllib.parse.quote(issuer, safe="")
+        otpauth = (
+            f"otpauth://totp/{issuer_enc}:{label_enc}"
+            f"?secret={secret}&issuer={issuer_enc}&algorithm=SHA1&digits=6&period=30"
+        )
+        display_hint = f"base32 secret · {length} chars · 30s period"
+    elif req.type == "otp":
+        digits = max(4, min(10, req.otp_digits))
+        # Interpret first 8 bytes as int, mod 10^digits
+        n = int.from_bytes(out[:8], "big") % (10 ** digits)
+        token = str(n).zfill(digits)
+        length = digits
+        display_hint = f"{digits}-digit numeric code"
+    else:  # session
+        token = _base64url(out, length)
+        display_hint = f"base64url · {length} chars"
+
+    return TokenResponse(
+        type=req.type,
+        token=token,
+        display_hint=display_hint,
+        otpauth_uri=otpauth,
+        length=len(token),
+        block_id=block["block_id"],
+        health_state=block["health_state"],
+        signature_hex=block["signature_hex"],
+        mixed_hash_hex=block["mixed_hash_hex"],
+        timestamp=block["timestamp"],
+        source=block["source"],
     )
 
 app.include_router(api)

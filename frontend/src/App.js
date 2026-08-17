@@ -4,15 +4,18 @@ import {
   Stack,
   Planet,
   IdentificationCard,
+  Key,
 } from "@phosphor-icons/react";
 import HarvestScreen from "./screens/HarvestScreen";
 import LedgerScreen from "./screens/LedgerScreen";
 import UniverseScreen from "./screens/UniverseScreen";
 import DeviceScreen from "./screens/DeviceScreen";
+import TokensScreen from "./screens/TokensScreen";
 import { getStatus } from "./lib/api";
 
 const TABS = [
   { id: "harvest", label: "Harvest", Icon: Aperture, Comp: HarvestScreen },
+  { id: "tokens", label: "Tokens", Icon: Key, Comp: TokensScreen },
   { id: "ledger", label: "Ledger", Icon: Stack, Comp: LedgerScreen },
   { id: "universe", label: "Universe", Icon: Planet, Comp: UniverseScreen },
   { id: "device", label: "Device", Icon: IdentificationCard, Comp: DeviceScreen },
@@ -61,7 +64,7 @@ function BottomNav({ active, onChange }) {
       className="fixed bottom-0 inset-x-0 z-30 backdrop-blur-2xl bg-black/80 border-t border-white/10"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {TABS.map(({ id, label, Icon }) => {
           const isActive = id === active;
           return (
@@ -75,9 +78,9 @@ function BottomNav({ active, onChange }) {
                     : "text-white/45 hover:text-white/80"
                 }`}
               >
-                <Icon size={22} weight={isActive ? "fill" : "regular"} />
+                <Icon size={20} weight={isActive ? "fill" : "regular"} />
                 <span
-                  className={`text-[9px] font-mono uppercase tracking-[0.24em] ${
+                  className={`text-[9px] font-mono uppercase tracking-[0.2em] ${
                     isActive ? "text-cyan-200" : "text-white/45"
                   }`}
                 >

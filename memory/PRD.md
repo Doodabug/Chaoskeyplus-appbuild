@@ -26,9 +26,12 @@
 | `/api/get_random` | POST | generate signed entropy block (source=camera\|system) |
 | `/api/ledger` | GET | paginated block history |
 | `/api/simulate_universe` | POST | run universe sim seeded by real chaos |
+| `/api/generate_token` | POST | signed token (bearer/password/uuid/totp/otp/session) |
 
 ## Implementation Log
 - **2026-01-08** — MVP shipped end-to-end. Backend ported from uploaded script; replaced `cv2.VideoCapture` with browser-camera + system-entropy dual source. MongoDB-backed ledger. All 4 screens built. **Testing agent: 12/12 backend pytest passed, 100% frontend pass, no critical issues.**
+- **2026-08-16** — Deployed to production at `https://mobile-app-build-778.emergent.host`.
+- **2026-08-17** — **Feature: Token Generator.** Added `POST /api/generate_token` (bearer, password, UUID v4, TOTP+QR, OTP, session). Every token is signed & ledgered. New "Tokens" tab makes bottom nav 5 tabs. Fixed clipboard `.catch` fallback and URL-encoded TOTP otpauth issuer/label. **Testing agent iter_3: 25/25 backend, 100% frontend, no runtime errors.**
 
 ## Backlog / Future Enhancements
 - **P1** External offline verifier (web tool that takes a block + pubkey and verifies signature locally)
