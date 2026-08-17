@@ -7,6 +7,7 @@
     "@starknet-io/get-starknet-discovery": "6.0.3",
     "@starknet-io/get-starknet-wallet-standard": "6.0.3",
     "@starknet-io/types-js": "0.10.3",
+    "ajv": "^8.20.0",
     "axios": "^1.6.7",
     "framer-motion": "^11.0.8",
     "qrcode": "^1.5.3",

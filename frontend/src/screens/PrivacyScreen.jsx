@@ -27,6 +27,14 @@ function onSepolia(chainId) {
 
 export default function PrivacyScreen() {
   const starknet = useStarknet();
+  const {
+    pool,
+    address,
+    fetchFee,
+    refreshMaturity,
+    lastShieldBlock,
+    maturityLeft,
+  } = starknet;
   const [shieldAmt, setShieldAmt] = useState("");
   const [xferAmt, setXferAmt] = useState("");
   const [xferTo, setXferTo] = useState("");
@@ -40,20 +48,20 @@ export default function PrivacyScreen() {
 
   useEffect(() => {
     let live = true;
-    starknet.fetchFee().then((f) => {
+    fetchFee().then((f) => {
       if (live) setFee(f);
     });
     return () => {
       live = false;
     };
-  }, [starknet.pool, starknet.address, starknet.fetchFee]);
+  }, [pool, address, fetchFee]);
 
   useEffect(() => {
-    if (!starknet.lastShieldBlock || starknet.maturityLeft <= 0) return undefined;
+    if (!lastShieldBlock || maturityLeft <= 0) return undefined;
     let live = true;
     const tick = async () => {
       if (!live) return;
-      await starknet.refreshMaturity();
+      await refreshMaturity();
     };
     tick();
     const id = setInterval(tick, 8000);
@@ -61,7 +69,7 @@ export default function PrivacyScreen() {
       live = false;
       clearInterval(id);
     };
-  }, [starknet.lastShieldBlock, starknet.maturityLeft, starknet.refreshMaturity]);
+  }, [lastShieldBlock, maturityLeft, refreshMaturity]);
 
   async function onConnect(wallet) {
     setError(null);
