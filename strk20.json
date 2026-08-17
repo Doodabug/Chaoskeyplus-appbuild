@@ -1,0 +1,37 @@
+{
+  "name": "ChaosKey+ STRK20 pool integration",
+  "version": "2.0",
+  "description": "This app integrates with the Starknet STRK20 privacy pool via the user's Ready wallet (starknet.js WalletAccountV6). STRK20 is a note-based pool for ERC-20s — not a token ABI and not a mixer. See STRK20_INTEGRATION_PLAN.md.",
+  "route": "wallet-api",
+  "packages": {
+    "starknet": "10.4.0",
+    "@starknet-io/get-starknet-discovery": "6.0.3",
+    "@starknet-io/get-starknet-wallet-standard": "6.0.3",
+    "@starknet-io/types-js": "0.10.3"
+  },
+  "actions": ["deposit", "transfer", "withdraw"],
+  "token": {
+    "symbol": "STRK",
+    "decimals": 18,
+    "address": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+    "note": "Official STRK ERC-20 — same address on Sepolia and mainnet."
+  },
+  "pool": {
+    "mainnet": "0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a",
+    "sepolia": "SET_REACT_APP_STRK20_POOL"
+  },
+  "hidden": [
+    "private-transfer sender",
+    "private-transfer receiver",
+    "private-transfer amount",
+    "spent notes"
+  ],
+  "visible": [
+    "shield and unshield amounts",
+    "the fact and timing of a pool interaction"
+  ],
+  "contact": {
+    "maintainer": "doodabug",
+    "email": "REDACTED"
+  }
+}
