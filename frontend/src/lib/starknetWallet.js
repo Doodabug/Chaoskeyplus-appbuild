@@ -113,11 +113,34 @@ export function subscribeSession(fn) {
   return () => listeners.delete(fn);
 }
 
+function legacyInjectedWallets() {
+  if (typeof window === "undefined") return [];
+  // Fall back to window.ready ?? window.starknet ?? window.starknet_argentX ?? window.starknet_braavos
+  const found = [];
+  const seen = new Set();
+  const push = (w, fallbackId, fallbackName) => {
+    if (!w || seen.has(w)) return;
+    seen.add(w);
+    found.push({
+      ...w,
+      id: w.id || fallbackId,
+      name: w.name || fallbackName,
+    });
+  };
+  push(window.ready, "ready", "Ready");
+  push(window.starknet, "starknet", "Starknet Wallet");
+  push(window.starknet_argentX, "argentX", "Argent X");
+  push(window.starknet_braavos, "braavos", "Braavos");
+  return found;
+}
+
 export function initWalletStore() {
   if (session.store) return session.store;
   session.store = createStore();
   const refresh = () => {
-    session.wallets = session.store.getWallets();
+    const discovered = session.store.getWallets();
+    // If modern Wallet Standard finds nothing, fall back to legacy window injections
+    session.wallets = discovered.length > 0 ? discovered : legacyInjectedWallets();
     emit();
   };
   session.storeUnsub = session.store.subscribe(refresh);
