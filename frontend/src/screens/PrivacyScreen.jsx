@@ -148,6 +148,18 @@ export default function PrivacyScreen() {
   const sepolia = onSepolia(starknet.chainId);
   const locked = starknet.maturityLeft > 0;
   const spendDisabled = !!busy || locked;
+  // The known mainnet privacy-pool address. If REACT_APP_STRK20_POOL matches this
+  // AND the wallet is on Sepolia, pool actions will predict failure.
+  const MAINNET_POOL_ADDR =
+    "0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a";
+  const poolAddressLooksSepolia = (() => {
+    if (!pool) return true; // Not configured — treat as OK; STRK20 wallet API doesn't need it for shield
+    try {
+      return BigInt(pool) !== BigInt(MAINNET_POOL_ADDR);
+    } catch (_) {
+      return true;
+    }
+  })();
 
   return (
     <div className="space-y-4">
@@ -270,23 +282,28 @@ export default function PrivacyScreen() {
 
       {connected && sepolia && (
         <>
-          <Panel title="POOL REGISTRATION :: ONE-TIME" testid="pool-register-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              First-time users must register with the pool contract before
-              shielding. This is a public Starknet invoke on the pool's
-              <code className="text-cyan-300"> register()</code> entrypoint — one
-              signature, small gas fee. Skip if you're already registered.
-            </p>
-            <Btn
-              intent="primary"
-              testid="pool-register-btn"
-              onClick={() => runAction("register", () => starknet.register())}
-              disabled={!!busy}
-              className="w-full"
-            >
-              {busy === "register" ? "Awaiting wallet signature" : "Register with pool"}
-            </Btn>
-          </Panel>
+          {!poolAddressLooksSepolia && (
+            <Panel title="POOL ADDRESS :: WARNING" testid="pool-address-warning">
+              <p className="text-[12px] font-mono text-[#FFB86B] leading-relaxed mb-2">
+                Your <code className="text-cyan-300">REACT_APP_STRK20_POOL</code>
+                {" "}is the <span className="text-[#FF6B8A]">mainnet</span> address.
+                Ready is on Sepolia, so pool calls will predict failure ("Unable
+                to estimate transaction fees").
+              </p>
+              <p className="text-[11px] font-mono text-white/60 leading-relaxed">
+                Options:{" "}
+                <span className="text-white/85">
+                  (a) deploy or point to a Sepolia pool from starknet-privacy-toolkit,{" "}
+                  (b) switch this app to mainnet by setting{" "}
+                  <code className="text-cyan-300">REACT_APP_STARKNET_RPC</code>{" "}
+                  to a mainnet RPC and reconnecting your wallet on mainnet, or{" "}
+                  (c) try Shield without setting pool address — the STRK20 wallet
+                  API routes deposits internally and does not need the dapp to
+                  know the pool address.
+                </span>
+              </p>
+            </Panel>
+          )}
 
           <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
