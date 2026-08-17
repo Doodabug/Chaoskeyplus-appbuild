@@ -11,6 +11,7 @@ import {
   refreshMaturity,
   shieldAmount,
   subscribeSession,
+  switchToSepolia,
   transferAmount,
   unshieldAmount,
 } from "../lib/starknetWallet";
@@ -32,6 +33,7 @@ export function StarknetProvider({ children }) {
       rpcUrl: getRpcUrl(),
       connect: connectWallet,
       disconnect: disconnectWallet,
+      switchToSepolia,
       shield: shieldAmount,
       transfer: transferAmount,
       unshield: unshieldAmount,

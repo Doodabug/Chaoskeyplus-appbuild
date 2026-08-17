@@ -212,10 +212,23 @@ export default function PrivacyScreen() {
                 <Btn
                   intent="primary"
                   testid="pool-switch-sepolia-btn"
-                  onClick={() => onConnect(starknet.wallet)}
+                  onClick={async () => {
+                    setError(null);
+                    setBusy("switch");
+                    try {
+                      await starknet.switchToSepolia();
+                    } catch (e) {
+                      setError({
+                        kind: e?.kind || "switch_failed",
+                        message: e?.message || "Could not switch network.",
+                      });
+                    } finally {
+                      setBusy("");
+                    }
+                  }}
                   disabled={!!busy || !starknet.wallet}
                 >
-                  Switch to Sepolia
+                  {busy === "switch" ? "Waiting on wallet" : "Switch to Sepolia"}
                 </Btn>
               </div>
             )}

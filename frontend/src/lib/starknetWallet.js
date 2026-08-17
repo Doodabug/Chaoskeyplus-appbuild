@@ -163,6 +163,27 @@ export async function readWalletApiVersions(wallet) {
   }
 }
 
+async function readChainId(wallet, account) {
+  // Preferred: account.getChainId() (uses starknet.js WalletAccountV6)
+  try {
+    const cid = account ? await account.getChainId() : "";
+    if (cid) return String(cid);
+  } catch (e) {
+    console.warn("[starknetWallet] account.getChainId failed:", e?.message || e);
+  }
+  // Fallback 1: ask the wallet directly via Wallet API
+  try {
+    const cid = await walletV6.requestChainId(wallet);
+    if (cid) return String(cid);
+  } catch (e) {
+    console.warn("[starknetWallet] walletV6.requestChainId failed:", e?.message || e);
+  }
+  // Fallback 2: some legacy wallets expose chainId on the injection object
+  const legacyId = wallet?.chainId || wallet?.provider?.chainId;
+  if (legacyId) return String(legacyId);
+  return "";
+}
+
 async function applyConnected(wallet, account) {
   if (session.changeUnsub) {
     try {
@@ -175,11 +196,7 @@ async function applyConnected(wallet, account) {
   session.wallet = wallet;
   session.account = account;
   session.address = account?.address || "";
-  try {
-    session.chainId = account ? await account.getChainId() : "";
-  } catch (_) {
-    session.chainId = "";
-  }
+  session.chainId = await readChainId(wallet, account);
   session.apiVersions = await readWalletApiVersions(wallet);
   session.capable = isStrk20Capable(session.apiVersions);
   if (account?.onChange) {
@@ -199,15 +216,51 @@ export async function connectWallet(wallet) {
   if (!wallet) throw new Error("Pick a wallet.");
   initWalletStore();
   const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
-  try {
-    const writeId = await walletV6.requestChainId(wallet);
-    if (!sameAddress(writeId, SEPOLIA_CHAIN_ID)) {
-      await account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
-    }
-  } catch (_) {
-    /* wallet may refuse the switch; PrivacyScreen shows the chain */
-  }
   await applyConnected(wallet, account);
+  // Try auto-switch if we detected a non-Sepolia chain
+  if (session.chainId && !sameAddress(session.chainId, SEPOLIA_CHAIN_ID)) {
+    try {
+      await switchToSepolia();
+    } catch (_) {
+      /* switch failed; user can retry from the UI, which will surface the error */
+    }
+  }
+  return getSession();
+}
+
+/** Explicit switch attempt. Surfaces errors so the UI can show a red message. */
+export async function switchToSepolia() {
+  if (!session.wallet) throw new Error("Connect a wallet first.");
+  try {
+    // Prefer wallet-level switch (works even before WalletAccountV6 refreshes)
+    if (typeof walletV6.switchStarknetChain === "function") {
+      await walletV6.switchStarknetChain(session.wallet, constants.StarknetChainId.SN_SEPOLIA);
+    } else if (session.account?.switchStarknetChain) {
+      await session.account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
+    } else {
+      throw new Error("Wallet does not expose switchStarknetChain.");
+    }
+  } catch (err) {
+    const msg = String(err?.message || err || "");
+    if (/USER_REFUSED|refused|reject/i.test(msg)) {
+      const wrapped = new Error("You declined the network switch in the wallet.");
+      wrapped.kind = "refused";
+      throw wrapped;
+    }
+    const wrapped = new Error(
+      `Could not switch to Sepolia — do it manually in your wallet. (${msg || "unknown error"})`
+    );
+    wrapped.kind = "switch_failed";
+    throw wrapped;
+  }
+  // Refresh account + chainId after switch
+  try {
+    const next = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, session.wallet);
+    await applyConnected(session.wallet, next);
+  } catch (_) {
+    session.chainId = await readChainId(session.wallet, session.account);
+    emit();
+  }
   return getSession();
 }
 
