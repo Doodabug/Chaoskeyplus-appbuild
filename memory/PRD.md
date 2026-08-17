@@ -26,9 +26,15 @@
 | `/api/get_random` | POST | generate signed entropy block (source=camera\|system) |
 | `/api/ledger` | GET | paginated block history |
 | `/api/simulate_universe` | POST | run universe sim seeded by real chaos |
+| `/api/generate_token` | POST | signed token (bearer/password/uuid/totp/otp/session) + optional expires_in_seconds — expires_at is cryptographically bound in the token_signature |
+| `/api/verify_token` | POST | public verifier — checks block sig + token_hash + token_signature + expiry |
 
 ## Implementation Log
 - **2026-01-08** — MVP shipped end-to-end. Backend ported from uploaded script; replaced `cv2.VideoCapture` with browser-camera + system-entropy dual source. MongoDB-backed ledger. All 4 screens built. **Testing agent: 12/12 backend pytest passed, 100% frontend pass, no critical issues.**
+- **2026-08-16** — Deployed to production at `https://mobile-app-build-778.emergent.host`.
+- **2026-08-17** — **Feature: Token Generator** (6 types) + fix TOTP URL encoding. Iter_3: 25/25 backend.
+- **2026-08-17** — **Feature x4: Verify /verify page, Camera-source tokens, Bulk Generate, Encrypted Vault.** Iter_4: 23/23.
+- **2026-08-17** — **Curation pass**: user selected KEEP (Verify Page, Camera Tokens) + ADD (Verify QR, Token Expiry). **REMOVED** bulk endpoint & encrypted vault. New expiry chip selector (Never/15m/1h/24h/7d/30d) with **cryptographic binding** — `expires_at_int` is part of the signed token message. Verify page surfaces `expired` reason. Green **Verify QR** below every token encodes `/verify?block_id=X&token=Y` so anyone can scan-to-verify. **Iter_5: 23/23 backend, 100% frontend, no issues.**
 
 ## Backlog / Future Enhancements
 - **P1** External offline verifier (web tool that takes a block + pubkey and verifies signature locally)
@@ -43,3 +49,8 @@
 - **Crypto-curious tinkerer** — wants to feel "I'm generating randomness from the real world right now"
 - **Security researcher** — wants verifiable, signed, chained entropy attestation
 - **Hobbyist simulator** — runs universe sims with physically-rooted seeds
+
+## Deployment Readiness Check — June 2026
+- Ran deployment_agent full readiness scan: PASS, no blockers.
+- Verified: env vars externalized, /api prefixes, ports (8001/3000), no hardcoded secrets, Ed25519 keys intact.
+- App (Tokens tab + /verify page) is ready for user to deploy to production via the Deploy button.
