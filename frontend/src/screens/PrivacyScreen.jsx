@@ -224,16 +224,17 @@ export default function PrivacyScreen() {
       </Panel>
 
       {connected && !capable && (
-        <Panel title="UNSUPPORTED WALLET" testid="pool-unsupported">
+        <Panel title="LEGACY WALLET" testid="pool-unsupported">
           <p className="text-[12px] font-mono text-white/70 leading-relaxed">
-            Needs a STRK20-capable wallet (Ready). Braavos, Privy, and other
-            wallets are not prepared for pool actions. Shield, transfer, and
-            unshield are hidden.
+            This wallet doesn't advertise the STRK20 Wallet API (spec ≥ 0.10).
+            You can still try shield / transfer / unshield below — the wallet
+            will reject the request if it can't handle it. For full support,
+            use <span className="text-cyan-300">Ready</span>.
           </p>
         </Panel>
       )}
 
-      {connected && capable && sepolia && (
+      {connected && sepolia && (
         <>
           <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">

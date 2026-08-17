@@ -278,9 +278,23 @@ export async function waitForTx(hash) {
 
 function assertReady() {
   if (!session.account) throw new Error("Connect a wallet first.");
-  if (!session.capable) {
-    throw new Error("Needs a STRK20-capable wallet (Ready).");
+}
+
+function friendlyMissingApi(err) {
+  const msg = String(err?.message || err || "");
+  if (
+    /is not a function/i.test(msg) ||
+    /strk20/i.test(msg) ||
+    /METHOD_NOT_FOUND|method not (supported|found)|unknown method/i.test(msg)
+  ) {
+    const wrapped = new Error(
+      "This wallet does not implement the STRK20 Wallet API. Install Ready (or another STRK20-capable wallet) to shield, transfer, or unshield."
+    );
+    wrapped.kind = "unsupported_wallet";
+    wrapped.cause = err;
+    return wrapped;
   }
+  return null;
 }
 
 function wrapPoolError(err, fallback) {
@@ -292,6 +306,11 @@ function wrapPoolError(err, fallback) {
 }
 
 async function invokeActions(actions) {
+  if (typeof session.account?.strk20InvokeTransaction !== "function") {
+    const err = new Error("strk20InvokeTransaction is not a function on this wallet.");
+    const friendly = friendlyMissingApi(err);
+    throw friendly || err;
+  }
   const result = await session.account.strk20InvokeTransaction(actions);
   const hash = result?.transaction_hash || "";
   const wait = await waitForTx(hash);
@@ -397,6 +416,10 @@ export async function unshieldAmount(humanAmount, recipient) {
 /** Consent-gated. Call only from the Pool tab after the user asks to see balances. */
 export async function fetchShieldedBalances() {
   assertReady();
+  if (typeof session.account?.strk20Balances !== "function") {
+    throw friendlyMissingApi(new Error("strk20Balances is not a function on this wallet.")) ||
+      new Error("Wallet does not support shielded balance reads.");
+  }
   const entries = await session.account.strk20Balances([tokenAddress()]);
   const list = Array.isArray(entries) ? entries : [];
   const match =
