@@ -150,9 +150,25 @@ export default function PrivacyScreen() {
             {starknet.wallets.length === 0 && (
               <div
                 data-testid="pool-no-wallets"
-                className="text-[11px] font-mono text-white/45 uppercase tracking-[0.18em] py-4 text-center"
+                className="border border-white/10 px-3 py-4 text-center space-y-3"
               >
-                No wallets detected. Install the Ready extension.
+                <p className="text-[11px] font-mono text-white/55 leading-relaxed">
+                  No wallets detected in this browser. Pool needs the Ready X
+                  extension on Sepolia.
+                </p>
+                <a
+                  data-testid="pool-install-ready"
+                  href="https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center border border-cyan-400/60 text-cyan-300 hover:border-cyan-200 hover:text-cyan-100 hover:bg-cyan-400/10 px-4 py-2.5 font-mono text-xs uppercase tracking-[0.2em]"
+                >
+                  Install Ready X
+                </a>
+                <p className="text-[10px] font-mono text-white/40 leading-relaxed">
+                  Then hard-refresh this tab (Ctrl+Shift+R). Phone apps will not
+                  appear on localhost.
+                </p>
               </div>
             )}
             <ul className="space-y-2">
