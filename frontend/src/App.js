@@ -5,15 +5,18 @@ import {
   Stack,
   Planet,
   IdentificationCard,
+  ShieldCheck,
   Key,
 } from "@phosphor-icons/react";
 import HarvestScreen from "./screens/HarvestScreen";
 import LedgerScreen from "./screens/LedgerScreen";
 import UniverseScreen from "./screens/UniverseScreen";
 import DeviceScreen from "./screens/DeviceScreen";
+import PrivacyScreen from "./screens/PrivacyScreen";
 import TokensScreen from "./screens/TokensScreen";
 import VerifyPage from "./screens/VerifyPage";
 import { getStatus } from "./lib/api";
+import { useStarknet } from "./providers/StarknetProvider";
 
 const TABS = [
   { id: "harvest", label: "Harvest", Icon: Aperture, Comp: HarvestScreen },
@@ -21,10 +24,17 @@ const TABS = [
   { id: "ledger", label: "Ledger", Icon: Stack, Comp: LedgerScreen },
   { id: "universe", label: "Universe", Icon: Planet, Comp: UniverseScreen },
   { id: "device", label: "Device", Icon: IdentificationCard, Comp: DeviceScreen },
+  { id: "pool", label: "Pool", Icon: ShieldCheck, Comp: PrivacyScreen },
 ];
 
-function TopBar({ status }) {
+function shortAddr(addr) {
+  if (!addr) return "";
+  return addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr;
+}
+
+function TopBar({ status, onOpenPool }) {
   const ok = status?.chain_intact;
+  const { address, capable } = useStarknet();
   return (
     <header className="sticky top-0 z-20 backdrop-blur-2xl bg-[#05050A]/80 border-b border-white/10">
       <div className="px-4 py-3 flex items-center justify-between">
@@ -53,6 +63,20 @@ function TopBar({ status }) {
           >
             {ok ? "▣ CHAIN OK" : "▣ CHAIN ✗"}
           </span>
+          <button
+            type="button"
+            data-testid="topbar-wallet"
+            onClick={onOpenPool}
+            className={`border px-2 py-[3px] ${
+              address
+                ? capable
+                  ? "border-cyan-400/50 text-cyan-300"
+                  : "border-[#FF6B8A]/50 text-[#FF6B8A]"
+                : "border-white/15 text-white/55 hover:text-white/80"
+            }`}
+          >
+            {address ? shortAddr(address) : "Connect"}
+          </button>
         </div>
       </div>
     </header>
@@ -66,7 +90,7 @@ function BottomNav({ active, onChange }) {
       className="fixed bottom-0 inset-x-0 z-30 backdrop-blur-2xl bg-black/80 border-t border-white/10"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {TABS.map(({ id, label, Icon }) => {
           const isActive = id === active;
           return (
@@ -137,7 +161,7 @@ function MainApp() {
 
   return (
     <div className="min-h-screen text-white grid-bg noise relative">
-      <TopBar status={status} />
+      <TopBar status={status} onOpenPool={() => setActive("pool")} />
       <main
         data-testid="app-main"
         className="max-w-md mx-auto px-4 py-4 pb-28 relative z-10"
