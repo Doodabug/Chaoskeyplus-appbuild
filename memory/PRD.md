@@ -49,3 +49,8 @@
 - **Crypto-curious tinkerer** — wants to feel "I'm generating randomness from the real world right now"
 - **Security researcher** — wants verifiable, signed, chained entropy attestation
 - **Hobbyist simulator** — runs universe sims with physically-rooted seeds
+
+## Deployment Readiness Check — June 2026
+- Ran deployment_agent full readiness scan: PASS, no blockers.
+- Verified: env vars externalized, /api prefixes, ports (8001/3000), no hardcoded secrets, Ed25519 keys intact.
+- App (Tokens tab + /verify page) is ready for user to deploy to production via the Deploy button.
