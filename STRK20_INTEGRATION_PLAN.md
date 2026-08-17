@@ -155,6 +155,30 @@ Re-check (2026-08-17):
   - Naming: SDK / next docs use **shadow accounts**; older skill text says sub-accounts; `packages/sub_account_anonymizer` is gone, `packages/shadow_account_anonymizer` exists.
 - No anonymizer contract is in scope for ChaosKey+ M3 unless the product later adds its own vault/swap/lend. This skill will not generate Cairo. If that day comes, the team owns review, audit, deploy, and maintenance; start from `packages/ekubo_swap_anonymizer` / `packages/vesu_lending_anonymizer` in [starknet-privacy](https://github.com/starkware-libs/starknet-privacy).
 
+## 7b. Sprint checklist (hackathon)
+
+Code (this repo):
+
+- [x] Wallet API connect + shield / transfer / unshield (`starknetWallet.js`, `PrivacyScreen.jsx`)
+- [x] Capability degrade (version query, not `strk20Balances`)
+- [x] Sepolia gate + switch prompt
+- [x] Honest labels; screening as declined deposit; no gas-sponsorship claim
+- [x] Note maturity lock on transfer/unshield
+- [x] Consent-gated shielded balances on Pool only
+- [x] Tokens tab is off-pool (not ERC-20 / not STRK20)
+- [x] Harvest / Tokens / Pool in the bar; Ledger / Universe / Device under More
+- [x] Empty-wallet **Install Ready X** + wallet test dapp link
+- [x] Local env: `REACT_APP_BACKEND_URL=http://127.0.0.1:8000` (`.env` / `.env.local`, not committed)
+- [ ] `REACT_APP_STRK20_POOL` still empty — fee line degrades until set
+- [ ] Phase 3 shadow accounts — blocked on stable Wallet API
+
+Human (Ready in this browser):
+
+- [ ] Install Ready X, Sepolia, fund a little STRK
+- [ ] Pool → Connect; non-Ready wallets hide actions
+- [ ] Shield (approve then deposit) → wait ~10 blocks → private transfer → unshield
+- [ ] Cross-check: https://starknet-wallet-account.vercel.app/
+
 ## 8. Testing
 
 - Testnet (Sepolia) only until an explicit mainnet go.

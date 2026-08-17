@@ -169,6 +169,15 @@ export default function PrivacyScreen() {
                   Then hard-refresh this tab (Ctrl+Shift+R). Phone apps will not
                   appear on localhost.
                 </p>
+                <a
+                  data-testid="pool-wallet-test-dapp"
+                  href="https://starknet-wallet-account.vercel.app/"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300/80 hover:text-cyan-200"
+                >
+                  Wallet test dapp
+                </a>
               </div>
             )}
             <ul className="space-y-2">
@@ -340,6 +349,7 @@ export default function PrivacyScreen() {
                 onChange={(e) => setXferTo(e.target.value)}
                 placeholder="0x…"
                 className={inputClass}
+                disabled={spendDisabled}
               />
             </label>
             <label className="block mb-4">
@@ -363,6 +373,7 @@ export default function PrivacyScreen() {
                 value={xferAmt}
                 onChange={(e) => setXferAmt(e.target.value)}
                 className={inputClass}
+                disabled={spendDisabled}
               />
             </label>
             <Btn
@@ -391,6 +402,7 @@ export default function PrivacyScreen() {
                 onChange={(e) => setWithdrawTo(e.target.value)}
                 placeholder={starknet.address || "0x…"}
                 className={inputClass}
+                disabled={spendDisabled}
               />
             </label>
             <label className="block mb-4">
@@ -414,6 +426,7 @@ export default function PrivacyScreen() {
                 value={withdrawAmt}
                 onChange={(e) => setWithdrawAmt(e.target.value)}
                 className={inputClass}
+                disabled={spendDisabled}
               />
             </label>
             <Btn
@@ -485,6 +498,15 @@ export default function PrivacyScreen() {
           pays whom and how much. This is not a mixer. Activity is never
           attributed from the transaction sender — that address is the relayer.
         </p>
+        <a
+          data-testid="pool-wallet-test-dapp-footer"
+          href="https://starknet-wallet-account.vercel.app/"
+          target="_blank"
+          rel="noreferrer"
+          className="mt-3 inline-block text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300/80 hover:text-cyan-200"
+        >
+          Wallet test dapp
+        </a>
       </Panel>
     </div>
   );
