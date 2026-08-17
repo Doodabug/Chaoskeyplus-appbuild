@@ -7,7 +7,7 @@ This file supersedes `docs/privacy-plan.md` for on-chain privacy. That document 
 ### What changed 2026-08-17
 
 - Merged `conflict_160826_1834`: Tokens tab + `/verify` (`712ed0f`). Those tokens are ChaosKey-signed secrets, **not** STRK20 notes.
-- Snapshot: six tabs (Harvest, Tokens, Ledger, Universe, Device, Pool).
+- Snapshot: primary nav Harvest / Tokens / Pool + More (Ledger, Universe, Device).
 - Phase 2c executed: Tokens panel copy states they are not an ERC-20 / not STRK20.
 - Phase 3 still **blocked** (freshness 2026-08-17: types-js `0.10.3`, spec stable `v0.10.3`, get-starknet `next` still `6.0.4`).
 
@@ -17,7 +17,7 @@ This file supersedes `docs/privacy-plan.md` for on-chain privacy. That document 
 - Relevant code:
   - Wallet connection: `frontend/src/lib/starknetWallet.js:115-188` (`createStore` + `WalletAccountV6.connect`) via `frontend/src/providers/StarknetProvider.jsx`, wrapped in `frontend/src/index.js:9-11`.
   - Transaction layer: `frontend/src/lib/starknetWallet.js` — `shieldAmount` (318), `transferAmount` (335), `unshieldAmount` (354), `fetchShieldedBalances` (374), capability via `walletV6.supportedWalletApi` (127). Pure helpers + tests: `frontend/src/lib/starknetWalletUtils.js` + `.test.js`.
-  - Navigation: `frontend/src/App.js:21-28` — six tabs (Harvest, Tokens, Ledger, Universe, Device, Pool) plus `/verify`. Top-bar "Connect" only switches to the Pool tab.
+  - Navigation: `frontend/src/App.js` — **Harvest · Tokens · Pool · More** (Ledger, Universe, Device in the More sheet) plus `/verify`. Top-bar "Connect" only switches to the Pool tab.
   - Pool UI: `frontend/src/screens/PrivacyScreen.jsx` — `useStarknet()` (no props). Connect picker, Sepolia prompt, capability degrade, shield / transfer / unshield, consent-gated balances, fee + maturity, explorer result.
   - Token generator (off-pool): `frontend/src/screens/TokensScreen.jsx` → `POST /api/generate_token` (`backend/server.py`). Bearer/password/UUID/TOTP/OTP/session from harvest entropy. **Not** an ERC-20 and never touches viewing keys.
   - Entropy ledger (not chain activity): `frontend/src/screens/LedgerScreen.jsx` ← `GET /api/ledger` (`backend/server.py`).
