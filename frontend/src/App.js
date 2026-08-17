@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import {
   Aperture,
   Stack,
@@ -11,6 +12,7 @@ import LedgerScreen from "./screens/LedgerScreen";
 import UniverseScreen from "./screens/UniverseScreen";
 import DeviceScreen from "./screens/DeviceScreen";
 import TokensScreen from "./screens/TokensScreen";
+import VerifyPage from "./screens/VerifyPage";
 import { getStatus } from "./lib/api";
 
 const TABS = [
@@ -99,6 +101,17 @@ function BottomNav({ active, onChange }) {
 }
 
 export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/verify" element={<VerifyPage />} />
+        <Route path="*" element={<MainApp />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+
+function MainApp() {
   const [active, setActive] = useState("harvest");
   const [status, setStatus] = useState(null);
 

@@ -601,6 +601,30 @@ class TokenResponse(BaseModel):
     mixed_hash_hex: str
     timestamp: float
     source: str
+    # Token binding — proves this specific token came from this specific block
+    token_hash_hex: str
+    token_signature_hex: str
+
+class BulkTokenRequest(BaseModel):
+    count: int = Field(default=5, ge=1, le=20)
+    template: TokenRequest
+
+class BulkTokenResponse(BaseModel):
+    tokens: List[TokenResponse]
+
+class VerifyTokenRequest(BaseModel):
+    token: str
+    block_id: int
+
+class VerifyTokenResponse(BaseModel):
+    valid: bool
+    reason: str
+    block_id: int
+    device_id: str
+    token_type: Optional[str] = None
+    timestamp: Optional[float] = None
+    mixed_hash_hex: Optional[str] = None
+    signature_hex: Optional[str] = None
 
 def _default_length(t: str, req_len: Optional[int]) -> int:
     if req_len is not None:
@@ -675,6 +699,17 @@ async def api_generate_token(req: TokenRequest):
         token = _base64url(out, length)
         display_hint = f"base64url · {length} chars"
 
+    # Bind the token cryptographically to its block: hash the token, sign
+    # (block_id | token_hash) with the device key, and persist token_hash on
+    # the block record so /api/verify_token can validate later.
+    token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    tsig_msg = f"token|{block['block_id']}|{token_hash}".encode("utf-8")
+    token_signature = DEVICE_PRIVATE_KEY.sign(tsig_msg).hex()
+    await db.ledger.update_one(
+        {"block_id": block["block_id"]},
+        {"$set": {"token_hash": token_hash, "token_type": req.type, "token_signature": token_signature}},
+    )
+
     return TokenResponse(
         type=req.type,
         token=token,
@@ -687,6 +722,64 @@ async def api_generate_token(req: TokenRequest):
         mixed_hash_hex=block["mixed_hash_hex"],
         timestamp=block["timestamp"],
         source=block["source"],
+        token_hash_hex=token_hash,
+        token_signature_hex=token_signature,
+    )
+
+@api.post("/generate_tokens_bulk", response_model=BulkTokenResponse)
+async def api_generate_tokens_bulk(req: BulkTokenRequest):
+    tokens: List[TokenResponse] = []
+    for _ in range(req.count):
+        r = await api_generate_token(req.template)
+        tokens.append(r)
+    return BulkTokenResponse(tokens=tokens)
+
+@api.post("/verify_token", response_model=VerifyTokenResponse)
+async def api_verify_token(req: VerifyTokenRequest):
+    # 1. Look up the block
+    block = await db.ledger.find_one({"block_id": req.block_id}, projection={"_id": 0})
+    if not block:
+        return VerifyTokenResponse(valid=False, reason="block_not_found", block_id=req.block_id, device_id=DEVICE_ID)
+
+    if not block.get("token_hash"):
+        return VerifyTokenResponse(valid=False, reason="block_is_not_a_token_block", block_id=req.block_id, device_id=DEVICE_ID)
+
+    # 2. Verify the block's primary signature (Ed25519 over the chain msg)
+    try:
+        block_msg = (
+            f"{block['block_id']}|{block['timestamp']}|{block['device_id']}|{block['health_state']}|"
+            f"{block['raw_hash_hex']}|{block['mixed_hash_hex']}|{block['prev_block_hash_hex']}"
+        ).encode("utf-8")
+        DEVICE_PUBLIC_KEY.verify(bytes.fromhex(block['signature_hex']), block_msg)
+    except Exception:
+        return VerifyTokenResponse(valid=False, reason="block_signature_invalid", block_id=req.block_id, device_id=DEVICE_ID)
+
+    # 3. Re-hash the token and compare
+    provided_hash = hashlib.sha256(req.token.encode("utf-8")).hexdigest()
+    if provided_hash != block["token_hash"]:
+        return VerifyTokenResponse(
+            valid=False, reason="token_hash_mismatch",
+            block_id=req.block_id, device_id=DEVICE_ID,
+            token_type=block.get("token_type"),
+            timestamp=block["timestamp"],
+            mixed_hash_hex=block["mixed_hash_hex"],
+            signature_hex=block["signature_hex"],
+        )
+
+    # 4. Verify the token-binding signature
+    try:
+        tsig_msg = f"token|{block['block_id']}|{block['token_hash']}".encode("utf-8")
+        DEVICE_PUBLIC_KEY.verify(bytes.fromhex(block['token_signature']), tsig_msg)
+    except Exception:
+        return VerifyTokenResponse(valid=False, reason="token_signature_invalid", block_id=req.block_id, device_id=DEVICE_ID)
+
+    return VerifyTokenResponse(
+        valid=True, reason="ok",
+        block_id=req.block_id, device_id=DEVICE_ID,
+        token_type=block.get("token_type"),
+        timestamp=block["timestamp"],
+        mixed_hash_hex=block["mixed_hash_hex"],
+        signature_hex=block["signature_hex"],
     )
 
 app.include_router(api)
