@@ -4,19 +4,13 @@ import {
   Key,
   Copy,
   Check,
-  Vault,
-  LockKey,
-  LockKeyOpen,
-  Trash,
-  Eye,
-  EyeSlash,
   ShieldCheck,
   CameraRotate,
   Lightning,
+  Clock,
 } from "@phosphor-icons/react";
-import { postToken, postTokensBulk } from "../lib/api";
+import { postToken } from "../lib/api";
 import { ChaosCameraSession } from "../lib/chaosCamera";
-import { vaultExists, saveVault, loadVault, clearVault } from "../lib/vault";
 import {
   Btn,
   HashLine,
@@ -54,51 +48,42 @@ const DESCRIPTIONS = {
   session: "URL-safe base64 session token — 256 bits of physical entropy.",
 };
 
+// Expiry presets — value is seconds; 0 = never
+const EXPIRIES = [
+  { id: 0, label: "Never" },
+  { id: 60 * 15, label: "15 min" },
+  { id: 60 * 60, label: "1 hour" },
+  { id: 60 * 60 * 24, label: "24 hours" },
+  { id: 60 * 60 * 24 * 7, label: "7 days" },
+  { id: 60 * 60 * 24 * 30, label: "30 days" },
+];
+
+function fmtCountdown(expiresAtSec) {
+  if (!expiresAtSec) return "never";
+  const rem = Math.max(0, Math.floor(expiresAtSec - Date.now() / 1000));
+  if (rem === 0) return "EXPIRED";
+  const d = Math.floor(rem / 86400);
+  const h = Math.floor((rem % 86400) / 3600);
+  const m = Math.floor((rem % 3600) / 60);
+  const s = rem % 60;
+  if (d) return `${d}d ${h}h ${m}m`;
+  if (h) return `${h}h ${m}m ${s}s`;
+  if (m) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
 export default function TokensScreen() {
-  const [tab, setTab] = useState("generate"); // generate | vault
-  return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-2">
-        <SubTab id="generate" tab={tab} setTab={setTab} label="Generate" testid="subtab-generate" />
-        <SubTab id="vault" tab={tab} setTab={setTab} label="Vault" testid="subtab-vault" />
-      </div>
-      {tab === "generate" ? <GenerateView /> : <VaultView />}
-    </div>
-  );
-}
-
-function SubTab({ id, tab, setTab, label, testid }) {
-  const active = tab === id;
-  return (
-    <button
-      data-testid={testid}
-      onClick={() => setTab(id)}
-      className={`py-2.5 border text-[11px] uppercase tracking-[0.24em] font-mono transition-colors ${
-        active
-          ? "border-cyan-400 text-cyan-300 bg-cyan-400/10"
-          : "border-white/10 text-white/50 hover:border-white/30 hover:text-white/85 hover:bg-white/5"
-      }`}
-    >
-      {label}
-    </button>
-  );
-}
-
-// ══════════════════════════════════════════════════════════════════
-// GENERATE VIEW
-// ══════════════════════════════════════════════════════════════════
-function GenerateView() {
   const [type, setType] = useState("bearer");
   const [cfg, setCfg] = useState(DEFAULTS.bearer);
   const [source, setSource] = useState("system"); // system | camera
-  const [bulk, setBulk] = useState(false);
-  const [bulkCount, setBulkCount] = useState(5);
+  const [expires, setExpires] = useState(0); // seconds
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
-  const [batch, setBatch] = useState(null); // list of TokenResponse
   const [copied, setCopied] = useState(false);
-  const [qr, setQr] = useState("");
+  const [totpQr, setTotpQr] = useState("");
+  const [verifyQr, setVerifyQr] = useState("");
+  const [, setNow] = useState(Date.now()); // ticker for expiry countdown
 
   // Camera
   const videoRef = useRef(null);
@@ -106,12 +91,19 @@ function GenerateView() {
   const [camReady, setCamReady] = useState(false);
   const [camTick, setCamTick] = useState({ collected: 0, total: 0, variance: 0 });
 
+  // Countdown ticker for expiry display
+  useEffect(() => {
+    if (!result?.expires_at) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [result?.expires_at]);
+
   function switchType(t) {
     setType(t);
     setCfg(DEFAULTS[t]);
     setResult(null);
-    setBatch(null);
-    setQr("");
+    setTotpQr("");
+    setVerifyQr("");
     setError("");
   }
 
@@ -141,48 +133,54 @@ function GenerateView() {
     if (source !== "camera") stopCam();
   }, [source]);
 
-  async function harvestCameraFrames() {
-    if (!sessionRef.current) throw new Error("Camera not started");
-    const { frame_diffs_b64 } = await sessionRef.current.harvest({
-      numFrames: 10,
-      onTick: setCamTick,
-    });
-    return frame_diffs_b64;
-  }
-
   async function generate() {
     setBusy(true);
     setError("");
     setResult(null);
-    setBatch(null);
-    setQr("");
+    setTotpQr("");
+    setVerifyQr("");
     try {
       let frame_diffs_b64 = null;
       if (source === "camera") {
         if (!camReady) throw new Error("Start the camera first");
-        frame_diffs_b64 = await harvestCameraFrames();
+        const harvest = await sessionRef.current.harvest({
+          numFrames: 10,
+          onTick: setCamTick,
+        });
+        frame_diffs_b64 = harvest.frame_diffs_b64;
       }
-      const template = { type, ...cfg, source, frame_diffs_b64 };
+      const data = await postToken({
+        type, ...cfg,
+        source,
+        frame_diffs_b64,
+        expires_in_seconds: expires || null,
+      });
+      setResult(data);
 
-      if (bulk) {
-        const { tokens } = await postTokensBulk({ count: bulkCount, template });
-        setBatch(tokens);
-      } else {
-        const data = await postToken(template);
-        setResult(data);
-        if (data.otpauth_uri) {
-          try {
-            const url = await QRCode.toDataURL(data.otpauth_uri, {
-              margin: 1,
-              color: { dark: "#00F0FF", light: "#05050A" },
-              width: 180,
-            });
-            setQr(url);
-          } catch (_) {
-            setQr("");
-          }
-        }
+      // TOTP QR
+      if (data.otpauth_uri) {
+        try {
+          const url = await QRCode.toDataURL(data.otpauth_uri, {
+            margin: 1,
+            color: { dark: "#00F0FF", light: "#05050A" },
+            width: 160,
+          });
+          setTotpQr(url);
+        } catch (_) { /* ignore */ }
       }
+
+      // Verify QR — encodes /verify?block_id=X&token=Y so any phone
+      // scanning it opens the public verifier prefilled.
+      try {
+        const verifyUrl = `${window.location.origin}/verify?block_id=${data.block_id}&token=${encodeURIComponent(data.token)}`;
+        const url = await QRCode.toDataURL(verifyUrl, {
+          margin: 1,
+          color: { dark: "#00FF41", light: "#05050A" },
+          width: 160,
+          errorCorrectionLevel: "M",
+        });
+        setVerifyQr(url);
+      } catch (_) { /* ignore */ }
     } catch (e) {
       setError(e?.response?.data?.detail?.[0]?.msg || e?.response?.data?.detail || e?.message || "Failed");
     } finally {
@@ -204,44 +202,17 @@ function GenerateView() {
     }
   }
 
-  async function saveOne(tokenObj) {
-    const pass = prompt("Vault passphrase (used to encrypt your saved tokens):");
-    if (!pass) return;
-    let existing = [];
-    if (vaultExists()) {
-      try {
-        existing = await loadVault(pass);
-      } catch (_) {
-        alert("Wrong passphrase — this vault is protected by a different one. Aborted.");
-        return;
-      }
-    }
-    existing.unshift({
-      id: `${tokenObj.block_id}-${Date.now()}`,
-      block_id: tokenObj.block_id,
-      type: tokenObj.type,
-      token: tokenObj.token,
-      timestamp: tokenObj.timestamp,
-      token_signature_hex: tokenObj.token_signature_hex,
-      note: "",
-    });
-    await saveVault(pass, existing);
-    alert(`Saved. Vault now has ${existing.length} item(s).`);
-  }
+  const countdown = result?.expires_at ? fmtCountdown(result.expires_at) : null;
+  const isExpired = countdown === "EXPIRED";
 
   return (
-    <>
+    <div className="space-y-4">
       <Panel
         title="TOKEN GENERATOR"
         right={
-          <Btn
-            intent="primary"
-            testid="generate-token-btn"
-            onClick={generate}
-            disabled={busy}
-          >
+          <Btn intent="primary" testid="generate-token-btn" onClick={generate} disabled={busy}>
             <Key size={12} weight="fill" className="inline mr-1.5 -mt-0.5" />
-            {busy ? "Forging…" : bulk ? `Generate ×${bulkCount}` : "Generate"}
+            {busy ? "Forging…" : "Generate"}
           </Btn>
         }
         testid="tokens-panel"
@@ -302,7 +273,7 @@ function GenerateView() {
           </button>
         </div>
 
-        {/* Camera preview (only when source=camera) */}
+        {/* Camera preview */}
         {source === "camera" && (
           <div className="mb-4">
             <div className="relative aspect-[4/3] border border-white/10 bg-black overflow-hidden">
@@ -324,18 +295,14 @@ function GenerateView() {
                 <div className="absolute inset-0 flex items-center justify-center text-center p-4">
                   <div>
                     <CameraRotate size={26} weight="thin" className="mx-auto text-cyan-300 mb-1" />
-                    <div className="text-[10px] font-mono text-white/55">
-                      Camera offline
-                    </div>
+                    <div className="text-[10px] font-mono text-white/55">Camera offline</div>
                   </div>
                 </div>
               )}
               {camReady && (
                 <div className="absolute top-2 right-2 flex items-center gap-2">
                   <span className="block h-[6px] w-[6px] bg-[#00FF41] led-pulse text-[#00FF41]" />
-                  <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-[#7AFF9B]">
-                    LIVE
-                  </span>
+                  <span className="text-[9px] font-mono uppercase tracking-[0.22em] text-[#7AFF9B]">LIVE</span>
                 </div>
               )}
               {busy && camReady && (
@@ -375,10 +342,10 @@ function GenerateView() {
               <LabeledNumber label="Length" testid="length-input" min={6} max={128}
                 value={cfg.length} onChange={(v) => update("length", v)} />
               <div className="grid grid-cols-2 gap-2">
-                <Toggle label="a-z" testid="opt-lower" value={cfg.include_lower} onChange={(v) => update("include_lower", v)} />
-                <Toggle label="A-Z" testid="opt-upper" value={cfg.include_upper} onChange={(v) => update("include_upper", v)} />
-                <Toggle label="0-9" testid="opt-digits" value={cfg.include_digits} onChange={(v) => update("include_digits", v)} />
-                <Toggle label="!@#$" testid="opt-symbols" value={cfg.include_symbols} onChange={(v) => update("include_symbols", v)} />
+                <ToggleBtn label="a-z" testid="opt-lower" value={cfg.include_lower} onChange={(v) => update("include_lower", v)} />
+                <ToggleBtn label="A-Z" testid="opt-upper" value={cfg.include_upper} onChange={(v) => update("include_upper", v)} />
+                <ToggleBtn label="0-9" testid="opt-digits" value={cfg.include_digits} onChange={(v) => update("include_digits", v)} />
+                <ToggleBtn label="!@#$" testid="opt-symbols" value={cfg.include_symbols} onChange={(v) => update("include_symbols", v)} />
               </div>
             </>
           )}
@@ -405,37 +372,31 @@ function GenerateView() {
           )}
         </div>
 
-        {/* Bulk */}
-        <div className="mt-4 border-t border-white/10 pt-4 grid grid-cols-[auto_1fr] items-center gap-3">
-          <button
-            data-testid="bulk-toggle"
-            onClick={() => setBulk((v) => !v)}
-            className={`py-1.5 px-3 border text-[10px] uppercase tracking-[0.22em] font-mono transition-colors ${
-              bulk
-                ? "border-cyan-400 text-cyan-300 bg-cyan-400/10"
-                : "border-white/15 text-white/50 hover:border-white/30 hover:text-white/85"
-            }`}
-          >
-            {bulk ? "✓ BULK" : "○ BULK"}
-          </button>
-          {bulk ? (
-            <label className="flex items-center gap-3">
-              <span className="text-[10px] uppercase tracking-[0.22em] text-white/50 font-mono">count</span>
-              <input
-                data-testid="bulk-count-input"
-                type="number"
-                min={1}
-                max={20}
-                value={bulkCount}
-                onChange={(e) => setBulkCount(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
-                className="w-20 bg-transparent border border-white/15 px-2 py-1 text-sm text-cyan-300 font-mono focus:border-cyan-400 outline-none"
-              />
-            </label>
-          ) : (
-            <span className="text-[10px] font-mono text-white/35 uppercase tracking-[0.22em]">
-              Off — single token per press
-            </span>
-          )}
+        {/* Expiry */}
+        <div className="mt-5 border-t border-white/10 pt-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Clock size={12} className="text-cyan-300" />
+            <Overline>Expiry — cryptographically bound</Overline>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {EXPIRIES.map((e) => {
+              const active = e.id === expires;
+              return (
+                <button
+                  key={e.id}
+                  data-testid={`expiry-${e.id}`}
+                  onClick={() => setExpires(e.id)}
+                  className={`py-2 border text-[10px] uppercase tracking-[0.22em] font-mono transition-colors ${
+                    active
+                      ? "border-cyan-400 text-cyan-300 bg-cyan-400/10"
+                      : "border-white/10 text-white/45 hover:border-white/30 hover:text-white/80"
+                  }`}
+                >
+                  {e.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {error && (
@@ -448,7 +409,7 @@ function GenerateView() {
         )}
       </Panel>
 
-      {result && !batch && (
+      {result && (
         <Panel
           title="OUTPUT"
           right={
@@ -461,14 +422,9 @@ function GenerateView() {
         >
           <div className="mb-1 flex items-center justify-between">
             <Overline>{result.type} · {result.display_hint}</Overline>
-            <div className="flex gap-2">
-              <Btn intent="default" testid="copy-token-btn" onClick={() => safeCopy(result.token)}>
-                {copied ? <><Check size={12} className="inline mr-1.5 -mt-0.5" />Copied</> : <><Copy size={12} className="inline mr-1.5 -mt-0.5" />Copy</>}
-              </Btn>
-              <Btn intent="success" testid="save-vault-btn" onClick={() => saveOne(result)}>
-                <Vault size={12} className="inline mr-1.5 -mt-0.5" />Save
-              </Btn>
-            </div>
+            <Btn intent="default" testid="copy-token-btn" onClick={() => safeCopy(result.token)}>
+              {copied ? <><Check size={12} className="inline mr-1.5 -mt-0.5" />Copied</> : <><Copy size={12} className="inline mr-1.5 -mt-0.5" />Copy</>}
+            </Btn>
           </div>
           <div
             data-testid="token-value"
@@ -477,10 +433,64 @@ function GenerateView() {
             {result.token}
           </div>
 
-          {qr && (
+          {/* Expiry countdown */}
+          {result.expires_at && (
+            <div
+              data-testid="token-expiry"
+              className={`mt-3 flex items-center justify-between border px-3 py-2 text-[11px] font-mono ${
+                isExpired
+                  ? "border-[#FF003C]/50 bg-[#FF003C]/5 text-[#FF6B8A]"
+                  : "border-[#FFB800]/40 bg-[#FFB800]/5 text-[#FFC846]"
+              }`}
+            >
+              <span className="uppercase tracking-[0.22em] text-[10px]">
+                {isExpired ? "EXPIRED" : "expires in"}
+              </span>
+              <span className="text-sm">
+                {countdown}
+                <span className="text-white/40 text-[10px] ml-2">
+                  · {new Date(result.expires_at * 1000).toISOString().slice(0, 19)}Z
+                </span>
+              </span>
+            </div>
+          )}
+
+          {/* Verification QR (scan → opens /verify prefilled) */}
+          {verifyQr && (
+            <div className="mt-4 flex items-start gap-4 border border-[#00FF41]/20 bg-[#00FF41]/[0.02] p-3">
+              <div className="border border-white/10 p-2 bg-black shrink-0">
+                <img
+                  data-testid="verify-qr"
+                  src={verifyQr}
+                  alt="Verify QR"
+                  className="w-[130px] h-[130px] block"
+                />
+              </div>
+              <div className="text-[10px] font-mono text-white/60 leading-relaxed">
+                <div className="text-[#7AFF9B] uppercase tracking-[0.22em] mb-1.5">Scan-to-verify</div>
+                Anyone can scan this QR to open the public verifier and
+                confirm the token was minted by this device. No account
+                needed.
+                <div className="mt-2">
+                  <a
+                    data-testid="verify-link"
+                    href={`/verify?block_id=${result.block_id}&token=${encodeURIComponent(result.token)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-cyan-300 hover:text-cyan-100 underline"
+                  >
+                    Open /verify →
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TOTP QR */}
+          {totpQr && (
             <div className="mt-4 flex items-start gap-4">
-              <div className="border border-white/10 p-2 bg-black">
-                <img data-testid="totp-qr" src={qr} alt="TOTP QR" className="w-[160px] h-[160px] block" />
+              <div className="border border-white/10 p-2 bg-black shrink-0">
+                <img data-testid="totp-qr" src={totpQr} alt="TOTP QR" className="w-[160px] h-[160px] block" />
               </div>
               <div className="text-[11px] font-mono text-white/60 leading-relaxed">
                 Scan into your authenticator. Secret ledgered under block #{result.block_id}.
@@ -501,250 +511,13 @@ function GenerateView() {
             <Overline className="mb-1">token_signature (Ed25519)</Overline>
             <HashLine value={result.token_signature_hex} className="text-[#7AFF9B]" />
           </div>
-          <div className="mt-4 border border-cyan-400/20 bg-cyan-400/[0.03] p-3">
-            <Overline className="mb-1">Shareable verification receipt</Overline>
-            <div className="text-[11px] font-mono text-white/70 break-all leading-relaxed">
-              Anyone can verify this token at{" "}
-              <a
-                href={`${window.location.origin}/verify?block_id=${result.block_id}`}
-                target="_blank"
-                rel="noreferrer"
-                className="text-cyan-300 hover:text-cyan-100 underline"
-              >
-                /verify?block_id={result.block_id}
-              </a>
-            </div>
-          </div>
         </Panel>
       )}
-
-      {batch && (
-        <Panel
-          title={`BATCH · ${batch.length} tokens`}
-          right={
-            <Btn intent="default" testid="copy-batch-btn" onClick={() => safeCopy(batch.map((b) => b.token).join("\n"))}>
-              {copied ? <><Check size={12} className="inline mr-1.5 -mt-0.5" />Copied</> : <><Copy size={12} className="inline mr-1.5 -mt-0.5" />Copy all</>}
-            </Btn>
-          }
-          testid="token-batch"
-        >
-          <ul className="space-y-2">
-            {batch.map((t) => (
-              <li
-                key={t.block_id}
-                data-testid={`batch-item-${t.block_id}`}
-                className="border border-white/10 bg-white/[0.02] px-3 py-2 flex items-center justify-between gap-2"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="text-[9px] uppercase tracking-[0.22em] text-cyan-300 font-mono">#{t.block_id} · {t.type}</div>
-                  <div className="font-mono text-[11px] text-white/85 truncate">{t.token}</div>
-                </div>
-                <div className="flex gap-1 shrink-0">
-                  <button
-                    onClick={() => safeCopy(t.token)}
-                    className="p-1.5 border border-white/15 text-white/60 hover:border-cyan-400 hover:text-cyan-300"
-                    aria-label="copy"
-                  >
-                    <Copy size={12} />
-                  </button>
-                  <button
-                    onClick={() => saveOne(t)}
-                    className="p-1.5 border border-[#00FF41]/40 text-[#7AFF9B] hover:border-[#00FF41] hover:text-white"
-                    aria-label="save"
-                  >
-                    <Vault size={12} />
-                  </button>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-      )}
-    </>
+    </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════
-// VAULT VIEW
-// ══════════════════════════════════════════════════════════════════
-function VaultView() {
-  const [locked, setLocked] = useState(true);
-  const [pass, setPass] = useState("");
-  const [items, setItems] = useState([]);
-  const [error, setError] = useState("");
-  const [reveal, setReveal] = useState({});
-  const [exists, setExists] = useState(vaultExists());
-
-  async function unlock() {
-    setError("");
-    if (!pass) return;
-    try {
-      if (!vaultExists()) {
-        setItems([]);
-        setLocked(false);
-        return;
-      }
-      const data = await loadVault(pass);
-      setItems(data);
-      setLocked(false);
-    } catch (_) {
-      setError("Wrong passphrase (or vault corrupted).");
-    }
-  }
-
-  async function persist(next) {
-    await saveVault(pass, next);
-    setItems(next);
-    setExists(true);
-  }
-
-  async function removeItem(id) {
-    const next = items.filter((it) => it.id !== id);
-    await persist(next);
-  }
-
-  async function destroy() {
-    if (!window.confirm("This permanently erases the encrypted vault from this device.")) return;
-    clearVault();
-    setItems([]);
-    setExists(false);
-    setLocked(true);
-    setPass("");
-  }
-
-  if (locked) {
-    return (
-      <Panel title="VAULT :: LOCKED" testid="vault-locked">
-        <div className="flex items-center gap-3 mb-4">
-          <LockKey size={24} weight="fill" className="text-cyan-300" />
-          <div className="text-[11px] font-mono text-white/60 leading-relaxed">
-            {exists
-              ? "Enter your passphrase to decrypt this device's token vault. Never leaves your phone."
-              : "No vault exists yet on this device. Set a passphrase to create one."}
-          </div>
-        </div>
-        <label className="block mb-3">
-          <Overline className="mb-1">Passphrase</Overline>
-          <input
-            data-testid="vault-pass-input"
-            type="password"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && unlock()}
-            className="w-full bg-transparent border border-white/15 px-3 py-2 text-sm text-white font-mono focus:border-cyan-400 outline-none"
-            autoComplete="off"
-          />
-        </label>
-        {error && (
-          <div className="mb-3 border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A]">
-            {error}
-          </div>
-        )}
-        <Btn intent="primary" testid="vault-unlock-btn" onClick={unlock} disabled={!pass} className="w-full">
-          <LockKeyOpen size={12} className="inline mr-1.5 -mt-0.5" />
-          {exists ? "Unlock" : "Create Vault"}
-        </Btn>
-        {exists && (
-          <button
-            data-testid="vault-destroy-btn"
-            onClick={destroy}
-            className="mt-3 w-full py-2 border border-[#FF003C]/40 text-[#FF6B8A] text-[10px] uppercase tracking-[0.22em] font-mono hover:border-[#FF003C] hover:text-white hover:bg-[#FF003C]/10 transition-colors"
-          >
-            <Trash size={11} className="inline mr-1.5 -mt-0.5" /> Wipe this vault
-          </button>
-        )}
-        <div className="mt-4 text-[10px] font-mono text-white/35 leading-relaxed">
-          Encrypted client-side with AES-GCM. Key derived via PBKDF2-SHA256 · 100k iters. Losing the passphrase means the vault is unrecoverable.
-        </div>
-      </Panel>
-    );
-  }
-
-  return (
-    <Panel
-      title={`VAULT :: ${items.length} item(s)`}
-      right={
-        <Btn intent="default" testid="vault-lock-btn" onClick={() => { setLocked(true); setPass(""); setItems([]); setReveal({}); }}>
-          <LockKey size={12} className="inline mr-1.5 -mt-0.5" /> Lock
-        </Btn>
-      }
-      testid="vault-open"
-    >
-      {items.length === 0 && (
-        <div className="text-center py-8 text-white/40 text-[11px] uppercase tracking-[0.22em] font-mono">
-          Vault is empty. Save a token from Generate to populate it.
-        </div>
-      )}
-      <ul className="space-y-3">
-        {items.map((it) => {
-          const shown = !!reveal[it.id];
-          return (
-            <li
-              key={it.id}
-              data-testid={`vault-item-${it.id}`}
-              className="border border-white/10 bg-white/[0.025] p-3"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono text-cyan-300 uppercase tracking-[0.22em]">
-                    #{it.block_id} · {it.type}
-                  </span>
-                  <span className="text-[10px] font-mono text-white/40">
-                    {new Date(it.timestamp * 1000).toISOString().slice(0, 10)}
-                  </span>
-                </div>
-                <div className="flex gap-1">
-                  <button
-                    data-testid={`vault-reveal-${it.id}`}
-                    onClick={() => setReveal((p) => ({ ...p, [it.id]: !p[it.id] }))}
-                    className="p-1.5 border border-white/15 text-white/60 hover:border-cyan-400 hover:text-cyan-300"
-                    aria-label="reveal"
-                  >
-                    {shown ? <EyeSlash size={12} /> : <Eye size={12} />}
-                  </button>
-                  <button
-                    data-testid={`vault-copy-${it.id}`}
-                    onClick={() => {
-                      try {
-                        navigator.clipboard.writeText(it.token).catch(() => {});
-                      } catch (_) { /* ignore */ }
-                    }}
-                    className="p-1.5 border border-white/15 text-white/60 hover:border-cyan-400 hover:text-cyan-300"
-                    aria-label="copy"
-                  >
-                    <Copy size={12} />
-                  </button>
-                  <button
-                    data-testid={`vault-delete-${it.id}`}
-                    onClick={() => removeItem(it.id)}
-                    className="p-1.5 border border-[#FF003C]/40 text-[#FF6B8A] hover:border-[#FF003C] hover:text-white"
-                    aria-label="delete"
-                  >
-                    <Trash size={12} />
-                  </button>
-                </div>
-              </div>
-              <div className={`font-mono text-[11px] break-all leading-relaxed ${shown ? "text-cyan-100" : "text-white/40 blur-sm select-none"}`}>
-                {shown ? it.token : "•".repeat(Math.min(48, it.token.length))}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-      {items.length > 0 && (
-        <button
-          data-testid="vault-destroy-btn"
-          onClick={destroy}
-          className="mt-4 w-full py-2 border border-[#FF003C]/40 text-[#FF6B8A] text-[10px] uppercase tracking-[0.22em] font-mono hover:border-[#FF003C] hover:text-white hover:bg-[#FF003C]/10 transition-colors"
-        >
-          <Trash size={11} className="inline mr-1.5 -mt-0.5" /> Wipe vault
-        </button>
-      )}
-    </Panel>
-  );
-}
-
-// ── shared field primitives ─────────────────────────
+// ── field primitives ─────────────────────────
 function LabeledInput({ label, value, onChange, testid }) {
   return (
     <label className="block">
@@ -777,7 +550,7 @@ function LabeledNumber({ label, value, onChange, min, max, testid }) {
   );
 }
 
-function Toggle({ label, value, onChange, testid }) {
+function ToggleBtn({ label, value, onChange, testid }) {
   return (
     <button
       data-testid={testid}

@@ -13,6 +13,7 @@ const REASON_LABEL = {
   block_signature_invalid: "Block's Ed25519 signature failed verification (device compromised?)",
   token_hash_mismatch: "This token was NOT produced by that block (forged / mistyped)",
   token_signature_invalid: "Token-binding signature failed verification (tamper detected)",
+  expired: "Token was authentic but has passed its expiry time",
 };
 
 export default function VerifyPage() {
@@ -165,6 +166,26 @@ export default function VerifyPage() {
                 label="issued"
                 value={new Date(result.timestamp * 1000).toISOString().slice(0, 19) + "Z"}
               />
+            )}
+            {result.expires_at && (
+              <div className="flex items-center justify-between border-b border-white/5 py-2">
+                <span className="text-[11px] uppercase tracking-[0.22em] text-white/45 font-mono">
+                  expires
+                </span>
+                <span
+                  data-testid="verify-expiry"
+                  className={`font-mono text-sm ${
+                    result.expired ? "text-[#FF6B8A]" : "text-[#FFC846]"
+                  }`}
+                >
+                  {new Date(result.expires_at * 1000).toISOString().slice(0, 19)}Z
+                  {result.expired && (
+                    <span className="ml-2 text-[10px] uppercase tracking-[0.2em]">
+                      · past
+                    </span>
+                  )}
+                </span>
+              </div>
             )}
             {result.mixed_hash_hex && (
               <div className="mt-3">

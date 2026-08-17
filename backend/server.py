@@ -585,6 +585,8 @@ class TokenRequest(BaseModel):
     totp_issuer: str = "ChaosKey+"
     # OTP options
     otp_digits: int = 6
+    # Expiry (0 or None => never expires)
+    expires_in_seconds: Optional[int] = Field(default=None, ge=0, le=60 * 60 * 24 * 365 * 5)
     # Source
     source: Literal["camera", "system"] = "system"
     frame_diffs_b64: Optional[List[str]] = None
@@ -601,20 +603,14 @@ class TokenResponse(BaseModel):
     mixed_hash_hex: str
     timestamp: float
     source: str
-    # Token binding — proves this specific token came from this specific block
+    # Token binding
     token_hash_hex: str
     token_signature_hex: str
-
-class BulkTokenRequest(BaseModel):
-    count: int = Field(default=5, ge=1, le=20)
-    template: TokenRequest
-
-class BulkTokenResponse(BaseModel):
-    tokens: List[TokenResponse]
+    expires_at: Optional[float] = None
 
 class VerifyTokenRequest(BaseModel):
     token: str
-    block_id: int
+    block_id: int = Field(ge=0)
 
 class VerifyTokenResponse(BaseModel):
     valid: bool
@@ -625,6 +621,8 @@ class VerifyTokenResponse(BaseModel):
     timestamp: Optional[float] = None
     mixed_hash_hex: Optional[str] = None
     signature_hex: Optional[str] = None
+    expires_at: Optional[float] = None
+    expired: bool = False
 
 def _default_length(t: str, req_len: Optional[int]) -> int:
     if req_len is not None:
@@ -699,15 +697,24 @@ async def api_generate_token(req: TokenRequest):
         token = _base64url(out, length)
         display_hint = f"base64url · {length} chars"
 
-    # Bind the token cryptographically to its block: hash the token, sign
-    # (block_id | token_hash) with the device key, and persist token_hash on
-    # the block record so /api/verify_token can validate later.
+    # Bind the token cryptographically to its block. Message format:
+    #   token|{block_id}|{token_hash}|{expires_at_int}
+    # expires_at_int is 0 when the token has no expiry.
     token_hash = hashlib.sha256(token.encode("utf-8")).hexdigest()
-    tsig_msg = f"token|{block['block_id']}|{token_hash}".encode("utf-8")
+    expires_at: Optional[float] = None
+    if req.expires_in_seconds and req.expires_in_seconds > 0:
+        expires_at = block["timestamp"] + req.expires_in_seconds
+    expires_at_int = int(expires_at) if expires_at is not None else 0
+    tsig_msg = f"token|{block['block_id']}|{token_hash}|{expires_at_int}".encode("utf-8")
     token_signature = DEVICE_PRIVATE_KEY.sign(tsig_msg).hex()
     await db.ledger.update_one(
         {"block_id": block["block_id"]},
-        {"$set": {"token_hash": token_hash, "token_type": req.type, "token_signature": token_signature}},
+        {"$set": {
+            "token_hash": token_hash,
+            "token_type": req.type,
+            "token_signature": token_signature,
+            "expires_at": expires_at,
+        }},
     )
 
     return TokenResponse(
@@ -724,15 +731,8 @@ async def api_generate_token(req: TokenRequest):
         source=block["source"],
         token_hash_hex=token_hash,
         token_signature_hex=token_signature,
+        expires_at=expires_at,
     )
-
-@api.post("/generate_tokens_bulk", response_model=BulkTokenResponse)
-async def api_generate_tokens_bulk(req: BulkTokenRequest):
-    tokens: List[TokenResponse] = []
-    for _ in range(req.count):
-        r = await api_generate_token(req.template)
-        tokens.append(r)
-    return BulkTokenResponse(tokens=tokens)
 
 @api.post("/verify_token", response_model=VerifyTokenResponse)
 async def api_verify_token(req: VerifyTokenRequest):
@@ -744,7 +744,7 @@ async def api_verify_token(req: VerifyTokenRequest):
     if not block.get("token_hash"):
         return VerifyTokenResponse(valid=False, reason="block_is_not_a_token_block", block_id=req.block_id, device_id=DEVICE_ID)
 
-    # 2. Verify the block's primary signature (Ed25519 over the chain msg)
+    # 2. Verify the block's primary chain signature
     try:
         block_msg = (
             f"{block['block_id']}|{block['timestamp']}|{block['device_id']}|{block['health_state']}|"
@@ -764,14 +764,31 @@ async def api_verify_token(req: VerifyTokenRequest):
             timestamp=block["timestamp"],
             mixed_hash_hex=block["mixed_hash_hex"],
             signature_hex=block["signature_hex"],
+            expires_at=block.get("expires_at"),
         )
 
     # 4. Verify the token-binding signature
+    expires_at = block.get("expires_at")
+    expires_at_int = int(expires_at) if expires_at else 0
     try:
-        tsig_msg = f"token|{block['block_id']}|{block['token_hash']}".encode("utf-8")
+        tsig_msg = f"token|{block['block_id']}|{block['token_hash']}|{expires_at_int}".encode("utf-8")
         DEVICE_PUBLIC_KEY.verify(bytes.fromhex(block['token_signature']), tsig_msg)
     except Exception:
         return VerifyTokenResponse(valid=False, reason="token_signature_invalid", block_id=req.block_id, device_id=DEVICE_ID)
+
+    # 5. Check expiry
+    expired = bool(expires_at and time.time() > expires_at)
+    if expired:
+        return VerifyTokenResponse(
+            valid=False, reason="expired",
+            block_id=req.block_id, device_id=DEVICE_ID,
+            token_type=block.get("token_type"),
+            timestamp=block["timestamp"],
+            mixed_hash_hex=block["mixed_hash_hex"],
+            signature_hex=block["signature_hex"],
+            expires_at=expires_at,
+            expired=True,
+        )
 
     return VerifyTokenResponse(
         valid=True, reason="ok",
@@ -780,6 +797,8 @@ async def api_verify_token(req: VerifyTokenRequest):
         timestamp=block["timestamp"],
         mixed_hash_hex=block["mixed_hash_hex"],
         signature_hex=block["signature_hex"],
+        expires_at=expires_at,
+        expired=False,
     )
 
 app.include_router(api)

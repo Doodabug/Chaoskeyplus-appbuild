@@ -18,8 +18,6 @@ export const postSimulate = (payload) =>
   client.post("/simulate_universe", payload).then((r) => r.data);
 export const postToken = (payload) =>
   client.post("/generate_token", payload).then((r) => r.data);
-export const postTokensBulk = (payload) =>
-  client.post("/generate_tokens_bulk", payload).then((r) => r.data);
 export const postVerifyToken = (payload) =>
   client.post("/verify_token", payload).then((r) => r.data);
 
