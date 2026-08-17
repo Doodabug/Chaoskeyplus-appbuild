@@ -97,6 +97,27 @@ export default function PrivacyScreen() {
     try {
       const r = await fn();
       setResult({ ...r, kind });
+      // On success, clear the inputs for this action and refresh balance if we had one
+      if (r?.status === "accepted" || r?.status === "submitted") {
+        if (kind === "shield") setShieldAmt("");
+        if (kind === "transfer") {
+          setXferAmt("");
+          setXferTo("");
+        }
+        if (kind === "unshield") {
+          setWithdrawAmt("");
+          setWithdrawTo("");
+        }
+        // Silently refresh balance if user has already opted in
+        if (balance) {
+          try {
+            const b = await starknet.fetchBalances();
+            setBalance(b);
+          } catch (_) {
+            /* balance refresh is best-effort; don't override the success result */
+          }
+        }
+      }
     } catch (e) {
       setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
     } finally {
