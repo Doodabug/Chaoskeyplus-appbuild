@@ -217,6 +217,11 @@ export default function TokensScreen() {
         }
         testid="tokens-panel"
       >
+        <p className="text-[11px] font-mono text-white/55 leading-relaxed mb-4">
+          ChaosKey entropy tokens (bearer, password, UUID, TOTP, OTP, session).
+          Not an ERC-20 and not STRK20. Private on-chain transfers live on the
+          Pool tab with Ready.
+        </p>
         {/* Type chips */}
         <div className="grid grid-cols-3 gap-2 mb-4">
           {TYPES.map((t) => {
