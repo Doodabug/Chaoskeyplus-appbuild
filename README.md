@@ -13,7 +13,7 @@ STRK20 hackathon entry: `starkience/strk20-hackathon` → `ChaosKey+`
 
 | Tab | Purpose |
 |---|---|
-| **Harvest** | Capture pixel diffs from your camera → mix through HKDF-SHA512 → sign the block with an Ed25519 device key → append to a hash-chained ledger. NIST-style health tests (chi-squared, Shannon entropy) gate every block. |
+| **Harvest** | Captures the geometry of reality from your camera → mix through HKDF-SHA512 → sign the block with an Ed25519 device key → append to a hash-chained ledger. NIST-style health tests (chi-squared, Shannon entropy) gate every block. |
 | **Tokens** | Generate Bearer, Password, UUID, TOTP, OTP, or Session tokens **cryptographically bound** to an entropy block. Optional expiry (15 min / 1 h / 24 h / 7 d / 30 d) is signed as part of the token message so it can't be tampered with. Each token gets a scannable QR that deep-links to a public `/verify` page. |
 | **Ledger** | Browse the signed chain — filter by source (`camera` vs `os`), inspect the frame diffs, verify each block's prev-hash / mixed-hash / signature. |
 | **Universe** | 500-step digital-universe simulation driven by the block's random hash. Because the sim is deterministic in the block hash, anyone can replay it to verify the block was actually used. |
@@ -192,6 +192,15 @@ See `CONTRIBUTING.md`. TL;DR:
 - Add a `data-testid` to every interactive element and user-facing critical panel.
 
 ---
+## Demo (STRK20 Privacy Preview)
+This hackathon demo runs entirely in preview mode — no real STRK is spent.
+
+1. Open the live preview: https://mobile-app-build-778.preview.emergentagent.com
+2. Connect a Starknet wallet (Argent X / Braavos / Ready).
+3. The app performs a STRK20 capability probe.
+4. Shield / transfer / unshield actions appear based on wallet capabilities.
+5. All actions run in preview mode using Sepolia test routing.
+6. ChaosKey+ entropy is bound to each privacy action.
 
 ## License
 
