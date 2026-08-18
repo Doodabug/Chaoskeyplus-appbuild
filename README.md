@@ -18,6 +18,18 @@ STRK20 is a note-based pool for any ERC-20 — not a mixer and not a token ABI. 
 
 Sprint checklist (code vs human) lives in the plan §7b. Phase 3 (shadow accounts) is blocked on a stable Wallet API.
 
+## STRK20 Stack
+
+This project implements the **Starknet Wallet API v0.10** (STRK20) using:
+
+- **Starknet SDK**: `starknet` (v10.4.0) — Core communication and account abstraction.
+
+- **Wallet Standard Discovery**: `@starknet-io/get-starknet-discovery` (v6.0.3) — Modern wallet detection.
+
+- **Wallet Standard Adapter**: `@starknet-io/get-starknet-wallet-standard` (v6.0.3) — Wallet compatibility layer.
+
+- **Wallet API Types**: `@starknet-io/types-js` (v0.10.3) — Type-safe STRK20 actions (deposit, transfer, withdraw).
+
 ## Pins
 
 `starknet@10.4.0` · `@starknet-io/get-starknet-discovery@6.0.3` · `@starknet-io/get-starknet-wallet-standard@6.0.3` · `@starknet-io/types-js@0.10.3`
