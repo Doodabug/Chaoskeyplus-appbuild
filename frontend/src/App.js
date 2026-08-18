@@ -7,6 +7,7 @@ import {
   IdentificationCard,
   ShieldCheck,
   Key,
+  DotsThree,
 } from "@phosphor-icons/react";
 import HarvestScreen from "./screens/HarvestScreen";
 import LedgerScreen from "./screens/LedgerScreen";
@@ -83,7 +84,30 @@ function TopBar({ status, onOpenPool }) {
   );
 }
 
-function BottomNav({ active, onChange }) {
+function NavBtn({ id, label, Icon, isActive, onClick }) {
+  return (
+    <button
+      data-testid={`nav-${id}`}
+      onClick={onClick}
+      className={`w-full py-3 flex flex-col items-center justify-center gap-1 transition-colors duration-150 ${
+        isActive ? "text-cyan-300" : "text-white/45 hover:text-white/80"
+      }`}
+    >
+      <Icon size={20} weight={isActive ? "fill" : "regular"} />
+      <span
+        className={`text-[9px] font-mono uppercase tracking-[0.2em] ${
+          isActive ? "text-cyan-200" : "text-white/45"
+        }`}
+      >
+        {label}
+      </span>
+      {isActive && <span className="block h-[2px] w-6 bg-cyan-300 -mb-[2px]" />}
+    </button>
+  );
+}
+
+function BottomNav({ active, onChange, moreOpen, onToggleMore }) {
+  const moreActive = MORE_IDS.includes(active);
   return (
     <nav
       data-testid="bottom-nav"
@@ -137,6 +161,7 @@ export default function App() {
 
 function MainApp() {
   const [active, setActive] = useState("harvest");
+  const [moreOpen, setMoreOpen] = useState(false);
   const [status, setStatus] = useState(null);
 
   useEffect(() => {
@@ -168,7 +193,15 @@ function MainApp() {
       >
         <Active />
       </main>
-      <BottomNav active={active} onChange={setActive} />
+      <BottomNav
+        active={active}
+        moreOpen={moreOpen}
+        onToggleMore={() => setMoreOpen((o) => !o)}
+        onChange={(id) => {
+          setActive(id);
+          setMoreOpen(MORE_IDS.includes(id));
+        }}
+      />
     </div>
   );
 }

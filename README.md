@@ -18,8 +18,6 @@ STRK20 is a note-based pool for any ERC-20 — not a mixer and not a token ABI. 
 
 Sprint checklist (code vs human) lives in the plan §7b. Phase 3 (shadow accounts) is blocked on a stable Wallet API.
 
-#Stack: Python + FastAPI + ChaosKey+ hardware + STRK20 agent skills
-
 ## STRK20 Stack
 
 This project implements the **Starknet Wallet API v0.10** (STRK20) using:
