@@ -12,8 +12,8 @@ const inputClass =
   "w-full bg-transparent border border-white/15 px-3 py-2 text-sm text-white font-mono focus:border-cyan-400 outline-none";
 
 function shortAddr(addr) {
-  if (!addr) return "—";
-  return addr.length > 16 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr;
+  if (!addr) return "â€”";
+  return addr.length > 16 ? `${addr.slice(0, 10)}â€¦${addr.slice(-6)}` : addr;
 }
 
 function onMainnet(chainId) {
@@ -144,7 +144,7 @@ export default function PrivacyScreen() {
           <>
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
               Connect Ready on Starknet Mainnet. The wallet holds keys, notes, and
-              proofs — this app never sees them.
+              proofs â€” this app never sees them.
             </p>
             {starknet.wallets.length === 0 && (
               <div
@@ -179,227 +179,8 @@ export default function PrivacyScreen() {
                     intent="primary"
                     testid={`pool-connect-${w.id || w.name}`}
                     onClick={() => onConnect(w)}
-                    disabled={!!busy}
-                  >
-                    <Plugs size={12} className="inline mr-1.5 -mt-0.5" />
-                    {busy === "connect" ? "Connecting" : "Connect"}
-                  </Btn>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
 
-        {connected && (
-          <>
-            <StatLine
-              label="Wallet"
-              value={starknet.walletName}
-              valueClass="text-cyan-300"
-              testid="pool-wallet-name"
-            />
-            <StatLine
-              label="Address"
-              value={shortAddr(starknet.address)}
-              testid="pool-address"
-            />
-            <StatLine
-              label="Network"
-              value={mainnet ? "Mainnet" : starknet.chainId || "—"}
-              valueClass={mainnet ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
-              testid="pool-network"
-            />
-            <StatLine
-              label="STRK20 API"
-              value={capable ? "capable" : "unsupported"}
-              valueClass={capable ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
-              testid="pool-capability"
-            />
-            {!mainnet && (
-              <div className="mt-3 space-y-2">
-                <p className="text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
-                  Pool actions are Mainnet-only. Switch the wallet network, then retry.
-                </p>
-                <Btn
-                  intent="primary"
-                  testid="pool-switch-mainnet-btn"
-                  onClick={() => onConnect(starknet.wallet)}
-                  disabled={!!busy || !starknet.wallet}
-                >
-                  Switch to Mainnet
-                </Btn>
-              </div>
-            )}
-          </>
-        )}
-      </Panel>
-
-      {connected && !capable && (
-        <Panel title="UNSUPPORTED WALLET" testid="pool-unsupported">
-          <p className="text-[12px] font-mono text-white/70 leading-relaxed">
-            Needs a STRK20-capable wallet (Ready). Braavos, Privy, and other
-            wallets are not prepared for pool actions. Shield, transfer, and
-            unshield are hidden.
-          </p>
-        </Panel>
-      )}
-
-      {connected && capable && mainnet && (
-        <>
-          <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              The wallet will ask to share your shielded STRK balance. This app
-              does not read notes or keys; skip this if you only want to act.
-            </p>
-            {balance ? (
-              <StatLine
-                label="Shielded STRK"
-                value={balance.human}
-                valueClass="text-cyan-300"
-                testid="pool-balance-value"
-              />
-            ) : (
-              <Btn
-                intent="default"
-                testid="pool-balance-btn"
-                onClick={onShowBalance}
-                disabled={!!busy}
-              >
-                <Eye size={12} className="inline mr-1.5 -mt-0.5" />
-                {busy === "balance" ? "Waiting on wallet" : "Show shielded balance"}
-              </Btn>
-            )}
-          </Panel>
-
-          <Panel title="SHIELD :: AMOUNT PUBLIC" testid="pool-shield-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Public STRK → encrypted note. The deposit amount stays public.
-              Do not bundle this with a private transfer.
-            </p>
-            <label className="block mb-4">
-              <Overline className="mb-1">Amount (STRK)</Overline>
-              <input
-                data-testid="pool-amount-input"
-                type="text"
-                inputMode="decimal"
-                value={shieldAmt}
-                onChange={(e) => setShieldAmt(e.target.value)}
-                className={inputClass}
-              />
-            </label>
-            <div className="border border-white/10 bg-white/[0.03] px-3 py-3 mb-4 space-y-2">
-              <p className="text-[11px] font-mono text-white/55 leading-relaxed">
-                The wallet will prompt twice: first a public ERC-20 approve, then
-                the private deposit. Both are required.
-              </p>
-              <p className="text-[11px] font-mono text-white/55 leading-relaxed">
-                {fee?.available
-                  ? `Pool fee ${fee.human} STRK per private operation. Subtracted from MAX. Separate from network gas.`
-                  : "Pool fee unavailable until REACT_APP_STRK20_POOL is set. Separate from network gas."}
-              </p>
-            </div>
-            <Btn
-              intent="primary"
-              testid="pool-shield-btn"
-              onClick={() => runAction("shield", () => starknet.shield(shieldAmt))}
-              disabled={!!busy || !shieldAmt}
-              className="w-full"
-            >
-              <ShieldCheck size={14} weight="bold" className="inline mr-1.5 -mt-0.5" />
-              {busy === "shield" ? "Awaiting wallet / proof" : "Shield"}
-            </Btn>
-          </Panel>
-
-          {locked && (
-            <div
-              data-testid="pool-maturity"
-              className="border border-cyan-400/30 bg-cyan-400/5 px-3 py-2 text-[11px] font-mono text-cyan-200"
-            >
-              Freshly shielded notes mature in ~{NOTE_MATURITY_BLOCKS} blocks.
-              Transfer and unshield locked for {starknet.maturityLeft} more
-              {starknet.maturityLeft === 1 ? " block" : " blocks"}.
-            </div>
-          )}
-
-          <Panel title="PRIVATE TRANSFER :: HIDDEN" testid="pool-transfer-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Private transfer (sender, receiver, amount hidden). Recipient must
-              already be registered. Not composed with a shield.
-            </p>
-            <label className="block mb-3">
-              <Overline className="mb-1">Recipient</Overline>
-              <input
-                data-testid="pool-transfer-to"
-                type="text"
-                value={xferTo}
-                onChange={(e) => setXferTo(e.target.value)}
-                placeholder="0x…"
-                className={inputClass}
-                disabled={spendDisabled}
-              />
-            </label>
-            <label className="block mb-4">
-              <div className="flex items-center justify-between mb-1">
-                <Overline>Amount (STRK)</Overline>
-                {balance && (
-                  <button
-                    type="button"
-                    data-testid="pool-transfer-max"
-                    className="text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300"
-                    onClick={() => applyMax(setXferAmt)}
-                  >
-                    Max
-                  </button>
-                )}
-              </div>
-              <input
-                data-testid="pool-transfer-amount"
-                type="text"
-                inputMode="decimal"
-                value={xferAmt}
-                onChange={(e) => setXferAmt(e.target.value)}
-                className={inputClass}
-                disabled={spendDisabled}
-              />
-            </label>
-            <Btn
-              intent="primary"
-              testid="pool-transfer-btn"
-              onClick={() => runAction("transfer", () => starknet.transfer(xferAmt, xferTo))}
-              disabled={spendDisabled || !xferAmt || !xferTo}
-              className="w-full"
-            >
-              <ArrowUpRight size={14} className="inline mr-1.5 -mt-0.5" />
-              {busy === "transfer" ? "Awaiting wallet / proof" : "Private transfer"}
-            </Btn>
-          </Panel>
-
-          <Panel title="UNSHIELD :: AMOUNT PUBLIC" testid="pool-unshield-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Shield / unshield (amount public). Withdraws STRK to a public
-              address. Defaults to your connected wallet.
-            </p>
-            <label className="block mb-3">
-              <Overline className="mb-1">Public recipient</Overline>
-              <input
-                data-testid="pool-unshield-to"
-                type="text"
-                value={withdrawTo}
-                onChange={(e) => setWithdrawTo(e.target.value)}
-                placeholder={starknet.address || "0x…"}
-                className={inputClass}
-                disabled={spendDisabled}
-              />
-            </label>
-            <label className="block mb-4">
-              <div className="flex items-center justify-between mb-1">
-                <Overline>Amount (STRK)</Overline>
-                {balance && (
-                  <button
-                    type="button"
-                    data-testid="pool-unshield-max"
-                    className="text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300"
-                    onClick={() => applyMax(setWithdrawAmt)}
+                    onChange={() => applyMax(setWithdrawAmt)}
                   >
                     Max
                   </button>
@@ -407,7 +188,7 @@ export default function PrivacyScreen() {
               </div>
               <input
                 data-testid="pool-unshield-amount"
-                type="text"
+                text="text"
                 inputMode="decimal"
                 value={withdrawAmt}
                 onChange={(e) => setWithdrawAmt(e.target.value)}
@@ -418,7 +199,7 @@ export default function PrivacyScreen() {
             <Btn
               intent="primary"
               testid="pool-unshield-btn"
-              onClick={() =>
+              onChange={() =>
                 runAction("unshield", () =>
                   starknet.unshield(withdrawAmt, withdrawTo || starknet.address)
                 )
@@ -436,16 +217,15 @@ export default function PrivacyScreen() {
         <div
           data-testid="pool-error"
           data-kind={error.kind}
-          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed"
-        >
+          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
           {error.kind === "screening"
             ? error.message
-            : `ERR :: ${error.message}`}
+            : `ERR :: ${error.message}`u}
         </div>
       )}
 
       {result && (
-        <Panel title={`${(result.kind || "action").toUpperCase()} RESULT`} testid="pool-result-panel">
+        <Panel title=`{${(result.kind || "action").toUpperCase()} RESULT` testid="pool-result-panel">
           <StatLine
             label="Status"
             value={result.status === "accepted" ? "accepted" : "submitted"}
@@ -454,7 +234,7 @@ export default function PrivacyScreen() {
           />
           <div className="py-2">
             <Overline className="mb-1">Transaction</Overline>
-            <HashLine testid="pool-tx-hash" value={result.hash || "—"} />
+            <HashLine testid="pool-tx-hash" value={result.hash || "â€•"} />
           </div>
           {result.explorer && (
             <a
@@ -470,7 +250,7 @@ export default function PrivacyScreen() {
           )}
           {result.status === "submitted" && (
             <p className="mt-3 text-[11px] font-mono text-white/45 leading-relaxed">
-              Confirmation timed out. The transaction was submitted — check the
+              Confirmation timed out. The transaction was submitted â†’ check the
               explorer.
             </p>
           )}

@@ -1,0 +1,30 @@
+{
+  "summary": "Iteration 6 smoke tests for Starknet Pool tab + wallet switch fix. Backend: /api/status, /api/pubkey, /api/ledger all return 200 (Starknet is frontend-only, no backend regressions). Frontend: app boots without JS crashes/react errors; all 6 nav tabs (nav-pool, nav-harvest, nav-tokens, nav-ledger, nav-universe, nav-device) render; topbar-wallet visible and clicking it navigates to Pool tab (pool-wallet-panel appears). On the Pool tab without a wallet extension, pool-no-wallets ('No wallets detected. Install the Ready extension.') is shown and the 'WHAT STAYS VISIBLE' disclosure panel is present. All 5 non-pool tabs still render body content correctly. Only console errors observed are 2x ERR_NAME_NOT_RESOLVED from the Starknet RPC (free-rpc.nethermind.io) being unreachable inside the sandboxed test env — expected, not a code bug. Verified starknetWallet.js exports switchToSepolia and readChainId with 3-level fallback; StarknetProvider exposes switchToSepolia in context; PrivacyScreen 'Switch to Sepolia' button awaits starknet.switchToSepolia() and surfaces errors into pool-error banner (kind=switch_failed/refused). Cannot exercise real wallet connect/switch here — no browser wallet extension in container (as noted in review request).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_chaoskey.py",
+    "/app/backend/tests/test_tokens.py",
+    "/app/backend/tests/test_verify_and_expiry.py"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "starknetWallet.js readChainId() 3-level fallback is correct: account.getChainId → walletV6.requestChainId(wallet) → wallet.chainId/wallet.provider.chainId. Good coverage for Ready wallet edge case.",
+    "switchToSepolia() correctly surfaces errors with kind='refused' vs 'switch_failed', and PrivacyScreen sets pool-error banner in the catch block — matches the review request fix.",
+    "connectWallet() still swallows switch errors in the initial auto-switch attempt (line 222-226) — intentional per comment, user retries manually via UI. OK.",
+    "PrivacyScreen.onSepolia() uses BigInt comparison with string fallback — handles both hex and label chainIds.",
+    "Minor: RPC ERR_NAME_NOT_RESOLVED noise in console when RPC blocked; consider silent fetch/try-catch around any provider probe that runs at boot (currently none at boot, so acceptable). Not blocking."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "N/A",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Wallet flow (real connect / switchToSepolia click / signed txs) cannot be tested here — the Kubernetes sandbox has no browser wallet extension. Smoke tests confirm no regressions from starknet.js v10.7.0 imports and pool UI empty state. If future testing needs real wallet, run outside sandbox with Ready extension installed. Backend endpoints /api/status, /api/pubkey, /api/ledger remain healthy.",
+  "rca of the issue": "Original bug: Ready wallet's WalletAccountV6.getChainId() resolved to empty, so PrivacyScreen showed NETWORK '—' and 'Switch to Sepolia' onClick was inline with a caught-and-ignored error. Fix (already applied in this iteration by main agent): (1) readChainId() falls back through walletV6.requestChainId(wallet) then wallet.chainId; (2) switchToSepolia() exported from starknetWallet.js and threaded through StarknetProvider; (3) PrivacyScreen button awaits it and setError() populates pool-error banner. Code inspection confirms fix; runtime verification of the real Ready wallet path requires a browser with the extension."
+}

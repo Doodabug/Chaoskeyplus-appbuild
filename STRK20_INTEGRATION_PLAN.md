@@ -1,15 +1,73 @@
 # STRK20 Privacy Integration Plan — ChaosKey+ M3 (`Chaoskeyplus-appbuild`)
 
-Generated 2026-08-15 by the strk20-privacy-integration skill. **Updated in place 2026-08-17** — prior interview decisions kept (Wallet API, hide who pays whom, Sepolia + Ready). Snapshot now includes the merged Tokens tab. Statuses below were current at this update — re-verify the "coming soon" items and the Open items section before building.
+## 🟠 2026-08-17 UPDATE — mainnet-only reality + open decision
+
+This section supersedes anything below that assumes Sepolia is a viable target for real shield/transfer/unshield flow. Read this first.
+
+### What was proven this session (browser-side testing with Ready wallet)
+1. **The STRK20 privacy pool is deployed on Starknet MAINNET only.** Confirmed via `starkience/strk20-agent-skills` README (`"live-on-mainnet privacy pool for any ERC-20 on Starknet"`) and by [Starknet docs](https://docs.starknet.io/build/starknet-privacy/architecture). There is **no publicly documented Sepolia pool address**.
+2. **Pool contract address (mainnet):** `0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a`.
+3. **Ready wallet on Sepolia + this address → predicted revert** ("Unable to estimate transaction fees") because the contract doesn't exist on Sepolia. This was mistakenly interpreted as "trigger register" during debugging — there is no register step in the STRK20 wallet API.
+4. **Wallet chainId lookup** on `WalletAccountV6.getChainId()` returned empty in the observed Ready build → the connected panel showed `NETWORK: —`. Fixed with a 3-level fallback (`account.getChainId` → `walletV6.requestChainId` → `wallet.chainId`) in `frontend/src/lib/starknetWallet.js::readChainId()`.
+5. **Manual `register()` invoke** was tried and correctly rejected by Ready — because (a) the mainnet pool is not on Sepolia, and (b) STRK20 does not expose a user-callable `register` action; registration is a wallet-internal concern during first `deposit`.
+6. **Package bump**: `starknet@10.4.0` → `starknet@10.7.0` to fix a CRA5/Node-20 webpack export-detection bug (`starknet-types-0101` named exports not detected). Same STRK20 API surface — safe.
+
+### Delta to §1 "Project snapshot"
+- Wallet layer: `starknet@10.7.0` (not 10.4.0). `WalletAccountV6`, `walletV6`, `RpcProvider`, `Contract` imports unchanged.
+- New export in `starknetWallet.js`: `switchToSepolia()` — surfaces `refused` / `switch_failed` errors into the UI red banner (previously silent).
+- New export in `starknetWallet.js`: `registerInPool()` — kept dormant; wired through `StarknetProvider` context but no UI button since the STRK20 wallet API doesn't need it.
+- New panel in `PrivacyScreen.jsx`: `pool-address-warning` — appears when `REACT_APP_STRK20_POOL` matches the known-mainnet address AND the wallet is on Sepolia.
+- `REACT_APP_STRK20_POOL` is currently **empty** in `frontend/.env` (per user Option A in this session).
+
+### The three-path decision (unresolved as of 2026-08-17)
+The chosen path gates Phase 2c and any hackathon-submission demo:
+
+| Path | What it means | Effort | Cost |
+|---|---|---|---|
+| **P-MAIN** | Point `REACT_APP_STARKNET_RPC` at Starknet mainnet, keep pool address = the mainnet one. User switches Ready to Mainnet, shields real STRK. | Small (env change + retest) | Real STRK required |
+| **P-SEPOLIA-DEPLOY** | Deploy a STRK20 pool clone on Sepolia via [starknet-privacy](https://github.com/starkware-libs/starknet-privacy) reference contracts. | Large — Cairo + Scarb + Foundry, audit responsibility on the deployer | Sepolia STRK only, but hours of Cairo work |
+| **P-DEMO-SEPOLIA** | Leave pool tab wired on Sepolia. Show a persistent "Preview mode — mainnet required for actual shielding" banner. Buttons still open Ready and demonstrate the integration path, but real shield attempts predict failure (which the banner explains). Suitable for hackathon submission that shows working UI + code without spending mainnet STRK. | Trivial (banner + copy) | Zero |
+
+**Recommended for hackathon submission:** **P-DEMO-SEPOLIA** now → **P-MAIN** after final judging. The submission repo already flags this in `docs/mainnet-transaction-plan.md` (which per prior note was flagged as leftover-wrong — should be rewritten to describe the mainnet cutover, not "deploying a token contract").
+
+### New Phase 2c — Preview-mode honesty (P-DEMO-SEPOLIA)
+Only if the user selects P-DEMO-SEPOLIA. Small, code-only, no Cairo.
+
+1. **Persistent yellow banner** in `PrivacyScreen.jsx` when `REACT_APP_STARKNET_RPC` targets Sepolia: *"STRK20 privacy is live on Starknet mainnet only. This preview shows the wallet integration path; real shield/transfer/unshield requires flipping the app to mainnet (`REACT_APP_STARKNET_RPC`)."* — with a docs link.
+2. **Disable action buttons** (or make them soft-fail with an explanation) when we detect mainnet-pool-on-sepolia mismatch. Do NOT hide them — they demonstrate the integration.
+3. **Rewrite `docs/mainnet-transaction-plan.md`** into a one-page checklist for flipping to mainnet: env vars to change, wallet steps, fee reservation, disclaimer.
+4. Verify Ready still lists the wallet chip + capability check on Sepolia (already works per iteration_10).
+5. Sign off: manual browser check.
+
+### New Phase 4 — Mainnet cutover (P-MAIN)
+Only if the user selects P-MAIN. Executes AFTER P-DEMO-SEPOLIA (or independently if user skips the demo phase).
+
+1. Change `REACT_APP_STARKNET_RPC` to a mainnet RPC (Nethermind mainnet, Infura, or Alchemy). Keep the pool address at `0x0403…812a` (mainnet).
+2. Change `REACT_APP_STARKNET_EXPLORER` to `https://voyager.online/tx` (drop `sepolia.`).
+3. Change `REACT_APP_STRK20_TOKEN` to the **mainnet** STRK ERC-20 address `0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d` (same string on both networks — verify).
+4. Update `SEPOLIA_CHAIN_ID` gate in `starknetWalletUtils.js` → `MAINNET_CHAIN_ID = 0x534e5f4d41494e`. Rename `onSepolia()` → `onExpectedChain()`. Update all four call sites in `PrivacyScreen.jsx`.
+5. Wipe the `pool-address-warning` panel (or invert its check to warn when pool address is a Sepolia address on mainnet — cheap paranoia).
+6. Sign off: shield 0.1 STRK on mainnet, verify accepted state + Voyager link.
+
+### Blocked / decided in this session (do not revisit)
+- ❌ Do NOT add a user-facing `register` button. STRK20 wallet API handles registration internally.
+- ❌ Do NOT try to shield on Sepolia with the mainnet pool address — Ready correctly rejects.
+- ✅ Amount format: **decimal string**, not `0x`-hex (spec allows both, decimal matches SDK examples and Ready parses cleanly).
+- ✅ `window.starknet` / `window.ready` legacy fallback stays (helps older Argent X / Braavos builds appear in the wallet list).
+- ✅ Capability gate stays soft — non-STRK20 wallets can attempt actions and surface a friendly "wallet doesn't implement STRK20 Wallet API" error.
+
+---
+
+Generated 2026-08-15 by the strk20-privacy-integration skill. **Updated in place 2026-08-16** — prior interview decisions kept; snapshot and phases rewritten against the code that is in the tree today. Statuses below were current at this update — re-verify the "coming soon" items and the Open items section before building.
 
 This file supersedes `docs/privacy-plan.md` for on-chain privacy. That document is generic mempool/HSM advice. `strk20.json` + `docs/integration.md` already point at the Wallet API route. `docs/mainnet-transaction-plan.md` still describes deploying a token contract and is leftover wrong model — do not follow it.
 
-### What changed 2026-08-17
+### What changed 2026-08-16
 
-- Merged `conflict_160826_1834`: Tokens tab + `/verify` (`712ed0f`). Those tokens are ChaosKey-signed secrets, **not** STRK20 notes.
-- Snapshot: primary nav Harvest / Tokens / Pool + More (Ledger, Universe, Device).
-- Phase 2c executed: Tokens panel copy states they are not an ERC-20 / not STRK20.
-- Phase 3 still **blocked** (freshness 2026-08-17: types-js `0.10.3`, spec stable `v0.10.3`, get-starknet `next` still `6.0.4`).
+- Snapshot was stale: it said no wallet-connect code existed. The Wallet API layer is now in the repo.
+- Phase 1–2 library, docs, and tab chrome are still done. Phase 2b restored `PrivacyScreen.jsx` (2026-08-16 execute).
+- Shadow accounts remain **blocked** on the Wallet API (stable spec / types-js / pinned starknet). Next-docs preview is not an entry-criterion pass.
+- Freshness re-check (2026-08-16): types-js latest still `0.10.3`; wallet-api spec latest stable still `v0.10.3` (`v0.10.4-rc.1` in flight); get-starknet npm `next` is `6.0.4` (keep pin `6.0.3` unless execute-time re-check says otherwise); `packages/sub_account_anonymizer` is gone, `packages/shadow_account_anonymizer` exists.
 
 ## 1. Project snapshot
 
@@ -17,10 +75,9 @@ This file supersedes `docs/privacy-plan.md` for on-chain privacy. That document 
 - Relevant code:
   - Wallet connection: `frontend/src/lib/starknetWallet.js:115-188` (`createStore` + `WalletAccountV6.connect`) via `frontend/src/providers/StarknetProvider.jsx`, wrapped in `frontend/src/index.js:9-11`.
   - Transaction layer: `frontend/src/lib/starknetWallet.js` — `shieldAmount` (318), `transferAmount` (335), `unshieldAmount` (354), `fetchShieldedBalances` (374), capability via `walletV6.supportedWalletApi` (127). Pure helpers + tests: `frontend/src/lib/starknetWalletUtils.js` + `.test.js`.
-  - Navigation: `frontend/src/App.js` — **Harvest · Tokens · Pool · More** (Ledger, Universe, Device in the More sheet) plus `/verify`. Top-bar "Connect" only switches to the Pool tab.
+  - Navigation: `frontend/src/App.js:17-23` — five tabs (Harvest, Ledger, Universe, Device, Pool). Top-bar "Connect" (`App.js:61-74`) only switches to the Pool tab.
   - Pool UI: `frontend/src/screens/PrivacyScreen.jsx` — `useStarknet()` (no props). Connect picker, Sepolia prompt, capability degrade, shield / transfer / unshield, consent-gated balances, fee + maturity, explorer result.
-  - Token generator (off-pool): `frontend/src/screens/TokensScreen.jsx` → `POST /api/generate_token` (`backend/server.py`). Bearer/password/UUID/TOTP/OTP/session from harvest entropy. **Not** an ERC-20 and never touches viewing keys.
-  - Entropy ledger (not chain activity): `frontend/src/screens/LedgerScreen.jsx` ← `GET /api/ledger` (`backend/server.py`).
+  - Entropy ledger (not chain activity): `frontend/src/screens/LedgerScreen.jsx` ← `GET /api/ledger` (`backend/server.py:419`).
   - Device identity: `frontend/src/screens/DeviceScreen.jsx` (Ed25519 PEM + QR via `getPubKey()` in `frontend/src/lib/api.js:12`). Device PEM at `backend/server.py:60-78` is **not** a Starknet key and must never be treated as a viewing key.
 - Privacy goal (from interview, confirmed 2026-08-16): hide who pays whom and transfer amounts; show the user their own shielded balances; later hide the public user↔account link (shadow accounts).
 - Environment: Starknet **testnet (Sepolia) first**, Ready extension. Pool tab is wired; Ready manual check is still on the developer.
@@ -43,7 +100,6 @@ React convenience: [useStrk20 hooks](https://strk20-by-example.org/starknet-wall
 | Transfer amounts and token type | The fact that the connected address interacted with the pool, and when |
 | Which notes were spent | Device Ed25519 identity, entropy ledger, harvest/universe activity (unchanged, off-pool) |
 | Shielded balances, once the wallet consents to `strk20Balances` | Relayer address on the transaction envelope (same for every user) |
-| ChaosKey token *values* stay on the device/user (hash + sig on the entropy ledger) | That a token block was minted, its type, expiry, and hashes on `GET /api/ledger` |
 
 This plan hides **who pays whom** and **how much** on private transfers. It does **not** hide that a user talked to the pool, or the size of a shield/unshield. Shadow accounts (Phase 3) hide the **wallet↔acting-account link**; amounts and dapp activity on that account may still be public.
 
@@ -125,19 +181,11 @@ Rewrite `frontend/src/screens/PrivacyScreen.jsx` against `useStarknet()` from `S
 
 Manual check at phase end: connect Ready → unsupported wallet hidden → shield STRK → approve then deposit both shown → wait ~10 blocks → private transfer → unshield. Deposit amount is public on the explorer; transfer sender/receiver/amount are not.
 
-## 6c. Phase 2c — Tokens stay off the pool ✅ done 2026-08-17
+## 7. Phase 3 — shadow accounts ⛔ blocked 2026-08-16: Wallet API route still has no stable shadow-account method
 
-Status: done 2026-08-17
+Status: blocked 2026-08-16 — execute requested; re-verified again, **not implemented**
 
-ChaosKey generates secrets (`/api/generate_token`). That is not [STRK20](https://strk20-by-example.org/what-is-strk20). Do not post those strings to `strk20InvokeTransaction`, do not treat `token_hash` as a note, and do not import the Privacy SDK to "privatize" them.
-
-Shipped: one-line scope copy on `TokensScreen.jsx`. Backend still never sees a viewing key.
-
-## 7. Phase 3 — shadow accounts ⛔ blocked 2026-08-17: Wallet API route still has no stable shadow-account method
-
-Status: blocked 2026-08-17 — plan+execute requested; re-verified, **not implemented**
-
-Re-check (2026-08-17):
+Re-check (2026-08-16, execute attempt):
 - Wallet API spec latest **stable** is still **v0.10.3** ([Latest](https://github.com/starkware-libs/starknet-specs/releases/tag/v0.10.3)). **v0.10.4-rc.1** (13 Aug, pre-release) renames sub-accounts → shadow accounts — not an entry-criterion pass.
 - `@starknet-io/types-js` latest still **0.10.3**; `STRK20_ACTION` is only `deposit | withdraw | transfer | invoke` — no `shadow_account_invoke`.
 - Pinned `starknet@10.4.0` `WalletAccountV6` has `strk20InvokeTransaction` / `strk20Balances` / `strk20PrepareInvoke` — no `strk20ShadowAccountCommitment`.
@@ -154,30 +202,6 @@ Re-check (2026-08-17):
   - Shadow-account funds and txs are **public**; only the link to the main wallet is hidden. Do not label them as shielded balances.
   - Naming: SDK / next docs use **shadow accounts**; older skill text says sub-accounts; `packages/sub_account_anonymizer` is gone, `packages/shadow_account_anonymizer` exists.
 - No anonymizer contract is in scope for ChaosKey+ M3 unless the product later adds its own vault/swap/lend. This skill will not generate Cairo. If that day comes, the team owns review, audit, deploy, and maintenance; start from `packages/ekubo_swap_anonymizer` / `packages/vesu_lending_anonymizer` in [starknet-privacy](https://github.com/starkware-libs/starknet-privacy).
-
-## 7b. Sprint checklist (hackathon)
-
-Code (this repo):
-
-- [x] Wallet API connect + shield / transfer / unshield (`starknetWallet.js`, `PrivacyScreen.jsx`)
-- [x] Capability degrade (version query, not `strk20Balances`)
-- [x] Sepolia gate + switch prompt
-- [x] Honest labels; screening as declined deposit; no gas-sponsorship claim
-- [x] Note maturity lock on transfer/unshield
-- [x] Consent-gated shielded balances on Pool only
-- [x] Tokens tab is off-pool (not ERC-20 / not STRK20)
-- [x] Harvest / Tokens / Pool in the bar; Ledger / Universe / Device under More
-- [x] Empty-wallet **Install Ready X** + wallet test dapp link
-- [x] Local env: `REACT_APP_BACKEND_URL=http://127.0.0.1:8000` (`.env` / `.env.local`, not committed)
-- [ ] `REACT_APP_STRK20_POOL` still empty — fee line degrades until set
-- [ ] Phase 3 shadow accounts — blocked on stable Wallet API
-
-Human (Ready in this browser):
-
-- [ ] Install Ready X, Sepolia, fund a little STRK
-- [ ] Pool → Connect; non-Ready wallets hide actions
-- [ ] Shield (approve then deposit) → wait ~10 blocks → private transfer → unshield
-- [ ] Cross-check: https://starknet-wallet-account.vercel.app/
 
 ## 8. Testing
 

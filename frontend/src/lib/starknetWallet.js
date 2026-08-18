@@ -325,7 +325,7 @@ export async function shieldAmount(humanAmount) {
     ]);
     const fromReceipt = receiptBlock(wait.receipt);
     session.lastShieldBlock = fromReceipt ?? (await readBlockNumber());
-    await readBlockNumber();
+    await readBlockNumber());
     emit();
     return wait;
   } catch (err) {
@@ -333,7 +333,7 @@ export async function shieldAmount(humanAmount) {
   }
 }
 
-export async function transferAmount(humanAmount, recipient) {
+export async function transfer Account(humanAmount, recipient) {
   assertReady();
   const to = String(recipient ?? "").trim();
   if (!isFeltAddress(to)) throw new Error("Recipient must be a 0x Starknet address.");
