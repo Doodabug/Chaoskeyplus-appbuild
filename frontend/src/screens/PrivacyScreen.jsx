@@ -4,7 +4,7 @@ import { Btn, HashLine, Overline, Panel, StatLine } from "../components/ui";
 import { useStarknet } from "../providers/StarknetProvider";
 import {
   NOTE_MATURITY_BLOCKS,
-  SEPOLIA_CHAIN_ID,
+  EXPECTED_CHAIN_ID,
   maxSpendHuman,
 } from "../lib/starknetWalletUtils";
 
@@ -16,12 +16,12 @@ function shortAddr(addr) {
   return addr.length > 16 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr;
 }
 
-function onSepolia(chainId) {
+function onMainnet(chainId) {
   if (!chainId) return false;
   try {
-    return BigInt(chainId) === BigInt(SEPOLIA_CHAIN_ID);
+    return BigInt(chainId) === BigInt(EXPECTED_CHAIN_ID);
   } catch (_) {
-    return String(chainId).toLowerCase().includes("sepolia");
+    return String(chainId).toLowerCase().includes("mainnet");
   }
 }
 
@@ -97,8 +97,7 @@ export default function PrivacyScreen() {
     try {
       const r = await fn();
       setResult({ ...r, kind });
-    } catch (e) {
-      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
+    } catch (e) {\n      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
     } finally {
       setBusy("");
     }
@@ -124,7 +123,7 @@ export default function PrivacyScreen() {
 
   const connected = !!starknet.address;
   const capable = starknet.capable;
-  const sepolia = onSepolia(starknet.chainId);
+  const mainnet = onMainnet(starknet.chainId);
   const locked = starknet.maturityLeft > 0;
   const spendDisabled = !!busy || locked;
 
@@ -144,7 +143,7 @@ export default function PrivacyScreen() {
         {!connected && (
           <>
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Connect Ready on Starknet Sepolia. The wallet holds keys, notes, and
+              Connect Ready on Starknet Mainnet. The wallet holds keys, notes, and
               proofs — this app never sees them.
             </p>
             {starknet.wallets.length === 0 && (
@@ -154,7 +153,7 @@ export default function PrivacyScreen() {
               >
                 <p className="text-[11px] font-mono text-white/55 leading-relaxed">
                   No wallets detected in this browser. Pool needs the Ready X
-                  extension on Sepolia.
+                  extension on Mainnet.
                 </p>
                 <a
                   data-testid="pool-install-ready"
@@ -164,19 +163,6 @@ export default function PrivacyScreen() {
                   className="inline-flex items-center justify-center border border-cyan-400/60 text-cyan-300 hover:border-cyan-200 hover:text-cyan-100 hover:bg-cyan-400/10 px-4 py-2.5 font-mono text-xs uppercase tracking-[0.2em]"
                 >
                   Install Ready X
-                </a>
-                <p className="text-[10px] font-mono text-white/40 leading-relaxed">
-                  Then hard-refresh this tab (Ctrl+Shift+R). Phone apps will not
-                  appear on localhost.
-                </p>
-                <a
-                  data-testid="pool-wallet-test-dapp"
-                  href="https://starknet-wallet-account.vercel.app/"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300/80 hover:text-cyan-200"
-                >
-                  Wallet test dapp
                 </a>
               </div>
             )}
@@ -219,8 +205,8 @@ export default function PrivacyScreen() {
             />
             <StatLine
               label="Network"
-              value={sepolia ? "Sepolia" : starknet.chainId || "—"}
-              valueClass={sepolia ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
+              value={mainnet ? "Mainnet" : starknet.chainId || "—"}
+              valueClass={mainnet ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-network"
             />
             <StatLine
@@ -229,18 +215,18 @@ export default function PrivacyScreen() {
               valueClass={capable ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-capability"
             />
-            {!sepolia && (
+            {!mainnet && (
               <div className="mt-3 space-y-2">
                 <p className="text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
-                  Pool actions are Sepolia-only. Switch the wallet network, then retry.
+                  Pool actions are Mainnet-only. Switch the wallet network, then retry.
                 </p>
                 <Btn
                   intent="primary"
-                  testid="pool-switch-sepolia-btn"
+                  testid="pool-switch-mainnet-btn"
                   onClick={() => onConnect(starknet.wallet)}
                   disabled={!!busy || !starknet.wallet}
                 >
-                  Switch to Sepolia
+                  Switch to Mainnet
                 </Btn>
               </div>
             )}
@@ -258,7 +244,7 @@ export default function PrivacyScreen() {
         </Panel>
       )}
 
-      {connected && capable && sepolia && (
+      {connected && capable && mainnet && (
         <>
           <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
@@ -495,18 +481,8 @@ export default function PrivacyScreen() {
         <p className="text-[12px] font-mono text-white/55 leading-relaxed">
           Shield and unshield amounts are public ERC-20 legs. The fact and
           timing of a pool interaction are public. Private transfers hide who
-          pays whom and how much. This is not a mixer. Activity is never
-          attributed from the transaction sender — that address is the relayer.
+          pays whom and how much. This is not a mixer.
         </p>
-        <a
-          data-testid="pool-wallet-test-dapp-footer"
-          href="https://starknet-wallet-account.vercel.app/"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 inline-block text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300/80 hover:text-cyan-200"
-        >
-          Wallet test dapp
-        </a>
       </Panel>
     </div>
   );

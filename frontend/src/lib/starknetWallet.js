@@ -8,7 +8,7 @@ import {
   DEFAULT_RPC,
   DEFAULT_TOKEN,
   DEFAULT_TOKEN_DECIMALS,
-  SEPOLIA_CHAIN_ID,
+  EXPECTED_CHAIN_ID,
   NOTE_MATURITY_BLOCKS,
   TX_WAIT_MS,
   baseToHuman,
@@ -178,8 +178,8 @@ export async function connectWallet(wallet) {
   const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
   try {
     const writeId = await walletV6.requestChainId(wallet);
-    if (!sameAddress(writeId, SEPOLIA_CHAIN_ID)) {
-      await account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
+    if (!sameAddress(writeId, EXPECTED_CHAIN_ID)) {
+      await account.switchStarknetChain(constants.StarknetChainId.SN_MAIN);
     }
   } catch (_) {
     /* wallet may refuse the switch; PrivacyScreen shows the chain */
