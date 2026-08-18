@@ -3,16 +3,24 @@
 
 export const STRK20_MIN = { major: 0, minor: 10, patch: 0 };
 
-export const DEFAULT_RPC =
-  "https://free-rpc.nethermind.io/sepolia-juno/v0_10";
+export const MAINNET_RPC = "https://free-rpc.nethermind.io/mainnet-juno/v0_10";
+export const SEPOLIA_RPC = "https://free-rpc.nethermind.io/sepolia-juno/v0_10";
+
+export const DEFAULT_RPC = MAINNET_RPC;
 
 // Official STRK ERC-20 — same address on mainnet, Sepolia, and devnet.
 export const DEFAULT_TOKEN =
   "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d";
 
 export const DEFAULT_TOKEN_DECIMALS = 18;
-export const DEFAULT_EXPLORER = "https://sepolia.voyager.online/tx";
+export const MAINNET_EXPLORER = "https://voyager.online/tx";
+export const SEPOLIA_EXPLORER = "https://sepolia.voyager.online/tx";
+export const DEFAULT_EXPLORER = MAINNET_EXPLORER;
+
+export const MAINNET_CHAIN_ID = "0x534e5f4d41494e";
 export const SEPOLIA_CHAIN_ID = "0x534e5f5345504f4c4941";
+export const EXPECTED_CHAIN_ID = MAINNET_CHAIN_ID;
+
 export const TX_WAIT_MS = 120000;
 export const NOTE_MATURITY_BLOCKS = 10;
 
@@ -53,7 +61,7 @@ export function sameAddress(a, b) {
   }
 }
 
-/** Human decimal string → base units as decimal-string FELT (per STRK20 spec). */
+/** Human decimal string → base units as 0x-hex felt. */
 export function humanToBaseHex(human, decimals = DEFAULT_TOKEN_DECIMALS) {
   const raw = String(human ?? "").trim();
   if (!raw || !/^\d+(\.\d+)?$/.test(raw)) {
@@ -66,9 +74,7 @@ export function humanToBaseHex(human, decimals = DEFAULT_TOKEN_DECIMALS) {
   const fracPadded = (fracPart + "0".repeat(decimals)).slice(0, decimals);
   const base = BigInt(wholePart || "0") * 10n ** BigInt(decimals) + BigInt(fracPadded || "0");
   if (base <= 0n) throw new Error("Enter a positive amount.");
-  // FELT accepts both hex and decimal per STRK20 spec; use decimal string —
-  // matches SDK examples and avoids wallets that reject unpadded hex felts.
-  return base.toString();
+  return `0x${base.toString(16)}`;
 }
 
 export function baseToHuman(base, decimals = DEFAULT_TOKEN_DECIMALS) {
@@ -96,7 +102,7 @@ export function classifyPoolError(err, fallback = "Pool action failed.") {
     return {
       kind: "not_registered",
       message:
-        "First-time use: Ready needs to register your account in the pool. This happens once, then Shield works. Follow the Ready wallet prompts.",
+        "This account is not registered in the pool. Ready registers on first use — retry after the wallet finishes registration.",
     };
   }
   if (code === 119 || /INSUFFICIENT_PRIVATE_BALANCE/i.test(msg)) {
