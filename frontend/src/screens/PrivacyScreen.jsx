@@ -4,7 +4,7 @@ import { Btn, HashLine, Overline, Panel, StatLine } from "../components/ui";
 import { useStarknet } from "../providers/StarknetProvider";
 import {
   NOTE_MATURITY_BLOCKS,
-  SEPOLIA_CHAIN_ID,
+  EXPECTED_CHAIN_ID,
   maxSpendHuman,
 } from "../lib/starknetWalletUtils";
 
@@ -16,12 +16,12 @@ function shortAddr(addr) {
   return addr.length > 16 ? `${addr.slice(0, 10)}â€¦${addr.slice(-6)}` : addr;
 }
 
-function onSepolia(chainId) {
+function onMainnet(chainId) {
   if (!chainId) return false;
   try {
-    return BigInt(chainId) === BigInt(SEPOLIA_CHAIN_ID);
+    return BigInt(chainId) === BigInt(EXPECTED_CHAIN_ID);
   } catch (_) {
-    return String(chainId).toLowerCase().includes("sepolia");
+    return String(chainId).toLowerCase().includes("mainnet");
   }
 }
 
@@ -93,41 +93,11 @@ export default function PrivacyScreen() {
   async function runAction(kind, fn) {
     setError(null);
     setResult(null);
-    if (previewMode && ["shield", "transfer", "unshield"].includes(kind)) {
-      setError({
-        kind: "preview_mode",
-        message:
-          "Preview mode: STRK20 privacy is mainnet-only. Ready will predict failure on Sepolia. Flip REACT_APP_STARKNET_RPC to mainnet to execute this for real.",
-      });
-      return;
-    }
     setBusy(kind);
     try {
       const r = await fn();
       setResult({ ...r, kind });
-      // On success, clear the inputs for this action and refresh balance if we had one
-      if (r?.status === "accepted" || r?.status === "submitted") {
-        if (kind === "shield") setShieldAmt("");
-        if (kind === "transfer") {
-          setXferAmt("");
-          setXferTo("");
-        }
-        if (kind === "unshield") {
-          setWithdrawAmt("");
-          setWithdrawTo("");
-        }
-        // Silently refresh balance if user has already opted in
-        if (balance) {
-          try {
-            const b = await starknet.fetchBalances();
-            setBalance(b);
-          } catch (_) {
-            /* balance refresh is best-effort; don't override the success result */
-          }
-        }
-      }
-    } catch (e) {
-      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
+    } catch (e) {\n      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
     } finally {
       setBusy("");
     }
@@ -153,47 +123,12 @@ export default function PrivacyScreen() {
 
   const connected = !!starknet.address;
   const capable = starknet.capable;
-  const sepolia = onSepolia(starknet.chainId);
+  const mainnet = onMainnet(starknet.chainId);
   const locked = starknet.maturityLeft > 0;
   const spendDisabled = !!busy || locked;
-  // The known mainnet privacy-pool address. If REACT_APP_STRK20_POOL matches this
-  // AND the wallet is on Sepolia, pool actions will predict failure.
-  const MAINNET_POOL_ADDR =
-    "0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a";
-  const poolAddressLooksSepolia = (() => {
-    if (!pool) return true; // Not configured â€” treat as OK; STRK20 wallet API doesn't need it for shield
-    try {
-      return BigInt(pool) !== BigInt(MAINNET_POOL_ADDR);
-    } catch (_) {
-      return true;
-    }
-  })();
-  // Preview mode = the app RPC targets Sepolia. STRK20 privacy is mainnet-only,
-  // so on-Sepolia actions cannot actually shield/transfer/unshield. We keep the
-  // UI wired so users see the full integration path; buttons soft-fail.
-  const previewMode = /sepolia/i.test(String(starknet.rpcUrl || ""));
 
   return (
     <div className="space-y-4">
-      {previewMode && (
-        <Panel title="PREVIEW MODE :: SEPOLIA" testid="pool-preview-banner">
-          <p className="text-[12px] font-mono text-[#FFB86B] leading-relaxed">
-            STRK20 privacy is live on{" "}
-            <span className="text-white/90">Starknet mainnet</span> only. This
-            preview shows the wallet-integration path â€” connect, capability
-            probe, action UX â€” without spending real STRK. Actual shield /
-            transfer / unshield needs a mainnet RPC.
-          </p>
-          <p className="text-[11px] font-mono text-white/55 leading-relaxed mt-2">
-            Ready to flip live? Set{" "}
-            <code className="text-cyan-300">REACT_APP_STARKNET_RPC</code> to a
-            mainnet endpoint (see{" "}
-            <span className="text-cyan-300">docs/mainnet-transaction-plan.md</span>
-            ), keep <code className="text-cyan-300">REACT_APP_STRK20_POOL</code>{" "}
-            at the mainnet pool, switch Ready to Mainnet, and reconnect.
-          </p>
-        </Panel>
-      )}
       <Panel
         title="WALLET"
         testid="pool-wallet-panel"
@@ -208,15 +143,27 @@ export default function PrivacyScreen() {
         {!connected && (
           <>
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Connect Ready on Starknet Sepolia. The wallet holds keys, notes, and
+              Connect Ready on Starknet Mainnet. The wallet holds keys, notes, and
               proofs â€” this app never sees them.
             </p>
             {starknet.wallets.length === 0 && (
               <div
                 data-testid="pool-no-wallets"
-                className="text-[11px] font-mono text-white/45 uppercase tracking-[0.18em] py-4 text-center"
+                className="border border-white/10 px-3 py-4 text-center space-y-3"
               >
-                No wallets detected. Install the Ready extension.
+                <p className="text-[11px] font-mono text-white/55 leading-relaxed">
+                  No wallets detected in this browser. Pool needs the Ready X
+                  extension on Mainnet.
+                </p>
+                <a
+                  data-testid="pool-install-ready"
+                  href="https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center border border-cyan-400/60 text-cyan-300 hover:border-cyan-200 hover:text-cyan-100 hover:bg-cyan-400/10 px-4 py-2.5 font-mono text-xs uppercase tracking-[0.2em]"
+                >
+                  Install Ready X
+                </a>
               </div>
             )}
             <ul className="space-y-2">
@@ -232,252 +179,45 @@ export default function PrivacyScreen() {
                     intent="primary"
                     testid={`pool-connect-${w.id || w.name}`}
                     onClick={() => onConnect(w)}
-                    disabled={!!busy}
-                  >
-                    <Plugs size={12} className="inline mr-1.5 -mt-0.5" />
-                    {busy === "connect" ? "Connecting" : "Connect"}
-                  </Btn>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+    -š\ØX›Y^ÈHX\Ş_Bˆ‚ˆYÜÈÚ^™O^ÌLŸHÛ\ÜÓ˜[YOHš[›[™H\‹LKH[]LHˆÏ‚ˆØ\ŞHOOH˜ÛÛ›™XİˆÈÛÛ›™Xİ[™ÈˆˆÛÛ›™XİŸBˆĞ‚ˆÛO‚ˆ
+J_Bˆİ[‚ˆÏ‚ˆ
+_B‚ˆØÛÛ›™XİY	‰ˆ
+ˆ‚ˆİ][™BˆX™[H•Ø[]‚ˆ˜[YO^Üİ\šÛ™]Ø[]˜[Y_Bˆ˜[YPÛ\ÜÏH^XŞX[‹LÌ‚ˆ\İYHœÛÛ]Ø[][˜[YH‚ˆÏ‚ˆİ][™BˆX™[HY™\ÜÈ‚ˆ˜[YO^ÜÚÜYŠİ\šÛ™]˜Y™\ÜÊ_Bˆ\İYHœÛÛXY™\ÜÈ‚ˆÏ‚ˆİ][™BˆX™[H“™]ÛÜšÈ‚ˆ˜[YO^ÛXZ[›™]È“XZ[›™]ˆˆİ\šÛ™]˜ÚZ[’Y¸ %ŸBˆ˜[YPÛ\ÜÏ^ÛXZ[›™]È^VÈÍĞQ‘P—Hˆˆ^VÈÑ‘WHŸBˆ\İYHœÛÛ[™]ÛÜšÈ‚ˆÏ‚ˆİ][™BˆX™[H”Õ’ÌŒTH‚ˆ˜[YO^ØØ\X›HÈ˜Ø\X›Hˆˆ[œİ\ÜYŸBˆ˜[YPÛ\ÜÏ^ØØ\X›HÈ^VÈÍĞQ‘P—Hˆˆ^VÈÑ‘WHŸBˆ\İYHœÛÛXØ\Xš[]H‚ˆÏ‚ˆÈ[XZ[›™]	‰ˆ
+ˆ]ˆÛ\ÜÓ˜[YOH›]LÈÜXÙK^KLˆ‚ˆÛ\ÜÓ˜[YOH^VÌL\H›Û[[Û›È^VÈÑ‘WHXY[™Ë\™[^Y‚ˆÛÛXİ[ÛœÈ\™HXZ[›™][Û›KˆİÚ]ÚHØ[]™]ÛÜšË[ˆ™]K‚ˆÜ‚ˆ‚ˆ[[Hœš[X\H‚ˆ\İYHœÛÛ\İÚ]Ú[XZ[›™]Xˆ‚ˆÛÛXÚÏ^Ê
+HOˆÛÛÛ›™Xİ
+İ\šÛ™]Ø[]
+_Bˆ\ØX›Y^ÈHX\ŞH\İ\šÛ™]Ø[]Bˆ‚ˆİÚ]ÚÈXZ[›™]ˆĞ‚ˆÙ]‚ˆ
+_BˆÏ‚ˆ
+_BˆÔ[™[‚‚ˆØÛÛ›™XİY	‰ˆXØ\X›H	‰ˆ
+ˆ[™[]OH•S”ÕTÔ•QĞSUˆ\İYHœÛÛ][œİ\ÜY‚ˆÛ\ÜÓ˜[YOH^VÌLœH›Û[[Û›È^]Ú]KÍÌXY[™Ë\™[^Y‚ˆ™YYÈHÕ’ÌŒXØ\X›HØ[]
+™XYJKˆœ˜X]›ÜËš]K[™İ\‚ˆØ[]È\™H›İ™\\™Y›ÜˆÛÛXİ[ÛœËˆÚY[˜[œÙ™\‹[™ˆ[œÚY[\™HY[‹‚ˆÜ‚ˆÔ[™[‚ˆ
+_B‚ˆØÛÛ›™XİY	‰ˆØ\X›H	‰ˆXZ[›™]	‰ˆ
+ˆ‚ˆ[™[]OH”ÒQSQSSÑHˆ\İYHœÛÛX˜[[˜ÙK\[™[‚ˆÛ\ÜÓ˜[YOH^VÌLœH›Û[[Û›È^]Ú]KÍŒXY[™Ë\™[^YX‹M‚ˆHØ[]Ú[\ÚÈÈÚ\™H[İ\ˆÚY[YÕ’È˜[[˜ÙKˆ\È\ˆÙ\È›İ™XY›İ\ÈÜˆÙ^\ÎÈÚÚ\\ÈYˆ[İHÛ›HØ[ÈXİ‚ˆÜ‚ˆØ˜[[˜ÙHÈ
+ˆİ][™BˆX™[H”ÚY[YÕ’È‚ˆ˜[YO^Ø˜[[˜ÙKš[X[ŸBˆ˜[YPÛ\ÜÏH^XŞX[‹LÌ‚ˆ\İYHœÛÛX˜[[˜ÙK]˜[YH‚ˆÏ‚ˆ
+Hˆ
+ˆ‚ˆ[[H™Y˜][‚ˆ\İYHœÛÛX˜[[˜ÙKXˆ‚ˆÛÛXÚÏ^ÛÛ”ÚİĞ˜[[˜Ù_Bˆ\ØX›Y^ÈHX\Ş_Bˆ‚ˆ^YHÚ^™O^ÌLŸHÛ\ÜÓ˜[YOHš[›[™H\‹LKH[]LHˆÏ‚ˆØ\ŞHOOH˜˜[[˜ÙHˆÈ•ØZ][™ÈÛˆØ[]ˆˆ”ÚİÈÚY[Y˜[[˜ÙHŸBˆĞ‚ˆ
+_BˆÔ[™[‚‚ˆ[™[]OH”ÒQSˆSSÕS•P“PÈˆ\İYHœÛÛ\ÚY[\[™[‚ˆÛ\ÜÓ˜[YOH^VÌLœH›Û[[Û›È^]Ú]KÍŒXY[™Ë\™[^YX‹M‚ˆX›XÈÕ’È8¡¤ˆ[˜Ü\Y›İKˆH\ÜÚ][[İ[İ^\ÈX›XË‚ˆÈ›İ[™H\ÈÚ]Hš]˜]H˜[œÙ™\‹‚ˆÜ‚ˆX™[Û\ÜÓ˜[YOH˜›ØÚÈX‹M‚ˆİ™\›[™HÛ\ÜÓ˜[YOH›X‹LH[[İ[
+Õ’ÊOÓİ™\›[™O‚ˆ[œ]ˆ]K]\İYHœÛÛX[[İ[Z[œ]‚ˆ\OH^‚ˆ[œ][ÙOH™XÚ[X[‚ˆ˜[YO^ÜÚY[[]BˆÛÚ[™ÙO^ÊJHOˆÙ]ÚY[[]
+K\™Ù]˜[YJ_BˆÛ\ÜÓ˜[YO^Ú[œ]Û\ÜßBˆÏ‚ˆÛX™[‚ˆ]ˆÛ\ÜÓ˜[YOH˜›Ü™\ˆ›Ü™\‹]Ú]KÌL™Ë]Ú]KÖÌŒ×HLÈKLÈX‹MÜXÙK^KLˆ‚ˆÛ\ÜÓ˜[YOH^VÌL\H›Û[[Û›È^]Ú]KÍMHXY[™Ë\™[^Y‚ˆHØ[]Ú[›Û\ÚXÙNˆš\œİHX›XÈTËLŒ\›İ™K[‚ˆHš]˜]H\ÜÚ]ˆ›İ\™H™\]Z\™Y‚ˆÜ‚ˆÛ\ÜÓ˜[YOH^VÌL\H›Û[[Û›È^]Ú]KÍMHXY[™Ë\™[^Y‚ˆÙYOË˜]˜Z[X›BˆÈÛÛ™YH	Ù™YKš[X[ŸHÕ’È\ˆš]˜]HÜ\˜][Û‹ˆİX˜XİYœ›ÛHPVˆÙ\\˜]Hœ›ÛH™]ÛÜšÈØ\Ë˜ˆˆ”ÛÛ™YH[˜]˜Z[X›H[[‘PPÕĞTÔÕ’ÌŒÔÓÓ\ÈÙ]ˆÙ\\˜]Hœ›ÛH™]ÛÜšÈØ\ËˆŸBˆÜ‚ˆÙ]‚ˆ‚ˆ[[Hœš[X\H‚ˆ\İYHœÛÛ\ÚY[Xˆ‚ˆÛÛXÚÏ^Ê
+HOˆ[Xİ[ÛŠœÚY[‹
 
-        {connected && (
-          <>
-            <StatLine
-              label="Wallet"
-              value={starknet.walletName}
-              valueClass="text-cyan-300"
-              testid="pool-wallet-name"
-            />
-            <StatLine
-              label="Address"
-              value={shortAddr(starknet.address)}
-              testid="pool-address"
-            />
-            <StatLine
-              label="Network"
-              value={sepolia ? "Sepolia" : starknet.chainId || "â€”"}
-              valueClass={sepolia ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
-              testid="pool-network"
-            />
-            <StatLine
-              label="STRK20 API"
-              value={capable ? "capable" : "unsupported"}
-              valueClass={capable ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
-              testid="pool-capability"
-            />
-            {!sepolia && (
-              <div className="mt-3 space-y-2">
-                <p className="text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
-                  Pool actions are Sepolia-only. Switch the wallet network, then retry.
-                </p>
-                <Btn
-                  intent="primary"
-                  testid="pool-switch-sepolia-btn"
-                  onClick={async () => {
-                    setError(null);
-                    setBusy("switch");
-                    try {
-                      await starknet.switchToSepolia();
-                    } catch (e) {
-                      setError({
-                        kind: e?.kind || "switch_failed",
-                        message: e?.message || "Could not switch network.",
-                      });
-                    } finally {
-                      setBusy("");
-                    }
-                  }}
-                  disabled={!!busy || !starknet.wallet}
-                >
-                  {busy === "switch" ? "Waiting on wallet" : "Switch to Sepolia"}
-                </Btn>
-              </div>
-            )}
-          </>
-        )}
-      </Panel>
+HOˆİ\šÛ™]œÚY[
+ÚY[[]
+J_Bˆ\ØX›Y^ÈHX\ŞH\ÚY[[]BˆÛ\ÜÓ˜[YOHËY[‚ˆ‚ˆÚY[ÚXÚÈÚ^™O^ÌMHÙZYÚH˜›ÛˆÛ\ÜÓ˜[YOHš[›[™H\‹LKH[]LHˆÏ‚ˆØ\ŞHOOHœÚY[ˆÈ]ØZ][™ÈØ[]È›ÛÙˆˆˆ”ÚY[ŸBˆĞ‚ˆÔ[™[‚‚ˆÛØÚÙY	‰ˆ
+ˆ]ˆˆ]K]\İYHœÛÛ[X]\š]H‚ˆÛ\ÜÓ˜[YOH˜›Ü™\ˆ˜›Ü™\‹XŞX[‹MÌÌ™ËXŞX[‹MÍHLÈKLˆ^VÌL\H›Û[[Û›È^XŞX[‹LŒ‚ˆœ™\ÚHÚY[Y›İ\ÈX]\™H[ˆÓ“ÕWÓPUT’UWĞ“ĞÒÔßH›ØÚÜË‚ˆ˜[œÙ™\ˆ[™[œÚY[ØÚÙY›ÜˆÜİ\šÛ™]›X]\š]SYH[Ü™BˆÜİ\šÛ™]›X]\š]SYOOHHÈˆ›ØÚÈˆˆˆ›ØÚÜÈŸK‚ˆÙ]‚ˆ
+_B‚ˆ[™[]OH”’UUHS”Ñ‘TˆˆQSˆˆ\İYHœÛÛ]˜[œÙ™\‹\[™[‚ˆÛ\ÜÓ˜[YOH^VÌLœH›Û[[Û›È^]Ú]KÍŒXY[™Ë\™[^YX‹M‚ˆš]˜]H˜[œÙ™\ˆ
+Ù[™\‹™XÙZ]™\‹[[İ[Y[ŠKˆ™XÚ\Y[]\İˆ[™XYH™H™YÚ\İ\™Yˆ›İÛÛ\ÜÙYÚ]HÚY[‚ˆÜ‚ˆX™[Û\ÜÓ˜[YOH˜›ØÚÈX‹LÈ‚ˆİ™\›[™HÛ\ÜÓ˜[YOH›X‹LH”™XÚ\Y[Óİ™\›[™O‚ˆ[œ]ˆ]K]\İYHœÛÛ]˜[œÙ™\‹]È‚ˆ\OH^‚ˆ˜[YO^Ş™\•ßBˆÛÚ[™ÙO^ÊJHOˆÙ]™\•ÊK\™Ù]˜[YJ_BˆXÙZÛ\HŒ8 )ˆ‚ˆÛ\ÜÓ˜[YO^Ú[œ]Û\ÜßBˆ\ØX›Y^ÜÜ[™\ØX›YBˆÏ‚ˆÛX™[‚ˆX™[Û\ÜÓ˜[YOH˜›ØÚÈX‹M‚ˆ]ˆÛ\ÜÓ˜[YOH™›^][\ËXÙ[\ˆ\İYKX™]ÙY[ˆX‹LH‚ˆİ™\›[™O[[İ[
+Õ’ÊOÓİ™\›[™O‚ˆØ˜[[˜ÙH	‰ˆ
+ˆ]Û‚ˆ\OH˜]Ûˆ‚ˆ]K]\İYHœÛÛ]˜[œÙ™\‹[X^‚ˆÛ\ÜÓ˜[YOH^VÌLH›Û[[Û›È\\˜Ø\ÙH˜XÚÚ[™ËVÌŒN[WH^XŞX[‹LÌ‚ˆÛÚ[™ÙO^Ê
+HOˆ\SX^
+Ù]™\[]
+_Bˆ‚ˆX^ˆØ]Û‚ˆ
+_BˆÙ]‚ˆ[œ]ˆ]K]\İYHœÛÛ]˜[œÙ™\‹X[[İ[‚ˆ\OH^‚ˆ[œ][ÙOH™XÚ[X[‚ˆ˜[YO^Ş™\[]BˆÛÚ[™ÙO^ÊJHOˆÙ]™\[]
+K\™Ù]˜[YJ_BˆÛ\ÜÓ˜[YO^Ú[œ]Û\ÜßBˆ\ØX›Y^ÜÜ[™\ØX›YBˆÏ‚ˆÛX™[‚ˆ‚ˆ[[Hœš[X\H‚ˆ\İYHœÛÛ]˜[œÙ™\‹Xˆ‚ˆÛÚ[™ÙO^Ê
+HOˆ[Xİ[ÛŠ˜[œÙ™\ˆ‹
 
-      {connected && !capable && (
-        <Panel title="LEGACY WALLET" testid="pool-unsupported">
-          <p className="text-[12px] font-mono text-white/70 leading-relaxed">
-            This wallet doesn't advertise the STRK20 Wallet API (spec â‰¥ 0.10).
-            You can still try shield / transfer / unshield below â€” the wallet
-            will reject the request if it can't handle it. For full support,
-            use <span className="text-cyan-300">Ready</span>.
-          </p>
-        </Panel>
-      )}
-
-      {connected && sepolia && (
-        <>
-          {!poolAddressLooksSepolia && (
-            <Panel title="POOL ADDRESS :: WARNING" testid="pool-address-warning">
-              <p className="text-[12px] font-mono text-[#FFB86B] leading-relaxed mb-2">
-                Your <code className="text-cyan-300">REACT_APP_STRK20_POOL</code>
-                {" "}is the <span className="text-[#FF6B8A]">mainnet</span> address.
-                Ready is on Sepolia, so pool calls will predict failure ("Unable
-                to estimate transaction fees").
-              </p>
-              <p className="text-[11px] font-mono text-white/60 leading-relaxed">
-                Options:{" "}
-                <span className="text-white/85">
-                  (a) deploy or point to a Sepolia pool from starknet-privacy-toolkit,{" "}
-                  (b) switch this app to mainnet by setting{" "}
-                  <code className="text-cyan-300">REACT_APP_STARKNET_RPC</code>{" "}
-                  to a mainnet RPC and reconnecting your wallet on mainnet, or{" "}
-                  (c) try Shield without setting pool address â€” the STRK20 wallet
-                  API routes deposits internally and does not need the dapp to
-                  know the pool address.
-                </span>
-              </p>
-            </Panel>
-          )}
-
-          <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              The wallet will ask to share your shielded STRK balance. This app
-              does not read notes or keys; skip this if you only want to act.
-            </p>
-            {balance ? (
-              <StatLine
-                label="Shielded STRK"
-                value={balance.human}
-                valueClass="text-cyan-300"
-                testid="pool-balance-value"
-              />
-            ) : (
-              <Btn
-                intent="default"
-                testid="pool-balance-btn"
-                onClick={onShowBalance}
-                disabled={!!busy}
-              >
-                <Eye size={12} className="inline mr-1.5 -mt-0.5" />
-                {busy === "balance" ? "Waiting on wallet" : "Show shielded balance"}
-              </Btn>
-            )}
-          </Panel>
-
-          <Panel title="SHIELD :: AMOUNT PUBLIC" testid="pool-shield-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Public STRK â†’ encrypted note. The deposit amount stays public.
-              Do not bundle this with a private transfer.
-            </p>
-            <label className="block mb-4">
-              <Overline className="mb-1">Amount (STRK)</Overline>
-              <input
-                data-testid="pool-amount-input"
-                type="text"
-                inputMode="decimal"
-                value={shieldAmt}
-                onChange={(e) => setShieldAmt(e.target.value)}
-                className={inputClass}
-              />
-            </label>
-            <div className="border border-white/10 bg-white/[0.03] px-3 py-3 mb-4 space-y-2">
-              <p className="text-[11px] font-mono text-white/55 leading-relaxed">
-                The wallet will prompt twice: first a public ERC-20 approve, then
-                the private deposit. Both are required.
-              </p>
-              <p className="text-[11px] font-mono text-white/55 leading-relaxed">
-                {fee?.available
-                  ? `Pool fee ${fee.human} STRK per private operation. Subtracted from MAX. Separate from network gas.`
-                  : "Pool fee unavailable until REACT_APP_STRK20_POOL is set. Separate from network gas."}
-              </p>
-            </div>
-            <Btn
-              intent="primary"
-              testid="pool-shield-btn"
-              onClick={() => runAction("shield", () => starknet.shield(shieldAmt))}
-              disabled={!!busy || !shieldAmt}
-              className="w-full"
-            >
-              <ShieldCheck size={14} weight="bold" className="inline mr-1.5 -mt-0.5" />
-              {busy === "shield" ? "Awaiting wallet / proof" : "Shield"}
-            </Btn>
-          </Panel>
-
-          {locked && (
-            <div
-              data-testid="pool-maturity"
-              className="border border-cyan-400/30 bg-cyan-400/5 px-3 py-2 text-[11px] font-mono text-cyan-200"
-            >
-              Freshly shielded notes mature in ~{NOTE_MATURITY_BLOCKS} blocks.
-              Transfer and unshield locked for {starknet.maturityLeft} more
-              {starknet.maturityLeft === 1 ? " block" : " blocks"}.
-            </div>
-          )}
-
-          <Panel title="PRIVATE TRANSFER :: HIDDEN" testid="pool-transfer-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Private transfer (sender, receiver, amount hidden). Recipient must
-              already be registered. Not composed with a shield.
-            </p>
-            <label className="block mb-3">
-              <Overline className="mb-1">Recipient</Overline>
-              <input
-                data-testid="pool-transfer-to"
-                type="text"
-                value={xferTo}
-                onChange={(e) => setXferTo(e.target.value)}
-                placeholder="0xâ€¦"
-                className={inputClass}
-              />
-            </label>
-            <label className="block mb-4">
-              <div className="flex items-center justify-between mb-1">
-                <Overline>Amount (STRK)</Overline>
-                {balance && (
-                  <button
-                    type="button"
-                    data-testid="pool-transfer-max"
-                    className="text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300"
-                    onClick={() => applyMax(setXferAmt)}
-                  >
-                    Max
-                  </button>
-                )}
-              </div>
-              <input
-                data-testid="pool-transfer-amount"
-                type="text"
-                inputMode="decimal"
-                value={xferAmt}
-                onChange={(e) => setXferAmt(e.target.value)}
-                className={inputClass}
-              />
-            </label>
-            <Btn
-              intent="primary"
-              testid="pool-transfer-btn"
-              onClick={() => runAction("transfer", () => starknet.transfer(xferAmt, xferTo))}
-              disabled={spendDisabled || !xferAmt || !xferTo}
-              className="w-full"
-            >
-              <ArrowUpRight size={14} className="inline mr-1.5 -mt-0.5" />
-              {busy === "transfer" ? "Awaiting wallet / proof" : "Private transfer"}
-            </Btn>
-          </Panel>
-
-          <Panel title="UNSHIELD :: AMOUNT PUBLIC" testid="pool-unshield-panel">
-            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Shield / unshield (amount public). Withdraws STRK to a public
-              address. Defaults to your connected wallet.
-            </p>
-            <label className="block mb-3">
-              <Overline className="mb-1">Public recipient</Overline>
-              <input
-                data-testid="pool-unshield-to"
-                type="text"
-                value={withdrawTo}
-                onChange={(e) => setWithdrawTo(e.target.value)}
-                placeholder={starknet.address || "0xâ€¦"}
-                className={inputClass}
-              />
-            </label>
+HOˆİ\šÛ™]˜[œÙ™\Š™\[]™\•ÊJ_Bˆ\ØX›Y^ÜÜ[™\ØX›Y^™\[]^™\•ßBˆÛ\ÜÓ˜[YOHËY[‚ˆ‚ˆ\œ›İÕ\šYÚÚ^™O^ÌMHÛ\ÜÓ˜[YOHš[›[™H\‹LKH[]LHˆÏ‚ˆØ\ŞHOOH˜[œÙ™\ˆˆÈ]ØZ][™ÈØ[]È›ÛÙˆˆˆ”š]˜]H˜[œÙ™\ˆŸBˆĞ‚ˆÔ[™[‚‚ˆ[™[]OH•S”ÒQSˆSSÕS•P“PÈˆ\İYHœÛÛ][œÚY[\[™[‚ˆÛ\ÜÓ˜[YOH^VÌLœH›Û[[Û›È^]Ú]KÍŒXY[™Ë\™[^YX‹M‚ˆÚY[È[œÚY[
+[[İ[X›XÊKˆÚ]˜]ÜÈÕ’ÈÈHX›XÂˆY™\ÜËˆY˜][ÈÈ[İ\ˆÛÛ›™XİYØ[]‚ˆÜ‚ˆX™[Û\ÜÓ˜[YOH˜›ØÚÈX‹LÈ‚ˆİ™\›[™HÛ\ÜÓ˜[YOH›X‹LH”X›XÈ™XÚ\Y[Óİ™\›[™O‚ˆ[œ]ˆ]K]\İYHœÛÛ][œÚY[]È‚ˆ^H^‚ˆ˜[YO^İÚ]˜]ÕÈœŸBˆÛÚ[™ÙO^ÊJHOˆÙ]Ú]˜]ÕÊK\™Ù]˜[YJ_BˆXÙZÛ\^Üİ\šÛ™]˜Y™\ÜÈŒ8 &ŸBˆÛ\ÜÓ˜[YO^Ú[œ]Û\ÜßBˆ\ØX›Y^ÜÜ[™\ØX›YBˆÏ‚ˆåi·¥>
             <label className="block mb-4">
               <div className="flex items-center justify-between mb-1">
                 <Overline>Amount (STRK)</Overline>
@@ -486,7 +226,7 @@ export default function PrivacyScreen() {
                     type="button"
                     data-testid="pool-unshield-max"
                     className="text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300"
-                    onClick={() => applyMax(setWithdrawAmt)}
+                    onChange={() => applyMax(setWithdrawAmt)}
                   >
                     Max
                   </button>
@@ -494,17 +234,18 @@ export default function PrivacyScreen() {
               </div>
               <input
                 data-testid="pool-unshield-amount"
-                type="text"
+                text="text"
                 inputMode="decimal"
                 value={withdrawAmt}
                 onChange={(e) => setWithdrawAmt(e.target.value)}
                 className={inputClass}
+                disabled={spendDisabled}
               />
             </label>
             <Btn
               intent="primary"
               testid="pool-unshield-btn"
-              onClick={() =>
+              onChange={() =>
                 runAction("unshield", () =>
                   starknet.unshield(withdrawAmt, withdrawTo || starknet.address)
                 )
@@ -522,16 +263,15 @@ export default function PrivacyScreen() {
         <div
           data-testid="pool-error"
           data-kind={error.kind}
-          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed"
-        >
+          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
           {error.kind === "screening"
             ? error.message
-            : `ERR :: ${error.message}`}
+            : `ERR :: ${error.message}`u}
         </div>
       )}
 
       {result && (
-        <Panel title={`${(result.kind || "action").toUpperCase()} RESULT`} testid="pool-result-panel">
+        <Panel title=`{${(result.kind || "action").toUpperCase()} RESULT` testid="pool-result-panel">
           <StatLine
             label="Status"
             value={result.status === "accepted" ? "accepted" : "submitted"}
@@ -540,7 +280,7 @@ export default function PrivacyScreen() {
           />
           <div className="py-2">
             <Overline className="mb-1">Transaction</Overline>
-            <HashLine testid="pool-tx-hash" value={result.hash || "â€”"} />
+            <HashLine testid="pool-tx-hash" value={result.hash || "â€•"} />
           </div>
           {result.explorer && (
             <a
@@ -556,7 +296,7 @@ export default function PrivacyScreen() {
           )}
           {result.status === "submitted" && (
             <p className="mt-3 text-[11px] font-mono text-white/45 leading-relaxed">
-              Confirmation timed out. The transaction was submitted â€” check the
+              Confirmation timed out. The transaction was submitted â†’ check the
               explorer.
             </p>
           )}
@@ -567,8 +307,7 @@ export default function PrivacyScreen() {
         <p className="text-[12px] font-mono text-white/55 leading-relaxed">
           Shield and unshield amounts are public ERC-20 legs. The fact and
           timing of a pool interaction are public. Private transfers hide who
-          pays whom and how much. This is not a mixer. Activity is never
-          attributed from the transaction sender â€” that address is the relayer.
+          pays whom and how much. This is not a mixer.
         </p>
       </Panel>
     </div>
