@@ -8,7 +8,7 @@ import {
   DEFAULT_RPC,
   DEFAULT_TOKEN,
   DEFAULT_TOKEN_DECIMALS,
-  SEPOLIA_CHAIN_ID,
+  EXPECTED_CHAIN_ID,
   NOTE_MATURITY_BLOCKS,
   TX_WAIT_MS,
   baseToHuman,
@@ -113,34 +113,11 @@ export function subscribeSession(fn) {
   return () => listeners.delete(fn);
 }
 
-function legacyInjectedWallets() {
-  if (typeof window === "undefined") return [];
-  // Fall back to window.ready ?? window.starknet ?? window.starknet_argentX ?? window.starknet_braavos
-  const found = [];
-  const seen = new Set();
-  const push = (w, fallbackId, fallbackName) => {
-    if (!w || seen.has(w)) return;
-    seen.add(w);
-    found.push({
-      ...w,
-      id: w.id || fallbackId,
-      name: w.name || fallbackName,
-    });
-  };
-  push(window.ready, "ready", "Ready");
-  push(window.starknet, "starknet", "Starknet Wallet");
-  push(window.starknet_argentX, "argentX", "Argent X");
-  push(window.starknet_braavos, "braavos", "Braavos");
-  return found;
-}
-
 export function initWalletStore() {
   if (session.store) return session.store;
   session.store = createStore();
   const refresh = () => {
-    const discovered = session.store.getWallets();
-    // If modern Wallet Standard finds nothing, fall back to legacy window injections
-    session.wallets = discovered.length > 0 ? discovered : legacyInjectedWallets();
+    session.wallets = session.store.getWallets();
     emit();
   };
   session.storeUnsub = session.store.subscribe(refresh);
@@ -163,27 +140,6 @@ export async function readWalletApiVersions(wallet) {
   }
 }
 
-async function readChainId(wallet, account) {
-  // Preferred: account.getChainId() (uses starknet.js WalletAccountV6)
-  try {
-    const cid = account ? await account.getChainId() : "";
-    if (cid) return String(cid);
-  } catch (e) {
-    console.warn("[starknetWallet] account.getChainId failed:", e?.message || e);
-  }
-  // Fallback 1: ask the wallet directly via Wallet API
-  try {
-    const cid = await walletV6.requestChainId(wallet);
-    if (cid) return String(cid);
-  } catch (e) {
-    console.warn("[starknetWallet] walletV6.requestChainId failed:", e?.message || e);
-  }
-  // Fallback 2: some legacy wallets expose chainId on the injection object
-  const legacyId = wallet?.chainId || wallet?.provider?.chainId;
-  if (legacyId) return String(legacyId);
-  return "";
-}
-
 async function applyConnected(wallet, account) {
   if (session.changeUnsub) {
     try {
@@ -196,7 +152,11 @@ async function applyConnected(wallet, account) {
   session.wallet = wallet;
   session.account = account;
   session.address = account?.address || "";
-  session.chainId = await readChainId(wallet, account);
+  try {
+    session.chainId = account ? await account.getChainId() : "";
+  } catch (_) {
+    session.chainId = "";
+  }
   session.apiVersions = await readWalletApiVersions(wallet);
   session.capable = isStrk20Capable(session.apiVersions);
   if (account?.onChange) {
@@ -216,51 +176,15 @@ export async function connectWallet(wallet) {
   if (!wallet) throw new Error("Pick a wallet.");
   initWalletStore();
   const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
-  await applyConnected(wallet, account);
-  // Try auto-switch if we detected a non-Sepolia chain
-  if (session.chainId && !sameAddress(session.chainId, SEPOLIA_CHAIN_ID)) {
-    try {
-      await switchToSepolia();
-    } catch (_) {
-      /* switch failed; user can retry from the UI, which will surface the error */
-    }
-  }
-  return getSession();
-}
-
-/** Explicit switch attempt. Surfaces errors so the UI can show a red message. */
-export async function switchToSepolia() {
-  if (!session.wallet) throw new Error("Connect a wallet first.");
   try {
-    // Prefer wallet-level switch (works even before WalletAccountV6 refreshes)
-    if (typeof walletV6.switchStarknetChain === "function") {
-      await walletV6.switchStarknetChain(session.wallet, constants.StarknetChainId.SN_SEPOLIA);
-    } else if (session.account?.switchStarknetChain) {
-      await session.account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
-    } else {
-      throw new Error("Wallet does not expose switchStarknetChain.");
+    const writeId = await walletV6.requestChainId(wallet);
+    if (!sameAddress(writeId, EXPECTED_CHAIN_ID)) {
+      await account.switchStarknetChain(constants.StarknetChainId.SN_MAIN);
     }
-  } catch (err) {
-    const msg = String(err?.message || err || "");
-    if (/USER_REFUSED|refused|reject/i.test(msg)) {
-      const wrapped = new Error("You declined the network switch in the wallet.");
-      wrapped.kind = "refused";
-      throw wrapped;
-    }
-    const wrapped = new Error(
-      `Could not switch to Sepolia — do it manually in your wallet. (${msg || "unknown error"})`
-    );
-    wrapped.kind = "switch_failed";
-    throw wrapped;
-  }
-  // Refresh account + chainId after switch
-  try {
-    const next = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, session.wallet);
-    await applyConnected(session.wallet, next);
   } catch (_) {
-    session.chainId = await readChainId(session.wallet, session.account);
-    emit();
+    /* wallet may refuse the switch; PrivacyScreen shows the chain */
   }
+  await applyConnected(wallet, account);
   return getSession();
 }
 
@@ -331,23 +255,9 @@ export async function waitForTx(hash) {
 
 function assertReady() {
   if (!session.account) throw new Error("Connect a wallet first.");
-}
-
-function friendlyMissingApi(err) {
-  const msg = String(err?.message || err || "");
-  if (
-    /is not a function/i.test(msg) ||
-    /strk20/i.test(msg) ||
-    /METHOD_NOT_FOUND|method not (supported|found)|unknown method/i.test(msg)
-  ) {
-    const wrapped = new Error(
-      "This wallet does not implement the STRK20 Wallet API. Install Ready (or another STRK20-capable wallet) to shield, transfer, or unshield."
-    );
-    wrapped.kind = "unsupported_wallet";
-    wrapped.cause = err;
-    return wrapped;
+  if (!session.capable) {
+    throw new Error("Needs a STRK20-capable wallet (Ready).");
   }
-  return null;
 }
 
 function wrapPoolError(err, fallback) {
@@ -359,21 +269,7 @@ function wrapPoolError(err, fallback) {
 }
 
 async function invokeActions(actions) {
-  if (typeof session.account?.strk20InvokeTransaction !== "function") {
-    const err = new Error("strk20InvokeTransaction is not a function on this wallet.");
-    const friendly = friendlyMissingApi(err);
-    throw friendly || err;
-  }
-  console.log("[strk20] invoke →", JSON.stringify(actions));
-  let result;
-  try {
-    result = await session.account.strk20InvokeTransaction(actions);
-    console.log("[strk20] invoke result →", result);
-  } catch (err) {
-    console.error("[strk20] invoke FAILED →", err);
-    // Preserve original error kind classification
-    throw err;
-  }
+  const result = await session.account.strk20InvokeTransaction(actions);
   const hash = result?.transaction_hash || "";
   const wait = await waitForTx(hash);
   return {
@@ -429,7 +325,7 @@ export async function shieldAmount(humanAmount) {
     ]);
     const fromReceipt = receiptBlock(wait.receipt);
     session.lastShieldBlock = fromReceipt ?? (await readBlockNumber());
-    await readBlockNumber();
+    await readBlockNumber());
     emit();
     return wait;
   } catch (err) {
@@ -437,61 +333,7 @@ export async function shieldAmount(humanAmount) {
   }
 }
 
-/**
- * Public invoke of pool.register() — one-time first-use registration.
- * The STRK20 privacy pool requires the caller to be registered before deposit;
- * this calls that entrypoint via the wallet's standard Starknet execute path.
- */
-export async function registerInPool() {
-  assertReady();
-  const pool = poolAddress();
-  if (!pool) {
-    throw new Error("REACT_APP_STRK20_POOL is not configured — cannot register.");
-  }
-  console.log("[strk20] register → pool:", pool);
-  let result;
-  try {
-    if (typeof session.account?.execute === "function") {
-      result = await session.account.execute({
-        contractAddress: pool,
-        entrypoint: "register",
-        calldata: [],
-      });
-    } else if (typeof session.account?.addInvokeTransaction === "function") {
-      // Fallback for wallets that only expose the low-level Wallet API method
-      result = await session.account.addInvokeTransaction({
-        calls: [{ contract_address: pool, entry_point: "register", calldata: [] }],
-      });
-    } else {
-      throw new Error("Wallet account has no execute/addInvokeTransaction method.");
-    }
-    console.log("[strk20] register result →", result);
-  } catch (err) {
-    console.error("[strk20] register FAILED →", err);
-    const msg = String(err?.message || err || "");
-    if (/USER_REFUSED|refused|reject/i.test(msg)) {
-      const wrapped = new Error("You declined the register signature in the wallet.");
-      wrapped.kind = "refused";
-      throw wrapped;
-    }
-    if (/already_registered|ALREADY_REGISTERED/i.test(msg)) {
-      const wrapped = new Error("This account is already registered in the pool.");
-      wrapped.kind = "already_registered";
-      throw wrapped;
-    }
-    const wrapped = new Error(`Register failed: ${msg}`);
-    wrapped.kind = "register_failed";
-    throw wrapped;
-  }
-  const hash = result?.transaction_hash || "";
-  const wait = await waitForTx(hash);
-  return {
-    ...wait,
-    explorer: explorerTxUrl(explorerBase(), hash),
-  };
-}
-
-export async function transferAmount(humanAmount, recipient) {
+export async function transfer Account(humanAmount, recipient) {
   assertReady();
   const to = String(recipient ?? "").trim();
   if (!isFeltAddress(to)) throw new Error("Recipient must be a 0x Starknet address.");
@@ -532,10 +374,6 @@ export async function unshieldAmount(humanAmount, recipient) {
 /** Consent-gated. Call only from the Pool tab after the user asks to see balances. */
 export async function fetchShieldedBalances() {
   assertReady();
-  if (typeof session.account?.strk20Balances !== "function") {
-    throw friendlyMissingApi(new Error("strk20Balances is not a function on this wallet.")) ||
-      new Error("Wallet does not support shielded balance reads.");
-  }
   const entries = await session.account.strk20Balances([tokenAddress()]);
   const list = Array.isArray(entries) ? entries : [];
   const match =
