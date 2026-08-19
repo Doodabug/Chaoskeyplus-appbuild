@@ -1,6 +1,8 @@
 {
   "transactions": [],
-  "contracts": [],
+  "contracts": [
+    "0x07a77c21fc19398bdad4f01dec17457cc9d5f7f6df71806903bb3914d70380d0"
+  ],
   "demo_video": "https://www.youtube.com/watch?v=CHAOSKEY_DEMO_VIDEO",
   "demo_url": "https://mobile-app-build-778.preview.emergentagent.com"
 }
