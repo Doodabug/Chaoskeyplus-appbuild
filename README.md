@@ -13,9 +13,11 @@ STRK20 is a note-based pool for any ERC-20 — not a mixer and not a token ABI. 
 1. Backend: `cd backend` → `uvicorn server:app --host 127.0.0.1 --port 8000` (needs Mongo, `MONGO_URL` / `DB_NAME`).
 2. Frontend: `cd frontend` → set `REACT_APP_BACKEND_URL=http://127.0.0.1:8000` → `npm start`.
 3. Bottom nav: **Harvest · Tokens · Pool · More** (Ledger / Universe / Device).
-4. Pool: install [Ready X](https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb), Sepolia, Connect → shield / private transfer / unshield.
+4. Pool: install [Ready X](https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb), Sepolia, Connect →  shield / private transfer / unshield.
 5. Cross-check wallet: https://starknet-wallet-account.vercel.app/
-    Method patent pending
+
+    Method is patent pending
+   
 Sprint checklist (code vs human) lives in the plan §7b. Phase 3 (shadow accounts) is blocked on a stable Wallet API.
 
 ## STRK20 Stack
