@@ -1,6 +1,7 @@
 # ChaosKey+ M3 — STRK20 hackathon sprint
 
 Physical-chaos entropy device (Harvest / Tokens / Ledger) plus a **Pool** tab that talks to the Starknet STRK20 privacy pool through the user's Ready wallet.
+
 Chaoskey+ method is patent pending
 
 **Authoritative privacy plan:** [`STRK20_INTEGRATION_PLAN.md`](./STRK20_INTEGRATION_PLAN.md)  
