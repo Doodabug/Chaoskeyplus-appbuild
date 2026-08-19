@@ -64,12 +64,20 @@ def load_or_create_device_keys():
             private_key = serialization.load_pem_private_key(f.read(), password=None)
     else:
         private_key = ed25519.Ed25519PrivateKey.generate()
-        with open(DEVICE_KEY_PATH, "wb") as f:
+        # Create the private-key file with owner-only perms before writing,
+        # so the secret never exists on disk with world-readable bits.
+        fd = os.open(str(DEVICE_KEY_PATH), os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        with os.fdopen(fd, "wb") as f:
             f.write(private_key.private_bytes(
                 encoding=Encoding.PEM,
                 format=PrivateFormat.PKCS8,
                 encryption_algorithm=NoEncryption(),
             ))
+    # Ensure existing key files also have owner-only perms (idempotent).
+    try:
+        os.chmod(DEVICE_KEY_PATH, 0o600)
+    except OSError:
+        pass
     public_key = private_key.public_key()
     with open(DEVICE_PUB_PATH, "wb") as f:
         f.write(public_key.public_bytes(
@@ -272,9 +280,25 @@ async def generate_block(
 # =========================
 # API models
 # =========================
+# Bound sizes to prevent unauth resource exhaustion.
+MAX_FRAME_DIFFS = 128
+MAX_FRAME_DIFF_B64_CHARS = 32 * 1024  # ~24KB decoded per frame diff
+
+
+def _validate_frame_diffs(items: Optional[List[str]]) -> Optional[List[str]]:
+    if items is None:
+        return None
+    if not isinstance(items, list) or len(items) > MAX_FRAME_DIFFS:
+        raise HTTPException(status_code=413, detail=f"frame_diffs_b64 must have <= {MAX_FRAME_DIFFS} items")
+    for b64 in items:
+        if not isinstance(b64, str) or len(b64) > MAX_FRAME_DIFF_B64_CHARS:
+            raise HTTPException(status_code=413, detail=f"each frame_diffs_b64 item must be a base64 string <= {MAX_FRAME_DIFF_B64_CHARS} chars")
+    return items
+
+
 class RandomRequest(BaseModel):
     length: int = Field(default=HKDF_OUTPUT_BYTES, ge=8, le=512)
-    context: str = ""
+    context: str = Field(default="", max_length=512)
     source: Literal["camera", "system"] = "system"
     frame_diffs_b64: Optional[List[str]] = None
 
@@ -350,10 +374,14 @@ class UniverseSimResponse(BaseModel):
 app = FastAPI(title="ChaosKey+ M3", lifespan=lifespan)
 
 # CORS — must be enabled BEFORE the api router for preflight
+_cors_env = os.environ.get("CORS_ORIGINS", "*").split(",")
+_cors_origins = [o.strip() for o in _cors_env if o.strip()]
+# Don't reflect credentialed requests when origins is the wildcard — safer default.
+_cors_credentials = "*" not in _cors_origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
-    allow_credentials=True,
+    allow_origins=_cors_origins or ["*"],
+    allow_credentials=_cors_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -367,6 +395,7 @@ async def root():
 
 @api.post("/get_random", response_model=RandomResponse)
 async def api_get_random(req: RandomRequest):
+    _validate_frame_diffs(req.frame_diffs_b64)
     out, block = await generate_block(
         output_len=req.length,
         context=req.context,
@@ -443,6 +472,10 @@ async def get_physical_origin(context: str, source: str, frame_diffs_b64: Option
 
 @api.post("/simulate_universe", response_model=UniverseSimResponse)
 async def api_simulate_universe(req: UniverseSimRequest):
+    _validate_frame_diffs(req.frame_diffs_b64)
+    # Bound the population so one request can't fan out into thousands of block
+    # generations (each = Ed25519 sign + Mongo insert).
+    MAX_POPULATION = 500
     entities: List[Entity] = []
     initial_origins: List[str] = []
     for i in range(req.initial_pop):
@@ -472,6 +505,8 @@ async def api_simulate_universe(req: UniverseSimRequest):
         births = 0
         new_entities: List[Entity] = []
         for e in entities:
+            if len(entities) + len(new_entities) >= MAX_POPULATION:
+                break
             if e.energy > 12 and random.random() < req.replication_prob:
                 new_origin = await get_physical_origin(
                     f"replication_step_{step}_{births}", req.source, req.frame_diffs_b64,
@@ -638,6 +673,7 @@ def _default_length(t: str, req_len: Optional[int]) -> int:
 
 @api.post("/generate_token", response_model=TokenResponse)
 async def api_generate_token(req: TokenRequest):
+    _validate_frame_diffs(req.frame_diffs_b64)
     # Use existing entropy pipeline — every token gets a signed ledger block.
     ctx = f"token:{req.type}"
     if req.prefix:

@@ -8,6 +8,9 @@ credentials.json
 *.pem
 *.key
 
+# Device signing keys (rotate + never commit)
+backend/keys/
+
 # Dependencies
 node_modules/
 .pnp
