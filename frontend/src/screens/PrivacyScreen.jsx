@@ -4,8 +4,12 @@ import { Btn, HashLine, Overline, Panel, StatLine } from "../components/ui";
 import { useStarknet } from "../providers/StarknetProvider";
 import {
   NOTE_MATURITY_BLOCKS,
+<<<<<<< HEAD
   formatChainLabel,
   isSepoliaChainId,
+=======
+  EXPECTED_CHAIN_ID,
+>>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   maxSpendHuman,
 } from "../lib/starknetWalletUtils";
 
@@ -13,10 +17,11 @@ const inputClass =
   "w-full bg-transparent border border-white/15 px-3 py-2 text-sm text-white font-mono focus:border-cyan-400 outline-none";
 
 function shortAddr(addr) {
-  if (!addr) return "—";
-  return addr.length > 16 ? `${addr.slice(0, 10)}…${addr.slice(-6)}` : addr;
+  if (!addr) return "â€”";
+  return addr.length > 16 ? `${addr.slice(0, 10)}â€¦${addr.slice(-6)}` : addr;
 }
 
+<<<<<<< HEAD
 function EmptyWalletHint({ scanning, hints, onRescan }) {
   const stub = hints.find((h) => h.status === "stub");
   const seen = hints.map((h) => h.name || h.key).filter(Boolean);
@@ -69,6 +74,15 @@ function EmptyWalletHint({ scanning, hints, onRescan }) {
       </a>
     </div>
   );
+=======
+function onMainnet(chainId) {
+  if (!chainId) return false;
+  try {
+    return BigInt(chainId) === BigInt(EXPECTED_CHAIN_ID);
+  } catch (_) {
+    return String(chainId).toLowerCase().includes("mainnet");
+  }
+>>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
 }
 
 export default function PrivacyScreen() {
@@ -185,8 +199,7 @@ export default function PrivacyScreen() {
     try {
       const r = await fn();
       setResult({ ...r, kind });
-    } catch (e) {
-      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
+    } catch (e) {\n      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
     } finally {
       setBusy("");
     }
@@ -212,7 +225,11 @@ export default function PrivacyScreen() {
 
   const connected = !!starknet.address;
   const capable = starknet.capable;
+<<<<<<< HEAD
   const sepolia = isSepoliaChainId(starknet.chainId);
+=======
+  const mainnet = onMainnet(starknet.chainId);
+>>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   const locked = starknet.maturityLeft > 0;
   const spendDisabled = !!busy || locked;
 
@@ -232,15 +249,36 @@ export default function PrivacyScreen() {
         {!connected && (
           <>
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
-              Connect Ready on Starknet Sepolia. The wallet holds keys, notes, and
-              proofs — this app never sees them.
+              Connect Ready on Starknet Mainnet. The wallet holds keys, notes, and
+              proofs â€” this app never sees them.
             </p>
             {starknet.wallets.length === 0 && (
+<<<<<<< HEAD
               <EmptyWalletHint
                 scanning={!!busy || starknet.scanning}
                 hints={starknet.injectedHints || []}
                 onRescan={onRescan}
               />
+=======
+              <div
+                data-testid="pool-no-wallets"
+                className="border border-white/10 px-3 py-4 text-center space-y-3"
+              >
+                <p className="text-[11px] font-mono text-white/55 leading-relaxed">
+                  No wallets detected in this browser. Pool needs the Ready X
+                  extension on Mainnet.
+                </p>
+                <a
+                  data-testid="pool-install-ready"
+                  href="https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center border border-cyan-400/60 text-cyan-300 hover:border-cyan-200 hover:text-cyan-100 hover:bg-cyan-400/10 px-4 py-2.5 font-mono text-xs uppercase tracking-[0.2em]"
+                >
+                  Install Ready X
+                </a>
+              </div>
+>>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
             )}
             <ul className="space-y-2">
               {starknet.wallets.map((w) => (
@@ -255,17 +293,8 @@ export default function PrivacyScreen() {
                     intent="primary"
                     testid={`pool-connect-${w.id || w.name}`}
                     onClick={() => onConnect(w)}
-                    disabled={!!busy}
-                  >
-                    <Plugs size={12} className="inline mr-1.5 -mt-0.5" />
-                    {busy === "connect" ? "Connecting" : "Connect"}
-                  </Btn>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
 
+<<<<<<< HEAD
         {connected && (
           <>
             <StatLine
@@ -486,6 +515,9 @@ export default function PrivacyScreen() {
                     data-testid="pool-unshield-max"
                     className="text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300"
                     onClick={() => applyMax(setWithdrawAmt)}
+=======
+                    onChange={() => applyMax(setWithdrawAmt)}
+>>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
                   >
                     Max
                   </button>
@@ -493,7 +525,7 @@ export default function PrivacyScreen() {
               </div>
               <input
                 data-testid="pool-unshield-amount"
-                type="text"
+                text="text"
                 inputMode="decimal"
                 value={withdrawAmt}
                 onChange={(e) => setWithdrawAmt(e.target.value)}
@@ -504,7 +536,7 @@ export default function PrivacyScreen() {
             <Btn
               intent="primary"
               testid="pool-unshield-btn"
-              onClick={() =>
+              onChange={() =>
                 runAction("unshield", () =>
                   starknet.unshield(withdrawAmt, withdrawTo || starknet.address)
                 )
@@ -522,16 +554,15 @@ export default function PrivacyScreen() {
         <div
           data-testid="pool-error"
           data-kind={error.kind}
-          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed"
-        >
+          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
           {error.kind === "screening"
             ? error.message
-            : `ERR :: ${error.message}`}
+            : `ERR :: ${error.message}`u}
         </div>
       )}
 
       {result && (
-        <Panel title={`${(result.kind || "action").toUpperCase()} RESULT`} testid="pool-result-panel">
+        <Panel title=`{${(result.kind || "action").toUpperCase()} RESULT` testid="pool-result-panel">
           <StatLine
             label="Status"
             value={result.status === "accepted" ? "accepted" : "submitted"}
@@ -540,7 +571,7 @@ export default function PrivacyScreen() {
           />
           <div className="py-2">
             <Overline className="mb-1">Transaction</Overline>
-            <HashLine testid="pool-tx-hash" value={result.hash || "—"} />
+            <HashLine testid="pool-tx-hash" value={result.hash || "â€•"} />
           </div>
           {result.explorer && (
             <a
@@ -556,7 +587,7 @@ export default function PrivacyScreen() {
           )}
           {result.status === "submitted" && (
             <p className="mt-3 text-[11px] font-mono text-white/45 leading-relaxed">
-              Confirmation timed out. The transaction was submitted — check the
+              Confirmation timed out. The transaction was submitted â†’ check the
               explorer.
             </p>
           )}
@@ -567,18 +598,8 @@ export default function PrivacyScreen() {
         <p className="text-[12px] font-mono text-white/55 leading-relaxed">
           Shield and unshield amounts are public ERC-20 legs. The fact and
           timing of a pool interaction are public. Private transfers hide who
-          pays whom and how much. This is not a mixer. Activity is never
-          attributed from the transaction sender — that address is the relayer.
+          pays whom and how much. This is not a mixer.
         </p>
-        <a
-          data-testid="pool-wallet-test-dapp-footer"
-          href="https://starknet-wallet-account.vercel.app/"
-          target="_blank"
-          rel="noreferrer"
-          className="mt-3 inline-block text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300/80 hover:text-cyan-200"
-        >
-          Wallet test dapp
-        </a>
       </Panel>
     </div>
   );

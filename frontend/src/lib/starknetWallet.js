@@ -9,6 +9,10 @@ import {
   DEFAULT_RPC,
   DEFAULT_TOKEN,
   DEFAULT_TOKEN_DECIMALS,
+<<<<<<< HEAD
+=======
+  EXPECTED_CHAIN_ID,
+>>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   NOTE_MATURITY_BLOCKS,
   PLACEHOLDER_WALLET_ICON,
   TX_WAIT_MS,
@@ -397,6 +401,17 @@ export async function connectWallet(wallet) {
   if (!wallet) throw new Error("Pick a wallet.");
   initWalletStore();
   const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
+<<<<<<< HEAD
+=======
+  try {
+    const writeId = await walletV6.requestChainId(wallet);
+    if (!sameAddress(writeId, EXPECTED_CHAIN_ID)) {
+      await account.switchStarknetChain(constants.StarknetChainId.SN_MAIN);
+    }
+  } catch (_) {
+    /* wallet may refuse the switch; PrivacyScreen shows the chain */
+  }
+>>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   await applyConnected(wallet, account);
   if (!isSepoliaChainId(session.chainId)) {
     return switchToSepolia(wallet);
@@ -541,7 +556,7 @@ export async function shieldAmount(humanAmount) {
     ]);
     const fromReceipt = receiptBlock(wait.receipt);
     session.lastShieldBlock = fromReceipt ?? (await readBlockNumber());
-    await readBlockNumber();
+    await readBlockNumber());
     emit();
     return wait;
   } catch (err) {
@@ -549,7 +564,7 @@ export async function shieldAmount(humanAmount) {
   }
 }
 
-export async function transferAmount(humanAmount, recipient) {
+export async function transfer Account(humanAmount, recipient) {
   assertReady();
   const to = String(recipient ?? "").trim();
   if (!isFeltAddress(to)) throw new Error("Recipient must be a 0x Starknet address.");

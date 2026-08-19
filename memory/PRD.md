@@ -35,6 +35,20 @@
 - **2026-08-17** — **Feature: Token Generator** (6 types) + fix TOTP URL encoding. Iter_3: 25/25 backend.
 - **2026-08-17** — **Feature x4: Verify /verify page, Camera-source tokens, Bulk Generate, Encrypted Vault.** Iter_4: 23/23.
 - **2026-08-17** — **Curation pass**: user selected KEEP (Verify Page, Camera Tokens) + ADD (Verify QR, Token Expiry). **REMOVED** bulk endpoint & encrypted vault. New expiry chip selector (Never/15m/1h/24h/7d/30d) with **cryptographic binding** — `expires_at_int` is part of the signed token message. Verify page surfaces `expired` reason. Green **Verify QR** below every token encodes `/verify?block_id=X&token=Y` so anyone can scan-to-verify. **Iter_5: 23/23 backend, 100% frontend, no issues.**
+- **2026-08-17** — **STRK20 Pool tab imported from doodabug/Chaoskeyplus-appbuild GitHub (Grok build)**. Added 6th tab "Pool" for privacy-preserving STRK operations on Starknet Sepolia. Deps: `starknet@10.7.0`, `@starknet-io/get-starknet-discovery`, `@starknet-io/get-starknet-wallet-standard`, `@starknet-io/types-js`. New files: `providers/StarknetProvider.jsx`, `lib/starknetWallet.js`, `lib/starknetWalletUtils.js`, `screens/PrivacyScreen.jsx`. Env: `REACT_APP_STRK20_POOL=0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a`, `REACT_APP_STRK20_TOKEN` (STRK ERC-20), `REACT_APP_STARKNET_RPC`, `REACT_APP_STARKNET_EXPLORER`. Also imported STRK20 submission docs: `STRK20_INTEGRATION_PLAN.md`, `strk20.json`, `demo/`, `docs/`.
+- **2026-08-17** — **Wallet detection relaxed**: `starknetWallet.js` now falls back to legacy `window.ready`/`window.starknet`/`window.starknet_argentX`/`window.starknet_braavos` when modern Wallet Standard discovery finds nothing. Capability gate softened — non-STRK20 wallets (Argent X, Braavos) can connect and see all actions; STRK20 methods surface a friendly `unsupported_wallet` error via `friendlyMissingApi()` if the wallet doesn't implement them. "UNSUPPORTED WALLET" panel renamed to "LEGACY WALLET" advisory.
+- **2026-08-17** — **Wallet chainId + Switch to Sepolia fix (Iter_6)**. Ready wallet's `WalletAccountV6.getChainId()` returned empty → NETWORK field showed `—` and switch button silently failed. Added `readChainId()` with 3-level fallback (`account.getChainId` → `walletV6.requestChainId(wallet)` → `wallet.chainId`), added exported `switchToSepolia()` that surfaces errors as `kind: "refused"` / `"switch_failed"` into the `pool-error` banner. Iter_6: 100% backend, 100% frontend, no regressions.
+- **2026-08-17** — **STRK20 action polish (Iter_7)**. `PrivacyScreen.runAction()` now clears input fields after successful shield/transfer/unshield and silently refreshes the shielded balance (if user opted in). Iter_7: 100% backend, 100% frontend.
+- **2026-08-17** — **STRK20 Hackathon registry submission**. Debugged JSON-formatting errors in user's PR to `starkience/strk20-hackathon`; final entry: name=ChaosKey+, category=Tooling, telegram=[TheDoodlebug], team=[doodabug]. PR now passes `validate-registry.mjs` schema.
+
+## STRK20 Pool Tab — Feature Details
+- **Wallet connect**: Wallet Standard v6 discovery + legacy `window.*` fallback
+- **Shield / Transfer / Unshield**: `strk20InvokeTransaction` actions `{type: deposit|transfer|withdraw, token, amount, recipient?}` per Starknet Wallet API ≥ 0.10
+- **Consent-gated balance read**: `strk20Balances([token])` only called when user clicks "Show shielded balance"
+- **Sepolia gate**: chainId compared as BigInt against `SEPOLIA_CHAIN_ID = 0x534e5f5345504f4c4941`
+- **Note maturity gate**: freshly shielded notes locked for ~10 blocks before transfer/unshield allowed
+- **Error classification**: `USER_REFUSED (113)`, `NOT_REGISTERED (118)`, `INSUFFICIENT_PRIVATE_BALANCE (119)`, protocol screening
+- **Fee display**: reads `get_fee_amount()` off the pool contract when `REACT_APP_STRK20_POOL` is set
 
 ## Backlog / Future Enhancements
 - **P1** External offline verifier (web tool that takes a block + pubkey and verifies signature locally)
@@ -42,8 +56,10 @@
 - **P2** Export ledger as JSONL (round-trip with the original script)
 - **P2** Real-time entropy bit visualization stream during harvest
 - **P2** PWA `manifest.json` + service worker for installable home-screen app
+- **P2** Block short-code aliases (e.g. #160 → KESTRAL) for crisper Verify QRs
 - **P3** WebSocket-streamed universe sim (per-step animation)
 - **P3** Sound-based entropy source (microphone)
+- **P3** Auto-retry on `NOT_REGISTERED` error (Ready registers on first use — a second click currently succeeds; automate the retry)
 
 ## Personas
 - **Crypto-curious tinkerer** — wants to feel "I'm generating randomness from the real world right now"

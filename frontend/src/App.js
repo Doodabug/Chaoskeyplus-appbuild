@@ -28,11 +28,6 @@ const TABS = [
   { id: "pool", label: "Pool", Icon: ShieldCheck, Comp: PrivacyScreen },
 ];
 
-const PRIMARY_IDS = ["harvest", "tokens", "pool"];
-const MORE_IDS = ["ledger", "universe", "device"];
-const PRIMARY_TABS = TABS.filter((t) => PRIMARY_IDS.includes(t.id));
-const MORE_TABS = TABS.filter((t) => MORE_IDS.includes(t.id));
-
 function shortAddr(addr) {
   if (!addr) return "";
   return addr.length > 12 ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : addr;
@@ -119,51 +114,35 @@ function BottomNav({ active, onChange, moreOpen, onToggleMore }) {
       className="fixed bottom-0 inset-x-0 z-30 backdrop-blur-2xl bg-black/80 border-t border-white/10"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      {moreOpen && (
-        <div
-          data-testid="more-sheet"
-          className="border-b border-white/10 px-3 py-3 grid grid-cols-3 gap-2"
-        >
-          {MORE_TABS.map(({ id, label, Icon }) => (
-            <button
-              key={id}
-              data-testid={`nav-${id}`}
-              onClick={() => onChange(id)}
-              className={`py-3 border flex flex-col items-center gap-1 ${
-                active === id
-                  ? "border-cyan-400/60 text-cyan-300"
-                  : "border-white/10 text-white/55 hover:text-white/80"
-              }`}
-            >
-              <Icon size={18} weight={active === id ? "fill" : "regular"} />
-              <span className="text-[9px] font-mono uppercase tracking-[0.2em]">
-                {label}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-      <ul className="grid grid-cols-4">
-        {PRIMARY_TABS.map(({ id, label, Icon }) => (
-          <li key={id}>
-            <NavBtn
-              id={id}
-              label={label}
-              Icon={Icon}
-              isActive={active === id}
-              onClick={() => onChange(id)}
-            />
-          </li>
-        ))}
-        <li>
-          <NavBtn
-            id="more"
-            label="More"
-            Icon={DotsThree}
-            isActive={moreOpen || moreActive}
-            onClick={onToggleMore}
-          />
-        </li>
+      <ul className="grid grid-cols-6">
+        {TABS.map(({ id, label, Icon }) => {
+          const isActive = id === active;
+          return (
+            <li key={id}>
+              <button
+                data-testid={`nav-${id}`}
+                onClick={() => onChange(id)}
+                className={`w-full py-3 flex flex-col items-center justify-center gap-1 transition-colors duration-150 ${
+                  isActive
+                    ? "text-cyan-300"
+                    : "text-white/45 hover:text-white/80"
+                }`}
+              >
+                <Icon size={20} weight={isActive ? "fill" : "regular"} />
+                <span
+                  className={`text-[9px] font-mono uppercase tracking-[0.2em] ${
+                    isActive ? "text-cyan-200" : "text-white/45"
+                  }`}
+                >
+                  {label}
+                </span>
+                {isActive && (
+                  <span className="block h-[2px] w-6 bg-cyan-300 -mb-[2px]" />
+                )}
+              </button>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );
@@ -207,13 +186,7 @@ function MainApp() {
 
   return (
     <div className="min-h-screen text-white grid-bg noise relative">
-      <TopBar
-        status={status}
-        onOpenPool={() => {
-          setMoreOpen(false);
-          setActive("pool");
-        }}
-      />
+      <TopBar status={status} onOpenPool={() => setActive("pool")} />
       <main
         data-testid="app-main"
         className="max-w-md mx-auto px-4 py-4 pb-28 relative z-10"

@@ -1,0 +1,14 @@
+{
+  "summary": "Phase 2c preview-mode honesty check: Pool tab renders new PREVIEW MODE :: SEPOLIA banner (data-testid='pool-preview-banner') at top of render tree with text 'STRK20 privacy is live on Starknet mainnet only...'. Wallet panel and 'What Stays Visible' panel render below. All 6 nav tabs (harvest, tokens, ledger, universe, device, pool) navigate correctly. Backend /api/status, /api/pubkey, /api/ledger all return 200. No console errors. docs/mainnet-transaction-plan.md contains 'Mainnet Cutover Checklist' (line 1). Preview banner logic uses /sepolia/i.test(rpcUrl) so it will correctly NOT appear on mainnet RPC URLs. Action buttons (shield/transfer/unshield) are only shown after wallet connect — soft-fail logic in runAction() short-circuits with kind='preview_mode' when previewMode=true, which is intended UX.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Preview banner shows correctly on Sepolia. To verify mainnet-hides-banner behavior, one would need to change REACT_APP_STARKNET_RPC to a mainnet URL and restart frontend — not tested since env kept on Sepolia intentionally for hackathon demo."
+}

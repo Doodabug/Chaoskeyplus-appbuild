@@ -2,6 +2,8 @@
 
 Physical-chaos entropy device (Harvest / Tokens / Ledger) plus a **Pool** tab that talks to the Starknet STRK20 privacy pool through the user's Ready wallet.
 
+Chaoskey+ method is patent pending
+
 **Authoritative privacy plan:** [`STRK20_INTEGRATION_PLAN.md`](./STRK20_INTEGRATION_PLAN.md)  
 **Reviewer manifest:** [`strk20.json`](./strk20.json)  
 **Wallet API recipe:** [`docs/integration.md`](./docs/integration.md)
@@ -13,10 +15,22 @@ STRK20 is a note-based pool for any ERC-20 — not a mixer and not a token ABI. 
 1. Backend: `cd backend` → `uvicorn server:app --host 127.0.0.1 --port 8000` (needs Mongo, `MONGO_URL` / `DB_NAME`).
 2. Frontend: `cd frontend` → set `REACT_APP_BACKEND_URL=http://127.0.0.1:8000` → `npm start`.
 3. Bottom nav: **Harvest · Tokens · Pool · More** (Ledger / Universe / Device).
-4. Pool: install [Ready X](https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb), Sepolia, Connect → shield / private transfer / unshield.
-5. Cross-check wallet: https://starknet-wallet-account.vercel.app/
-
+4. Pool: install [Ready X](https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb), Sepolia, Connect →  shield / private transfer / unshield.
+5. Cross-check wallet: https://starknet-wallet-account.vercel.app
+   
 Sprint checklist (code vs human) lives in the plan §7b. Phase 3 (shadow accounts) is blocked on a stable Wallet API.
+
+## STRK20 Stack
+
+This project implements the **Starknet Wallet API v0.10** (STRK20) using:
+
+- **Starknet SDK**: `starknet` (v10.4.0) — Core communication and account abstraction.
+
+- **Wallet Standard Discovery**: `@starknet-io/get-starknet-discovery` (v6.0.3) — Modern wallet detection.
+
+- **Wallet Standard Adapter**: `@starknet-io/get-starknet-wallet-standard` (v6.0.3) — Wallet compatibility layer.
+
+- **Wallet API Types**: `@starknet-io/types-js` (v0.10.3) — Type-safe STRK20 actions (deposit, transfer, withdraw).
 
 ## Pins
 
