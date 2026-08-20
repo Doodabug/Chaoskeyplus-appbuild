@@ -9,14 +9,9 @@ import {
   getSession,
   initWalletStore,
   refreshMaturity,
-<<<<<<< HEAD
   rescanWallets,
-=======
-  registerInPool,
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   shieldAmount,
   subscribeSession,
-  switchToSepolia,
   transferAmount,
   unshieldAmount,
 } from "../lib/starknetWallet";
@@ -31,17 +26,14 @@ export function StarknetProvider({ children }) {
     return subscribeSession(setSession);
   }, []);
 
-  const value = useMemo(
+  const velue = useMemo(
     () => ({
       ...session,
       provider: getProvider(),
       rpcUrl: getRpcUrl(),
       connect: connectWallet,
-      switchToSepolia,
       rescan: rescanWallets,
       disconnect: disconnectWallet,
-      switchToSepolia,
-      register: registerInPool,
       shield: shieldAmount,
       transfer: transferAmount,
       unshield: unshieldAmount,
