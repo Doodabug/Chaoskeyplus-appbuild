@@ -1,1 +1,404 @@
-Ly8gV2FsbGV0IEFQSSB2aWEgc3RhcmtuZXQuanMgV2FsbGV0QWNjb3VudFY2LgovLyBUaGlzIG1vZHVsZSBuZXZlciByZWFkcyB2aWV3aW5nIGtleXMsIG5vdGVzLCBvciBwcm9vZnMuCgppbXBvcnQgeyBjcmVhdGVTdG9yZSB9IGZyb20gIkBzdGFya25ldC1pby9nZXQtc3RhcmtuZXQtZGlzY292ZXJ5IjsKaW1wb3J0IHsgQ29udHJhY3QsIFJwY1Byb3ZpZGVyLCBXYWxsZXRBY2NvdW50VjYsIGNvbnN0YW50cywgd2FsbGV0VjYgfSBmcm9tICJzdGFya25ldCI7CmltcG9ydCB7CiAgREVGQVVMVF9FWFBMT1JFUiwKICBERUZBVUxUX1JQQywKICBERUZBVUxUX1RPS0VOLAogIERFRkFVTFRfVE9LRU5fREVDSU1BTFMsCiAgRVhQRUNURURfQ0hBSU5fSUQsCiAgTk9URV9NQVRVUklUWV9CTE9DS1MsCiAgVFhfV0FJVF9NUywKICBiYXNlVG9IdW1hbiwKICBjbGFzc2lmeVBvb2xFcnJvciwKICBleHBsb3JlclR4VXJsLAogIGh1bWFuVG9CYXNlSGV4LAogIGlzRmVsdEFkZHJlc3MsCiAgaXNTdHJrMjBDYXBhYmxlLAogIG1hdHVyaXR5UmVtYWluaW5nLAogIHNhbWVBZGRyZXNzLAogIHdhbGxldERpc3BsYXlOYW1lLAp9IGZyb20gIi4vc3RhcmtuZXRXYWxsZXRVdGlscyI7Cgpjb25zdCBGRUVfQUJJID0gWwogIHsKICAgIHR5cGU6ICJmdW5jdGlvbiIsCiAgICBuYW1lOiAiZ2V0X2ZlZV9hbW91bnQiLAogICAgaW5wdXRzOiBbXSwKICAgIG91dHB1dHM6IFsKICAgICAgewogICAgICAgIHR5cGU6ICJjb3JlOjppbnRlZ2VyOjp1MjU2IiwKICAgICAgfSwKICAgIF0sCiAgICBzdGF0ZV9tdXRhYmlsaXR5OiAidmlldyIsCiAgfSwKXTsKCmNvbnN0IGxpc3RlbmVycyA9IG5ldyBTZXQoKTsKCmNvbnN0IHNlc3Npb24gPSB7CiAgc3RvcmU6IG51bGwsCiAgc3RvcmVVbnN1YjogbnVsbCwKICB3YWxsZXRzOiBbXSwKICB3YWxsZXQ6IG51bGwsCiAgYWNjb3VudDogbnVsbCwKICBhZGRyZXNzOiAiIiwKICBjaGFpbklkOiAiIiwKICBjYXBhYmxlOiBmYWxzZSwKICBhcGlWZXJzaW9uczogW10sCiAgY2hhbmdlVW5zdWI6IG51bGwsCiAgbGFzdFNoaWVsZEJsb2NrOiBudWxsLAogIGN1cnJlbnRCbG9jazogbnVsbCwKfTsKCmZ1bmN0aW9uIGVtaXQoKSB7CiAgY29uc3Qgc25hcCA9IGdldFNlc3Npb24oKTsKICBsaXN0ZW5lcnMuZm9yRWFjaCgoZm4pID0+IGZuKHNuYXApKTsKfQoKZnVuY3Rpb24gbm9kZVVybCgpIHsKICByZXR1cm4gcHJvY2Vzcy5lbnYuUkVBQ1RfQVBQX1NUQVJLTkVUX1JQQyB8fCBERUZBVUxUX1JQQzsKfQoKZXhwb3J0IGZ1bmN0aW9uIGdldFJwY1VybCgpIHsKICByZXR1cm4gbm9kZVVybCgpOwp9CgpleHBvcnQgZnVuY3Rpb24gZ2V0UHJvdmlkZXIoKSB7CiAgcmV0dXJuIHNlc3Npb24uYWNjb3VudCA/PyBuZXcgUnBjUHJvdmlkZXIoeyBub2RlVXJsOiBub2RlVXJsKCkgfSk7Cn0KCmZ1bmN0aW9uIHRva2VuQWRkcmVzcygpIHsKICByZXR1cm4gcHJvY2Vzcy5lbnYuUkVBQ1RfQVBQX1NUUksyMF9UT0tFTiB8fCBERUZBVUxUX1RPS0VOOwp9CgpmdW5jdGlvbiBwb29sQWRkcmVzcygpIHsKICByZXR1cm4gKHByb2Nlc3MuZW52LlJFQUNUX0FQUF9TVFJLMjBfUE9PTCB8fCAiIikudHJpbSgpOwp9CgpmdW5jdGlvbiBleHBsb3JlckJhc2UoKSB7CiAgcmV0dXJuIHByb2Nlc3MuZW52LlJFQUNUX0FQUF9TVEFSS05FVF9FWFBMT1JFUiB8fCBERUZBVUxUX0VYUExPUkVSOwp9CgpleHBvcnQgZnVuY3Rpb24gZ2V0U2Vzc2lvbigpIHsKICByZXR1cm4gewogICAgd2FsbGV0czogc2Vzc2lvbi53YWxsZXRzLAogICAgd2FsbGV0OiBzZXNzaW9uLndhbGxldCwKICAgIGFjY291bnQ6IHNlc3Npb24uYWNjb3VudCwKICAgIGFkZHJlc3M6IHNlc3Npb24uYWRkcmVzcywKICAgIGNoYWluSWQ6IHNlc3Npb24uY2hhaW5JZCwKICAgIGNhcGFibGU6IHNlc3Npb24uY2FwYWJsZSwKICAgIGFwaVZlcnNpb25zOiBzZXNzaW9uLmFwaVZlcnNpb25zLAogICAgd2FsbGV0TmFtZTogd2FsbGV0RGlzcGxheU5hbWUoc2Vzc2lvbi53YWxsZXQpLAogICAgdG9rZW46IHRva2VuQWRkcmVzcygpLAogICAgcG9vbDogcG9vbEFkZHJlc3MoKSwKICAgIGBleHBsb3JlckJhc2U6IGV4cGxvcmVyQmFzZSgpLAogICAgbGFzdFNoaWVsZEJsb2NrOiBzZXNzaW9uLmxhc3RTaGllbGRCbG9jaywKICAgIGN1cnJlbnRCbG9jazogc2Vzc2lvbi5jdXJyZW50QmxvY2ssCiAgICBtYXR1cml0eUxlZnQ6IG1hdHVyaXR5UmVtYWluaW5nKAogICAgICBzZXNzaW9uLmN1cnJlbnRCbG9jaywKICAgICAgc2Vzc2lvbi5sYXN0U2hpZWxkQmxvY2ssCiAgICAgIE5PVEVfTUFUVVJJVFlfQkxPQ0tTCiAgICApLAogIH07Cn0KCmV4cG9ydCBmdW5jdGlvbiBzdWJzY3JpYmVTZXNzaW9uKGZuKSB7CiAgbGlzdGVuZXJzLmFkZChmbik7CiAgZm4oZ2V0U2Vzc2lvbigpKTsKICByZXR1cm4gKCkgPT4gbGlzdGVuZXJzLmRlbGV0ZShmbik7Cn0KCmV4cG9ydCBmdW5jdGlvbiBpbml0V2FsbGV0U3RvcmUoKSB7CiAgaWYgKHNlc3Npb24uc3RvcmUpIHJldHVybiBzZXNzaW9uLnN0b3JlOwogIHNlc3Npb24uc3RvcmUgPSBjcmVhdGVTdG9yZSgpOwogIGNvbnN0IHJlZnJlc2ggPSAoKSA9PiB7CiAgICBzZXNzaW9uLndhbGxldHMgPSBzZXNzaW9uLnN0b3JlLmdldFdhbGxldHMoKTsKICAgIGVtaXQoKTsKICB9OwogIHNlc3Npb24uc3RvcmVVbnN1YiA9IHNlc3Npb24uc3RvcmUuc3Vic2NyaWJlKHJlZnJlc2gpOwogIHJlZnJlc2goKTsKICByZXR1cm4IHNlc3Npb24uc3RvcmU7Cn0KCmV4cG9ydCBhc3luYyBmdW5jdGlvbiByZWFkV2FsbGV0QXBpVmVyc2lvbnMod2FsbGV0KSB7CiAgaWYgKCF3YWxsZXQpIHJldHVybiBbXTsKICB0cnkgewogICAgY29uc3QgdmVyc2lvbnMgPSBhd2FpdCB3YWxsZXRVNi5zdXBwb3J0ZWRXYWxsZXRBcGkod2FsbGV0KTsKICAgIHJldHVybiBBcnJheS5pc0FycmF5KHZlcnNpb25zKSA/IHZlcnNpb25zLm1hcChTdHJpbmcpIDogW107CiAgfSBjYXRjaCAoXykgewogICAgdHJ5IHsKICAgICAgY29uc3Qgc3BlY3MgPSBhd2FpdCB3YWxsZXRVNi5zdXBwb3J0ZWRTcGVjcyh3YWxsZXQpOwogICAgICByZXR1cm4gQXJyYXkuaXNBcnJheShzcGVjcykgPyBzcGVjcy5tYXAoU3RyaW5nKSA6IFtdOwogICAgfSBjYXRjaCAoX18pIHsKICAgICAgcmV0dXJuIFtdOwogICAgfQogIH0KfQoKYXN5bmMgZnVuY3Rpb24gYXBwbHlDb25uZWN0ZWQod2FsbGV0LCBhY2NvdW50KSB7CiAgaWY (zZXNzaW9uLmNoYW5nZVVuc3ViKSB7CiAgICB0cnkgewogICAgICBzZXNzaW9uLmNoYW5nZVVuc3ViKCk7CiAgICB9IGNhdGNoIChfKSB7CiAgICAgIC8qIGlnbm9yZSAqLwogICAgfQogICAgc2Vzc2lvbi5jaGFuZ2VVbnN1YiA9IG51bGw7CiAgfQogIHNlc3Npb24ud2FsbGV0ID0gd2FsbGV0OwogIHNlc3Npb24uYWNjb3VudCA9IGFjY291bnQ7CiAgc2Vzc2lvbi5hZGRyZXNzID0gYWNjb3VudD8uYWRkcmVzcyB8fCAiIjsKICB0cnkgewogICAgc2Vzc2lvbi5jaGFpbklkID0gYWNjb3VudCA/IGF3YWl0IGFjY291bnQuZ2V0Q2hhaW5JZCgpIDogIiI7CiAgfSBjYXRjaCAoXykgewogICAgc2Vzc2lvbi5jaGFpbklkID0gIiI7CiAgfQogIHNlc3Npb24uYXBpVmVyc2lvbnMgPSBhd2FpdCByZWFkV2FsbGV0QXBpVmVyc2lvbnMod2FsbGV0KTsKICBzZXNzaW9uLmNhcGFibGUgPSBpc1N0cmsyMENhcGFibGUoc2Vzc2lvbi5hcGlWZXJzaW9ucyk7CiAgaWYgKGFjY291bnQ/Lm9uQ2hhbmdlKSB7CiAgICBzZXNzaW9uLmNoYW5nZVVuc3ViID0gYWNjb3VudC5vbkNoYW5nZShhc3luYyAoKSA9PiB7CiAgICAgIHRyeSB7CiAgICAgICAgY29uc3QgbmV4dCA9IGF3YWl0IFdhbGxldEFjY291bnRWNi5jb25uZWN0KHsgbm9kZVVybDogbm9kZVVybCgpIH0sIHdhbGxldCk7CiAgICAgICAgYXdhaXQgYXBwbHlDb25uZWN0ZWQod2FsbGV0LCBuZXh0KTsKICAgICAgfSBjYXRjaCAoXykgewogICAgICAgIGF3YWl0IGRpc2Nvbm5lY3RXYWxsZXQoKTsKICAgICAgfQogICAgfSk7CiAgfQogIGVtaXQoKTsKfQoKZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIGNvbm5lY3RXYWxsZXQod2FsbGV0KSB7CiAgaWYgKCF3YWxsZXQpIHRocm93IG5ldyBFcnJvcigiUGljayBhIHdhbGxldC4iKTsKICBpbml0V2FsbGV0U3RvcmUoKTsKICBjb25zdCBhY2NvdW50ID0gYXdhaXQgV2FsbGV0QWNjb3VudFY2LmNvbm5lY3QoeyBub2RlVXJsOiBub2RlVXJsKCkgfSwgd2FsbGV0KTsKICB0cnkgewogICAgY29uc3Qgd3JpdGVJZCA9IGF3YWl0IHdhbGxldFY2LnJlcXVlc3RDaGFpbklkKHdhbGxldCk7CiAgICBpZiAoIXNhbWVBZGRyZXNzKHdyaXRlSWQsIEVYUEVDVEVEX0NIQUlOX0lEKSkgewogICAgICBhd2FpdCBhY2NvdW50LnN3aXRjaFN0YXJrbmV0Q2hhaW4oY29uc3RhbnRzLlN0YXJrbmV0Q2hhaW5JZC5TTl9NQUlOKTsKICAgIH0KICB9IGNhdGNoIChfKSB7CiAgICAvKiB3YWxsZXQgbWF5IHJlZnVzZSB0aGUgc3dpdGNoOyBQcml2YWN5U2NyZWVuIHNob3dzIHRoZSBjaGFpbiAqLwogIH0KICBhd2FpdCBhcHBseUNvbm5lY3RlZCh3YWxsZXQsIGFjY291bnQpOwogIHJldHVybiBnZXRTZXNzaW9uKCk7Cn0KCmV4cG9ydCBhc3luYyBmdW5jdGlvbiBkaXNjb25uZWN0V2FsbGV0KCkgewogIGlmIChzZXNzaW9uLmNoYW5nZVVuc3ViKSB7CiAgICB0cnkgewogICAgICBzZXNzaW9uLmNoYW5nZVVuc3ViKCk7CiAgICB9IGNhdGNoIChfKSB7CiAgICAgIC8qIGlnbm9yZSAqLwogICAgfQogIH0KICBpZiAoc2Vzc2lvbi5hY2NvdW50Py51bnN1YnNjcmliZUNoYW5nZSkgewogICAgdHJ5IHsKICAgICAgc2Vzc2lvbi5hY2NvdW50LnVuc3Vic2NyaWJlQ2hhbmdlKCk7CiAgICB9IGNhdGNoIChfKSB7CiAgICAgIC8qIGlnbm9yZSAqLwogICAgfQogIH0KICBzZXNzaW9uLndhbGxldCA9IG51bGw7CiAgc2Vzc2lvbi5hY2NvdW50ID0gbnVsbDsKICBzZXNzaW9uLmFkZHJlc3MgPSAiIjsKICBzZXNzaW9uLmNoYWluSWQgPSAiIjsKICBzZXNzaW9uLmNhcGFibGUgPSBmYWxzZTsKICBzZXNzaW9uLmFwaVZlcnNpb25zID0gW107CiAgc2Vzc2lvbi5jaGFuZ2VVbnN1YiA9IG51bGw7CiAgc2Vzc2lvbi5sYXN0U2hpZWxkQmxvY2sgPSBudWxsOwogIHNlc3Npb24uY3VycmVudEJsb2NrID0gbnVsbDsKICBlbWl0KCk7Cn0KCmV4cG9ydCBhc3luYyBmdW5jdGlvbiBmZXRjaFBvb2xGZWUoKSB7CiAgY29uc3QgYWRkcmVzcyA9IHBvb2xBZGRyZXNzKCk7CiAgaWYgKCFhZGRyZXNzKSByZXR1cm4geyBhdmFpbGFibGU6IGZhbHNlLCBodW1hbjogbnVsbCB9OwogIHRyeSB7CiAgICBjb25zdCBwcm92aWRlciA9IHNlc3Npb24uYWNjb3VudCA/PyBuZXcgUnBjUHJvdmlkZXIoeyBub2RlVXJsOiBub2RlVXJsKCkgfSk7CiAgICBjb25zdCBwb29sID0gbmV3IENvbnRyYWN0KHsgYWJpOiBGRUVfQUJJLCBhZGRyZXNzLCBwcm92aWRlck9yQWNjb3VudDogcHJvdmlkZXIgfSk7CiAgICBjb25zdCByYXcgPSBhd2FpdCBwb29sLmdldF9mZWVfYW1vdW50KCk7CiAgICBjb25zdCB2YWx1ZSA9CiAgICAgIHJhdz8uZmVlX2Ftb3VudCA/PwogICAgICByYXc/LlswXSA/PwogICAgICAodHlwZW9mIHJhdyA9PT0gImJpZ2ludCIgfHwgdHlwZW9mIHJhdyA9PT0gInN0cmluZyIgfHwgdHlwZW9mIHJhdyA9PT0gIm51bWJlciIKICAgICAgICA/IHJhdwogICAgICAgIDogcmF3Py5sb3cgIT0gbnVsbAogICAgICAgICAgPyBCaWdJbnQocmF3LmxvdykgKyAoQmlnSW50KHJhdy5oaWdoIHx8IDApIDw8IDEyOG4pCiAgICAgICAgICA6IG51bGwpOwogICAgaWYgKHZhbHVlID09IG51bGwpIHJldHVybiB7IGF2YWlsYWJsZTogZmFsc2UsIGh1bWFuOiBudWxsIH07CiAgICByZXR1cm4geyBhdmFpbGFibGU6IHRydWUsIHJhdzogdmFsdWUsIGh1bWFuOiBiYXNlVG9IdW1hbih2YWx1ZSwgREVGQVVMVF9UT0tFTl9ERUNJTUFMUykgfTsKICB9IGNhdGNoIChfKSB7CiAgICByZXR1cm4geyBhdmFpbGFibGU6IGZhbHNlLCBodW1hbjogbnVsbCB9OwogIH0KfQoKZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIHdhaXRGb3JUeChoYXNoKSB7CiAgY29uc3QgYWNjb3VudCA9IHNlc3Npb24uYWNjb3VudDsKICBpZiAoIWFjY291bnQgfHwgIWhhc2gpIHJldHVybiB7IHN0YXR1czogInN1Ym1pdHRlZCIsIGhhc2ggfTsKICBsZXQgdGltZXI7CiAgY29uc3QgdGltZW91dCA9IG5ldyBQcm9taXNlKChyZXNvbHZlKSA9PiB7CiAgICB0aW1lciA9IHNldFRpbWVvdXQoKCkgPT4gcmVzb2x2ZSh7IHRpbWVkT3V0OiB0cnVlIH0pLCBUWF9XQUlUX01TKTsKICB9KTsKICB0cnkgewogICAgY29uc3QgcmFjZWQgPSBhd2FpdCBQcm9taXNlLnJhY2UoW2FjY291bnQud2FpdEZvclRyYW5zYWN0aW9uKGhhc2gpLCB0aW1lb3V0XSk7CiAgICBpZiAocmFjZWQ/LnRpbWVkT3V0KSByZXR1cm4geyBzdGF0dXM6ICJzdWJtaXR0ZWQiLCBoYXNoIH07CiAgICByZXR1cm4geyBzdGF0dXM6ICJhY2NlcHRlZCIsIGhhc2gsIHJlY2VpcHQ6IHJhY2VkIH07CiAgfSBmaW5hbGx5IHsKICAgIGNsZWFyVGltZW91dCh0aW1lcik7CiAgfQp9CgpmdW5jdGlvbiBhc3NlcnRSZWFkeSgpIHsKICBpZiAoIXNlc3Npb24uYWNjb3VudCkgdGhyb3cgbmV3IEVycm9yKCJDb25uZWN0IGEgd2FsbGV0IGZpcnN0LiIpOwogIGlmICghc2Vzc2lvbi5jYXBhYmxlKSB7CiAgICB0aHJvdyBuZXcgRXJyb3IoIk5lZWRzIGEgU1RSSzIwLWNhcGFibGUgd2FsbGV0IChSZWFkeSkuIik7CiAgfQp9CgpmdW5jdGlvbiB3cmFwUG9vbEVycm9yKGVyciwgZmFsbGJhY2spIHsKICBjb25zdCBjbGFzc2lmaWVkID0gY2xhc3NpZnlQb29sRXJyb3IoZXJyLCBmYWxsYmFjayk7CiAgY29uc3Qgd3JhcHBlZCA9IG5ldyBFcnJvcihjbGFzc2lmaWVkLm1lc3NhZ2UpOwogIHdyYXBwZWQua2luZCA9IGNsYXNzaWZpZWQua2luZDsKICB3cmFwcGVkLmNhdXNlID0gZXJyOwogIHJldHVybiB3cmFwcGVkOwp9Cgphc3luYyBmdW5jdGlvbiBpbnZva2VBY3Rpb25zKGFjdGlvbnMpIHsKICBjb25zdCByZXN1bHQgPSBhd2FpdCBzZXNzaW9uLmFjY291bnQuc3RyazIwSW52b2tlVHJhbnNhY3Rpb24oYWN0aW9ucyk7CiAgY29uc3QgaGFzaCA9IHJlc3VsdD8udHJhbnNhY3Rpb25faGFzaCB8fCAiIjsKICBjb25zdCB3YWl0ID0gYXdhaXQgd2FpdEZvclR4KGhhc2gpOwogIHJldHVybiB7CiAgICAuLi53YWl0LAogICAgZXhwbG9yZXI6IGV4cGxvcmVyVHhVcmwoZXhwbG9yZXJCYXNlKCksIGhhc2gpLAogIH07Cn0KCmFzeW5jIGZ1bmN0aW9uIHJlYWRCbG9ja051bWJlcigpIHsKICBpZiAoIXNlc3Npb24uYWNjb3VudCkgcmV0dXJuIG51bGw7CiAgdHJ5IHsKICAgIGNvbnN0IG4gPSBhd2FpdCBzZXNzaW9uLmFjY291bnQuZ2V0QmxvY2tOdW1iZXIoKTsKICAgIHNlc3Npb24uY3VycmVudEJsb2NrID0gTnVtYmVyKG4pOwogICAgcmV0dXJuIHNlc3Npb24uY3VycmVudEJsb2NrOwogIH0gY2F0Y2ggKF8pIHsKICAgIHJldHVybiBzZXNzaW9uLmN1cnJlbnRCbG9jazsKICB9Cn0KCmZ1bmN0aW9uIHJlY2VpcHRCbG9jayhyZWNlaXB0KSB7CiAgY29uc3QgcmF3ID0KICAgIHJlY2VpcHQ/LmJsb2NrX251bWJlciA/PwogICAgcmVjZWlwdD8uYmxvY2tOdW1iZXIgPz8KICAgIHJlY2VpcHQ/LnZhbHVlPy5ibG9ja19udW1iZXIgPz8KICAgIG51bGw7CiAgaWYgKHJhdyA9PSBudWxsKSByZXR1cm4gbnVsbDsKICBjb25zdCBuID0gTnVtYmVyKHJhdyk7CiAgcmV0dXJuIE51bWJlci5pc0Zpbml0ZShuKSA/IG4gOiBudWxsOwp9CgpleHBvcnQgYXN5bmMgZnVuY3Rpb24gcmVmcmVzaE1hdHVyaXR5KCkgewogIGF3YWl0IHJlYWRCbG9ja051bWJlcigpOwogIGVtaXQoKTsKICByZXR1cm4gZ2V0U2Vzc2lvbigpOwp9CgpleHBvcnQgZnVuY3Rpb24gc3BlbmRMb2NrZWQoKSB7CiAgcmV0dXJuICgKICAgIG1hdHVyaXR5UmVtYWluaW5nKAogICAgICBzZXNzaW9uLmN1cnJlbnRCbG9jaywKICAgICAgc2Vzc2lvbi5sYXN0U2hpZWxkQmxvY2ssCiAgICAgIE5PVEVfTUFUVVJJVFlfQkxPQ0tTCiAgICApID4gMAogICk7Cn0KCmV4cG9ydCBhc3luYyBmdW5jdGlvbiBzaGllbGRBbW91bnQoaHVtYW5BbW91bnQpIHsKICBhc3NlcnRSZWFkeSgpOwogIGNvbnN0IGFtb3VudCA9IGh1bWFuVG9CYXNlSGV4KGh1bWFuQW1vdW50LCBERUZBVUxUX1RPS0VOX0RFQ0lNQUxTKTsKICB0cnkgewogICAgY29uc3Qgd2FpdCA9IGF3YWl0IGludm9rZUFjdGlvbnMoWwogICAgICB7IHR5cGU6ICJkZXBvc2l0IiwgdG9rZW46IHRva2VuQWRkcmVzcygpLCBhbW91bnQgfSwKICAgIF0pOwogICAgY29uc3QgZnJvbVJlY2VpcHQgPSByZWNlaXB0QmxvY2sod2FpdC5yZWNlaXB0KTsKICB8c2Vzc2lvbi5sYXN0U2hpZWxkQmxvY2sgPSBmcm9tUmVjZWlwdCA/PyAoYXdhaXQgcmVhZEJsb2NrTnVtYmVyKCkpOwogICAgYXdhaXQgcmVhZEJsb2NrTnVtYmVyKCk7CiAgICBlbWl0KCk7CiAgICByZXR1cm4gd2FpdDsKICB9IGNhdGNoIChlcnIpIHsKICAgIHRocm93IHdyYXBQb29sRXJyb3IoZXJyLCAiU2hpZWxkIGZhaWxlZC4iKTsKICB9Cn0KCmV4cG9ydCBhc3luYyBmdW5jdGlvbiB0cmFuc2ZlckFtb3VudChodW1hbkFtb3VudCwgcmVjaXBpZW50KSB7CiAgYXNzZXJ0UmVhZHkoKTsKICBjb25zdCB0byA9IFN0cmluZyhyZWNpcGllbnQgPz8gIiIpLnRyaW0oKTsKICBpZiAoIWlzRmVsdEFkZHJlc3ModG8pKSB0aHJvdyBuZXcgRXJyb3IoIlJlY2lwaWVudCBtdXN0IGJlIGEgMHggU3RhcmtuZXQgYWRkcmVzcy4iKTsKICBpZiAoc3BlbmRMb2NrZWQoKSkgewogICAgdGhyb3cgbmV3IEVycm9yKAogICAgICBgRnJlc2hseSBzaGllbGRlZCBub3RlcyBtYXR1cmUgaW4gfiR7Tk9URV9NQVRVUklUWV9CTE9DS1N9IGJsb2Nrcy4gV2FpdCBiZWZvcmUgdHJhbnNmZXJyaW5nLmAKICAgICk7CiAgfQogIGNvbnN0IGFtb3VudCA9IGh1bWFuVG9CYXNlSGV4KGh1bWFuQW1vdW50LCBERUZBVUxUX1RPS0VOX0RFQ0lNQUxTKTsKICB0cnkgewogICAgcmV0dXJuIGF3YWl0IGludm9rZUFjdGlvbnMoWwogICAgICB7IHR5cGU6ICJ0cmFuc2ZlciIsIHRva2VuOiB0b2tlbkFkZHJlc3MoKSwgYW1vdW50LCByZWNpcGllbnQ6IHRvIH0sCiAgICBcdSk7CiAgfSBjYXRjaCAoZXJyKSB7CiAgICB0aHJvdyB3cmFwUG9vbEVycm9yKGVyciwgIlByaXZhdGUgdHJhbnNmZXIgZmFpbGVkLiIpOwogIH0KfQoKZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIHVuc2hpZWxkQW1vdW50KGh1bWFuQW1vdW50LCByZWNpcGllbnQpIHsKICBhc3NlcnRSZWFkeSgpOwogIGNvbnN0IHRvID0gU3RyaW5nKHJlY2lwaWVudCA/PyAiIikudHJpbSgpIHx8IHNlc3Npb24uYWRkcmVzczsKICBpZiAoIWlzRmVsdEFkZHJlc3ModG8pKSB0aHJvdyBuZXcgRXJyb3IoIlJlY2lwaWVudCBtdXN0IGJlIGEgMHggU3RhcmtuZXQgYWRkcmVzcy4iKTsKICBpZiAoc3BlbmRMb2NrZWQoKSkgewogICAgdGhyb3cgbmV3IEVycm9yKAogICAgICBgRnJlc2hseSBzaGllbGRlZCBub3RlcyBtYXR1cmUgaW4gfiR7Tk9URV9NQVRVUklUWV9CTE9DS1N9IGJsb2Nrcy4gV2FpdCBiZWZvcmUgdW5zaGllbGRpbmcuYAogICAgKTsKICB9CiAgY29uc3QgYW1vdW50ID0gaHVtYW5Ub0Jhc2VIZXgoaHVtYW5BbW91bnQsIERFRkFVTFRfVE9LRU5fREVDSU1BTFMpOwogIHRyeSB7CiAgICByZXR1cm4gYXdhaXQgaW52b2tlQWN0aW9ucyhbCiAgICAgIHsgdHlwZTogIndpdGhkcmF3IiwgdG9rZW46IHRva2VuQWRkcmVzcygpLCBhbW91bnQsIHJlY2lwaWVudDogdG8gfSwKICAgIF0pOwogIH0gY2F0Y2ggKGVycikgewogICAgdGhyb3cgd3JhcFBvb2xFcnJvcihlcnIsICJVbnNoaWVsZCBmYWlsZWQuIik7CiAgfQp9CgpleHBvcnQgYXN5bmMgZnVuY3Rpb24gZmV0Y2hTaGllbGRlZEJhbGFuY2VzKCkgewogIGFzc2VydFJlYWR5KCk7CiAgY29uc3QgZW50cmllcyA9IGF3YWl0IHNlc3Npb24uYWNjb3VudC5zdHJrMjBCYWxhbmNlcyhbdG9rZW5BZGRyZXNzKCldKTsKICBjb25zdCBsaXN0ID0gQXJyYXkuaXNBcnJheShlbnRyaWVzKSA/IGVudHJpZXMgOiBbXTsKICBjb25zdCBtYXRjaCA9CiAgICBsaXN0LmZpbmQoKGUpID0+IGUgJiYgKGUudG9rZW4gPT09IHRva2VuQWRkcmVzcygpIHx8IHNhbWVUb2tlbihlLnRva2VuKSkpIHx8CiAgICBsaXN0WzBdOwogIGNvbnN0IHJhdyA9IG1hdGNoPy5iYWxhbmNlID8/ICIweDAiOwogIHJldHVybiB7CiAgICBlbnRyaWVzOiBsaXN0LAogICAgcmF3LAogICAgaHVtYW46IGJhc2VUb0h1bWFuKHJhdywgREVGQVVMVF9UT0tFTl9ERUNJTUFMUyksCiAgfTsKfQoKZnVuY3Rpb24gc2FtZVRva2VuKGFkZHIpIHsKICB0cnkgewogICAgcmV0dXJuIEJpZ0ludChhZGRyKSA9PT0gQmlnSW50KHRva2VuQWRkcmVzcygpKTsKICB9IGNhdGNoIChfKSB7CiAgICByZXR1cm4gZmFsc2U7CiAgfQp9CgovLyBTdHViIGZvciBwcm92aWRlcgpleHBvcnQgZnVuY3Rpb24gcmVzY2FuV2FsbGV0cygpIHsKICAgIGluaXRXYWxsZXRTdG9yZSgpOwogICAgcmV0dXJuIGdldFNlc3Npb24oKTsKfQoKZXhwb3J0IGZ1bmN0aW9uIHJlZ2lzdGVySW5Qb29sKCkgewogICAgdGhyb3cgbmV3IEVycm9yKCJSZWdpc3RyYXRpb24gaXMgaGFuZGxlZCBieSB0aGUgd2FsbGV0IG9uIGZpcnN0IFNoaWVsZC4iKTsKfQo=
+// Wallet API via starknet.js WalletAccountV6.
+// This module never reads viewing keys, notes, or proofs.
+
+import { createStore } from "@starknet-io/get-starknet-discovery";
+import { Contract, RpcProvider, WalletAccountV6, constants, walletV6 } from "starknet";
+import {
+  DEFAULT_EXPLORER,
+  DEFAULT_RPC,
+  DEFAULT_TOKEN,
+  DEFAULT_TOKEN_DECIMALS,
+  EXPECTED_CHAIN_ID,
+  NOTE_MATURITY_BLOCKS,
+  TX_WAIT_MS,
+  baseToHuman,
+  classifyPoolError,
+  explorerTxUrl,
+  humanToBaseHex,
+  isFeltAddress,
+  isStrk20Capable,
+  maturityRemaining,
+  sameAddress,
+  walletDisplayName,
+} from "./starknetWalletUtils";
+
+const FEE_ABI = [
+  {
+    type: "function",
+    name: "get_fee_amount",
+    inputs: [],
+    outputs: [
+      {
+        type: "core::integer::u256",
+      },
+    ],
+    state_mutability: "view",
+  },
+];
+
+const listeners = new Set();
+
+const session = {
+  store: null,
+  storeUnsub: null,
+  wallets: [],
+  wallet: null,
+  account: null,
+  address: "",
+  chainId: "",
+  capable: false,
+  apiVersions: [],
+  changeUnsub: null,
+  lastShieldBlock: null,
+  currentBlock: null,
+};
+
+function emit() {
+  const snap = getSession();
+  listeners.forEach((fn) => fn(snap));
+}
+
+function nodeUrl() {
+  return process.env.REACT_APP_STARKNET_RPC || DEFAULT_RPC;
+}
+
+export function getRpcUrl() {
+  return nodeUrl();
+}
+
+export function getProvider() {
+  return session.account ?? new RpcProvider({ nodeUrl: nodeUrl() });
+}
+
+function tokenAddress() {
+  return process.env.REACT_APP_STRK20_TOKEN || DEFAULT_TOKEN;
+}
+
+function poolAddress() {
+  return (process.env.REACT_APP_STRK20_POOL || "").trim();
+}
+
+function explorerBase() {
+  return process.env.REACT_APP_STARKNET_EXPLORER || DEFAULT_EXPLORER;
+}
+
+export function getSession() {
+  return {
+    wallets: session.wallets,
+    wallet: session.wallet,
+    account: session.account,
+    address: session.address,
+    chainId: session.chainId,
+    capable: session.capable,
+    apiVersions: session.apiVersions,
+    walletName: walletDisplayName(session.wallet),
+    token: tokenAddress(),
+    pool: poolAddress(),
+    explorerBase: explorerBase(),
+    lastShieldBlock: session.lastShieldBlock,
+    currentBlock: session.currentBlock,
+    maturityLeft: maturityRemaining(
+      session.currentBlock,
+      session.lastShieldBlock,
+      NOTE_MATURITY_BLOCKS
+    ),
+  };
+}
+
+export function subscribeSession(fn) {
+  listeners.add(fn);
+  fn(getSession());
+  return () => listeners.delete(fn);
+}
+
+export function initWalletStore() {
+  if (session.store) return session.store;
+  session.store = createStore();
+  const refresh = () => {
+    session.wallets = session.store.getWallets();
+    emit();
+  };
+  session.storeUnsub = session.store.subscribe(refresh);
+  refresh();
+  return session.store;
+}
+
+export async function readWalletApiVersions(wallet) {
+  if (!wallet) return [];
+  try {
+    const versions = await walletV6.supportedWalletApi(wallet);
+    return Array.isArray(versions) ? versions.map(String) : [];
+  } catch (_) {
+    try {
+      const specs = await walletV6.supportedSpecs(wallet);
+      return Array.isArray(specs) ? specs.map(String) : [];
+    } catch (__) {
+      return [];
+    }
+  }
+}
+
+async function applyConnected(wallet, account) {
+  if (session.changeUnsub) {
+    try {
+      session.changeUnsub();
+    } catch (_) {
+      /* ignore */
+    }
+    session.changeUnsub = null;
+  }
+  session.wallet = wallet;
+  session.account = account;
+  session.address = account?.address || "";
+  try {
+    session.chainId = account ? await account.getChainId() : "";
+  } catch (_) {
+    session.chainId = "";
+  }
+  session.apiVersions = await readWalletApiVersions(wallet);
+  session.capable = isStrk20Capable(session.apiVersions);
+  if (account?.onChange) {
+    session.changeUnsub = account.onChange(async () => {
+      try {
+        const next = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
+        await applyConnected(wallet, next);
+      } catch (_) {
+        await disconnectWallet();
+      }
+    });
+  }
+  emit();
+}
+
+export async function connectWallet(wallet) {
+  if (!wallet) throw new Error("Pick a wallet.");
+  initWalletStore();
+  const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
+  try {
+    const writeId = await walletV6.requestChainId(wallet);
+    if (!sameAddress(writeId, EXPECTED_CHAIN_ID)) {
+      await account.switchStarknetChain(constants.StarknetChainId.SN_MAIN);
+    }
+  } catch (_) {
+    /* wallet may refuse the switch; PrivacyScreen shows the chain */
+  }
+  await applyConnected(wallet, account);
+  return getSession();
+}
+
+export async function disconnectWallet() {
+  if (session.changeUnsub) {
+    try {
+      session.changeUnsub();
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  if (session.account?.unsubscribeChange) {
+    try {
+      session.account.unsubscribeChange();
+    } catch (_) {
+      /* ignore */
+    }
+  }
+  session.wallet = null;
+  session.account = null;
+  session.address = "";
+  session.chainId = "";
+  session.capable = false;
+  session.apiVersions = [];
+  session.changeUnsub = null;
+  session.lastShieldBlock = null;
+  session.currentBlock = null;
+  emit();
+}
+
+export async function fetchPoolFee() {
+  const address = poolAddress();
+  if (!address) return { available: false, human: null };
+  try {
+    const provider = session.account ?? new RpcProvider({ nodeUrl: nodeUrl() });
+    const pool = new Contract({ abi: FEE_ABI, address, providerOrAccount: provider });
+    const raw = await pool.get_fee_amount();
+    const value =
+      raw?.fee_amount ??
+      raw?.[0] ??
+      (typeof raw === "bigint" || typeof raw === "string" || typeof raw === "number"
+        ? raw
+        : raw?.low != null
+          ? BigInt(raw.low) + (BigInt(raw.high || 0) << 128n)
+          : null);
+    if (value == null) return { available: false, human: null };
+    return { available: true, raw: value, human: baseToHuman(value, DEFAULT_TOKEN_DECIMALS) };
+  } catch (_) {
+    return { available: false, human: null };
+  }
+}
+
+export async function waitForTx(hash) {
+  const account = session.account;
+  if (!account || !hash) return { status: "submitted", hash };
+  let timer;
+  const timeout = new Promise((resolve) => {
+    timer = setTimeout(() => resolve({ timedOut: true }), TX_WAIT_MS);
+  });
+  try {
+    const raced = await Promise.race([account.waitForTransaction(hash), timeout]);
+    if (raced?.timedOut) return { status: "submitted", hash };
+    return { status: "accepted", hash, receipt: raced };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function assertReady() {
+  if (!session.account) throw new Error("Connect a wallet first.");
+  if (!session.capable) {
+    throw new Error("Needs a STRK20-capable wallet (Ready).");
+  }
+}
+
+function wrapPoolError(err, fallback) {
+  const classified = classifyPoolError(err, fallback);
+  const wrapped = new Error(classified.message);
+  wrapped.kind = classified.kind;
+  wrapped.cause = err;
+  return wrapped;
+}
+
+async function invokeActions(actions) {
+  // Pass actions array directly -- wrapping in { actions } causes INVALID_REQUEST_PAYLOAD
+  const result = await session.account.strk20InvokeTransaction(actions);
+  const hash = result?.transaction_hash || "";
+  const wait = await waitForTx(hash);
+  return {
+    ...wait,
+    explorer: explorerTxUrl(explorerBase(), hash),
+  };
+}
+
+async function readBlockNumber() {
+  if (!session.account) return null;
+  try {
+    const n = await session.account.getBlockNumber();
+    session.currentBlock = Number(n);
+    return session.currentBlock;
+  } catch (_) {
+    return session.currentBlock;
+  }
+}
+
+function receiptBlock(receipt) {
+  const raw =
+    receipt?.block_number ??
+    receipt?.blockNumber ??
+    receipt?.value?.block_number ??
+    null;
+  if (raw == null) return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+export async function refreshMaturity() {
+  await readBlockNumber();
+  emit();
+  return getSession();
+}
+
+export function spendLocked() {
+  return (
+    maturityRemaining(
+      session.currentBlock,
+      session.lastShieldBlock,
+      NOTE_MATURITY_BLOCKS
+    ) > 0
+  );
+}
+
+export async function shieldAmount(humanAmount) {
+  assertReady();
+  const amount = humanToBaseHex(humanAmount, DEFAULT_TOKEN_DECIMALS);
+  try {
+    const wait = await invokeActions([
+      { type: "deposit", token: tokenAddress(), amount },
+    ]);
+    const fromReceipt = receiptBlock(wait.receipt);
+    session.lastShieldBlock = fromReceipt ?? (await readBlockNumber());
+    await readBlockNumber();
+    emit();
+    return wait;
+  } catch (err) {
+    throw wrapPoolError(err, "Shield failed.");
+  }
+}
+
+export async function transferAmount(humanAmount, recipient) {
+  assertReady();
+  const to = String(recipient ?? "").trim();
+  if (!isFeltAddress(to)) throw new Error("Recipient must be a 0x Starknet address.");
+  if (spendLocked()) {
+    throw new Error(
+      `Freshly shielded notes mature in ~${NOTE_MATURITY_BLOCKS} blocks. Wait before transferring.`
+    );
+  }
+  const amount = humanToBaseHex(humanAmount, DEFAULT_TOKEN_DECIMALS);
+  try {
+    return await invokeActions([
+      { type: "transfer", token: tokenAddress(), amount, recipient: to },
+    ]);
+  } catch (err) {
+    throw wrapPoolError(err, "Private transfer failed.");
+  }
+}
+
+export async function unshieldAmount(humanAmount, recipient) {
+  assertReady();
+  const to = String(recipient ?? "").trim() || session.address;
+  if (!isFeltAddress(to)) throw new Error("Recipient must be a 0x Starknet address.");
+  if (spendLocked()) {
+    throw new Error(
+      `Freshly shielded notes mature in ~${NOTE_MATURITY_BLOCKS} blocks. Wait before unshielding.`
+    );
+  }
+  const amount = humanToBaseHex(humanAmount, DEFAULT_TOKEN_DECIMALS);
+  try {
+    return await invokeActions([
+      { type: "withdraw", token: tokenAddress(), amount, recipient: to },
+    ]);
+  } catch (err) {
+    throw wrapPoolError(err, "Unshield failed.");
+  }
+}
+
+export async function fetchShieldedBalances() {
+  assertReady();
+  const entries = await session.account.strk20Balances([tokenAddress()]);
+  const list = Array.isArray(entries) ? entries : [];
+  const match =
+    list.find((e) => e && (e.token === tokenAddress() || sameToken(e.token))) ||
+    list[0];
+  const raw = match?.balance ?? "0x0";
+  return {
+    entries: list,
+    raw,
+    human: baseToHuman(raw, DEFAULT_TOKEN_DECIMALS),
+  };
+}
+
+function sameToken(addr) {
+  try {
+    return BigInt(addr) === BigInt(tokenAddress());
+  } catch (_) {
+    return false;
+  }
+}
+
+// Stub for provider
+export function rescanWallets() {
+    initWalletStore();
+    return getSession();
+}
+
+export function registerInPool() {
+    throw new Error("Registration is handled by the wallet on first Shield.");
+}
