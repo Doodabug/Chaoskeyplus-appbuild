@@ -4,12 +4,7 @@ import { Btn, HashLine, Overline, Panel, StatLine } from "../components/ui";
 import { useStarknet } from "../providers/StarknetProvider";
 import {
   NOTE_MATURITY_BLOCKS,
-<<<<<<< HEAD
-  formatChainLabel,
-  isSepoliaChainId,
-=======
   EXPECTED_CHAIN_ID,
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   maxSpendHuman,
 } from "../lib/starknetWalletUtils";
 
@@ -17,64 +12,10 @@ const inputClass =
   "w-full bg-transparent border border-white/15 px-3 py-2 text-sm text-white font-mono focus:border-cyan-400 outline-none";
 
 function shortAddr(addr) {
-  if (!addr) return "â€”";
-  return addr.length > 16 ? `${addr.slice(0, 10)}â€¦${addr.slice(-6)}` : addr;
+  if (!addr) return "—";
+  return addr.length > 16 ? addr.slice(0, 10) + "…" + addr.slice(-6) : addr;
 }
 
-<<<<<<< HEAD
-function EmptyWalletHint({ scanning, hints, onRescan }) {
-  const stub = hints.find((h) => h.status === "stub");
-  const seen = hints.map((h) => h.name || h.key).filter(Boolean);
-  return (
-    <div
-      data-testid="pool-no-wallets"
-      className="border border-white/10 px-3 py-4 text-center space-y-3"
-    >
-      <p className="text-[11px] font-mono text-white/70 leading-relaxed">
-        {scanning
-          ? "Looking for Ready in this tab…"
-          : stub
-            ? "Ready is in this browser but locked or not injected yet. Unlock it, then scan again."
-            : "This tab cannot see Ready. You do not need to install it again if the extension is already in this Chrome."}
-      </p>
-      <ol className="text-left text-[11px] font-mono text-white/50 leading-relaxed space-y-1.5 px-1">
-        <li>1. Click the Ready puzzle-piece on this tab and unlock it.</li>
-        <li>2. Ready → site access → On all sites (localhost counts).</li>
-        <li>3. Stay on http://localhost:3000 in the same Chrome profile.</li>
-        <li>4. The phone / App Store Ready app will never appear here.</li>
-      </ol>
-      {seen.length > 0 && (
-        <p
-          data-testid="pool-injected-hints"
-          className="text-[10px] font-mono text-white/35"
-        >
-          this tab sees {seen.join(", ")}
-        </p>
-      )}
-      <Btn intent="primary" testid="pool-rescan-wallets" onClick={onRescan}>
-        {scanning ? "Scanning" : "I already have Ready — scan again"}
-      </Btn>
-      <a
-        data-testid="pool-install-ready"
-        href="https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb"
-        target="_blank"
-        rel="noreferrer"
-        className="block text-[10px] font-mono uppercase tracking-[0.18em] text-white/40 hover:text-cyan-200"
-      >
-        Only if this Chrome has no Ready extension
-      </a>
-      <a
-        data-testid="pool-wallet-test-dapp"
-        href="https://starknet-wallet-account.vercel.app/"
-        target="_blank"
-        rel="noreferrer"
-        className="block text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300/80 hover:text-cyan-200"
-      >
-        Wallet test dapp
-      </a>
-    </div>
-  );
-=======
 function onMainnet(chainId) {
   if (!chainId) return false;
   try {
@@ -82,7 +23,6 @@ function onMainnet(chainId) {
   } catch (_) {
     return String(chainId).toLowerCase().includes("mainnet");
   }
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
 }
 
 export default function PrivacyScreen() {
@@ -115,33 +55,6 @@ export default function PrivacyScreen() {
       live = false;
     };
   }, [pool, address, fetchFee]);
-
-  useEffect(() => {
-    if (starknet.address) return undefined;
-    starknet.rescan();
-    return undefined;
-    // Pool open: poke Ready once. rescan identity is stable from the provider.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function onRescan() {
-    setError(null);
-    setBusy("rescan");
-    try {
-      const next = await starknet.rescan();
-      if (!next?.wallets?.length) {
-        setError({
-          kind: "unknown",
-          message:
-            "Still no Ready in this tab. Unlock the Ready icon here, set site access to On all sites, then scan again.",
-        });
-      }
-    } catch (e) {
-      setError({ kind: e?.kind || "unknown", message: e?.message || "Rescan failed." });
-    } finally {
-      setBusy("");
-    }
-  }
 
   useEffect(() => {
     if (!lastShieldBlock || maturityLeft <= 0) return undefined;
@@ -177,21 +90,6 @@ export default function PrivacyScreen() {
     await starknet.disconnect();
   }
 
-  async function onSwitchSepolia() {
-    setError(null);
-    setBusy("switch");
-    try {
-      await starknet.switchToSepolia();
-    } catch (e) {
-      setError({
-        kind: e?.kind || "unknown",
-        message: e?.message || "Switch to Sepolia failed.",
-      });
-    } finally {
-      setBusy("");
-    }
-  }
-
   async function runAction(kind, fn) {
     setError(null);
     setResult(null);
@@ -199,7 +97,8 @@ export default function PrivacyScreen() {
     try {
       const r = await fn();
       setResult({ ...r, kind });
-    } catch (e) {\n      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
+    } catch (e) {
+      setError({ kind: e?.kind || "unknown", message: e?.message || "Action failed." });
     } finally {
       setBusy("");
     }
@@ -225,11 +124,7 @@ export default function PrivacyScreen() {
 
   const connected = !!starknet.address;
   const capable = starknet.capable;
-<<<<<<< HEAD
-  const sepolia = isSepoliaChainId(starknet.chainId);
-=======
   const mainnet = onMainnet(starknet.chainId);
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   const locked = starknet.maturityLeft > 0;
   const spendDisabled = !!busy || locked;
 
@@ -250,16 +145,9 @@ export default function PrivacyScreen() {
           <>
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
               Connect Ready on Starknet Mainnet. The wallet holds keys, notes, and
-              proofs â€” this app never sees them.
+              proofs — this app never sees them.
             </p>
             {starknet.wallets.length === 0 && (
-<<<<<<< HEAD
-              <EmptyWalletHint
-                scanning={!!busy || starknet.scanning}
-                hints={starknet.injectedHints || []}
-                onRescan={onRescan}
-              />
-=======
               <div
                 data-testid="pool-no-wallets"
                 className="border border-white/10 px-3 py-4 text-center space-y-3"
@@ -278,7 +166,6 @@ export default function PrivacyScreen() {
                   Install Ready X
                 </a>
               </div>
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
             )}
             <ul className="space-y-2">
               {starknet.wallets.map((w) => (
@@ -291,10 +178,19 @@ export default function PrivacyScreen() {
                   </span>
                   <Btn
                     intent="primary"
-                    testid={`pool-connect-${w.id || w.name}`}
+                    testid={"pool-connect-" + (w.id || w.name)}
                     onClick={() => onConnect(w)}
+                    disabled={!!busy}
+                  >
+                    <Plugs size={12} className="inline mr-1.5 -mt-0.5" />
+                    {busy === "connect" ? "Connecting" : "Connect"}
+                  </Btn>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
 
-<<<<<<< HEAD
         {connected && (
           <>
             <StatLine
@@ -310,38 +206,28 @@ export default function PrivacyScreen() {
             />
             <StatLine
               label="Network"
-              value={formatChainLabel(starknet.chainId)}
-              valueClass={sepolia ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
+              value={mainnet ? "Mainnet" : starknet.chainId || "—"}
+              valueClass={mainnet ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-network"
             />
-            {!sepolia && starknet.chainId ? (
-              <p
-                data-testid="pool-chain-raw"
-                className="text-[10px] font-mono text-white/35 break-all"
-              >
-                wallet chain {String(starknet.chainId)}
-              </p>
-            ) : null}
             <StatLine
               label="STRK20 API"
               value={capable ? "capable" : "unsupported"}
               valueClass={capable ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
               testid="pool-capability"
             />
-            {!sepolia && (
+            {!mainnet && (
               <div className="mt-3 space-y-2">
                 <p className="text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
-                  Pool actions are Sepolia-only. Approve the Ready popup for
-                  Starknet Sepolia. If nothing appears, open Ready → Network →
-                  Starknet Sepolia, then tap Switch again.
+                  Pool actions are Mainnet-only. Switch the wallet network, then retry.
                 </p>
                 <Btn
                   intent="primary"
-                  testid="pool-switch-sepolia-btn"
-                  onClick={onSwitchSepolia}
-                  disabled={!!busy}
+                  testid="pool-switch-mainnet-btn"
+                  onClick={() => onConnect(starknet.wallet)}
+                  disabled={!!busy || !starknet.wallet}
                 >
-                  {busy === "switch" ? "Switching" : "Switch to Sepolia"}
+                  Switch to Mainnet
                 </Btn>
               </div>
             )}
@@ -359,7 +245,7 @@ export default function PrivacyScreen() {
         </Panel>
       )}
 
-      {connected && capable && sepolia && (
+      {connected && capable && mainnet && (
         <>
           <Panel title="SHIELDED BALANCE" testid="pool-balance-panel">
             <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
@@ -409,7 +295,7 @@ export default function PrivacyScreen() {
               </p>
               <p className="text-[11px] font-mono text-white/55 leading-relaxed">
                 {fee?.available
-                  ? `Pool fee ${fee.human} STRK per private operation. Subtracted from MAX. Separate from network gas.`
+                  ? "Pool fee " + fee.human + " STRK per private operation. Subtracted from MAX. Separate from network gas."
                   : "Pool fee unavailable until REACT_APP_STRK20_POOL is set. Separate from network gas."}
               </p>
             </div>
@@ -430,9 +316,9 @@ export default function PrivacyScreen() {
               data-testid="pool-maturity"
               className="border border-cyan-400/30 bg-cyan-400/5 px-3 py-2 text-[11px] font-mono text-cyan-200"
             >
-              Freshly shielded notes mature in ~{NOTE_MATURITY_BLOCKS} blocks.
-              Transfer and unshield locked for {starknet.maturityLeft} more
-              {starknet.maturityLeft === 1 ? " block" : " blocks"}.
+              Freshly shielded notes mature in ~" + NOTE_MATURITY_BLOCKS + " blocks.
+              Transfer and unshield locked for " + starknet.maturityLeft + " more
+              " + (starknet.maturityLeft === 1 ? " block" : " blocks") + ".
             </div>
           )}
 
@@ -515,9 +401,6 @@ export default function PrivacyScreen() {
                     data-testid="pool-unshield-max"
                     className="text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300"
                     onClick={() => applyMax(setWithdrawAmt)}
-=======
-                    onChange={() => applyMax(setWithdrawAmt)}
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
                   >
                     Max
                   </button>
@@ -525,7 +408,7 @@ export default function PrivacyScreen() {
               </div>
               <input
                 data-testid="pool-unshield-amount"
-                text="text"
+                type="text"
                 inputMode="decimal"
                 value={withdrawAmt}
                 onChange={(e) => setWithdrawAmt(e.target.value)}
@@ -536,7 +419,7 @@ export default function PrivacyScreen() {
             <Btn
               intent="primary"
               testid="pool-unshield-btn"
-              onChange={() =>
+              onClick={() =>
                 runAction("unshield", () =>
                   starknet.unshield(withdrawAmt, withdrawTo || starknet.address)
                 )
@@ -554,15 +437,16 @@ export default function PrivacyScreen() {
         <div
           data-testid="pool-error"
           data-kind={error.kind}
-          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed">
+          className="border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed"
+        >
           {error.kind === "screening"
             ? error.message
-            : `ERR :: ${error.message}`u}
+            : "ERR :: " + error.message}
         </div>
       )}
 
       {result && (
-        <Panel title=`{${(result.kind || "action").toUpperCase()} RESULT` testid="pool-result-panel">
+        <Panel title={((result.kind || "action").toUpperCase()) + " RESULT"} testid="pool-result-panel">
           <StatLine
             label="Status"
             value={result.status === "accepted" ? "accepted" : "submitted"}
@@ -571,7 +455,7 @@ export default function PrivacyScreen() {
           />
           <div className="py-2">
             <Overline className="mb-1">Transaction</Overline>
-            <HashLine testid="pool-tx-hash" value={result.hash || "â€•"} />
+            <HashLine testid="pool-tx-hash" value={result.hash || "—"} />
           </div>
           {result.explorer && (
             <a
@@ -587,7 +471,7 @@ export default function PrivacyScreen() {
           )}
           {result.status === "submitted" && (
             <p className="mt-3 text-[11px] font-mono text-white/45 leading-relaxed">
-              Confirmation timed out. The transaction was submitted â†’ check the
+              Confirmation timed out. The transaction was submitted — check the
               explorer.
             </p>
           )}
@@ -598,7 +482,8 @@ export default function PrivacyScreen() {
         <p className="text-[12px] font-mono text-white/55 leading-relaxed">
           Shield and unshield amounts are public ERC-20 legs. The fact and
           timing of a pool interaction are public. Private transfers hide who
-          pays whom and how much. This is not a mixer.
+          pays whom and how much. This is not a mixer. Activity is never
+          attributed from the transaction sender — that address is the relayer.
         </p>
       </Panel>
     </div>
