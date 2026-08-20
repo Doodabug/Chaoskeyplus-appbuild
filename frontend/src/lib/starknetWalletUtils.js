@@ -19,12 +19,8 @@ export const DEFAULT_EXPLORER = MAINNET_EXPLORER;
 
 export const MAINNET_CHAIN_ID = "0x534e5f4d41494e";
 export const SEPOLIA_CHAIN_ID = "0x534e5f5345504f4c4941";
-<<<<<<< HEAD
-export const MAINNET_CHAIN_ID = "0x534e5f4d41494e";
-=======
 export const EXPECTED_CHAIN_ID = MAINNET_CHAIN_ID;
 
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
 export const TX_WAIT_MS = 120000;
 export const NOTE_MATURITY_BLOCKS = 10;
 
@@ -63,40 +59,6 @@ export function sameAddress(a, b) {
   } catch (_) {
     return String(a).toLowerCase() === String(b).toLowerCase();
   }
-}
-
-/** Strip CAIP-2 `starknet:` prefix wallets emit on account/network events. */
-export function stripChainPrefix(chainId) {
-  const raw = String(chainId ?? "").trim();
-  if (raw.toLowerCase().startsWith("starknet:")) return raw.slice(9);
-  return raw;
-}
-
-/** True for Sepolia hex (`SN_SEPOLIA`), the name, or a CAIP-2 form of either. */
-export function isSepoliaChainId(chainId) {
-  if (chainId == null || chainId === "") return false;
-  const stripped = stripChainPrefix(chainId);
-  if (!stripped) return false;
-  if (stripped.toLowerCase().includes("sepolia")) return true;
-  try {
-    return BigInt(stripped) === BigInt(SEPOLIA_CHAIN_ID);
-  } catch (_) {
-    return stripped.toUpperCase() === "SN_SEPOLIA";
-  }
-}
-
-export function formatChainLabel(chainId) {
-  if (chainId == null || chainId === "") return "—";
-  if (isSepoliaChainId(chainId)) return "Sepolia";
-  const stripped = stripChainPrefix(chainId);
-  if (!stripped) return "—";
-  if (stripped.toLowerCase().includes("main")) return "Mainnet";
-  try {
-    if (BigInt(stripped) === BigInt(MAINNET_CHAIN_ID)) return "Mainnet";
-  } catch (_) {
-    /* not a felt */
-  }
-  return stripped;
 }
 
 /** Human decimal string → base units as 0x-hex felt. */
@@ -211,71 +173,4 @@ export function explorerTxUrl(base, hash) {
 
 export function walletDisplayName(wallet) {
   return wallet?.name || wallet?.id || "Unknown wallet";
-<<<<<<< HEAD
 }
-
-export const INJECTED_WINDOW_KEYS = [
-  "starknet",
-  "starknet_argentX",
-  "starknet_argent",
-  "starknet_ready",
-  "starknet_readyX",
-  "starknet_readyWallet",
-  "starknet_braavos",
-];
-
-/** 1×1 PNG so a stub inject still satisfies Wallet Standard `icon`. */
-export const PLACEHOLDER_WALLET_ICON =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
-
-export function prettyInjectedName(key) {
-  const k = String(key || "").toLowerCase();
-  if (k.includes("braavos")) return "Braavos";
-  if (k.includes("argent") || k.includes("ready") || k === "starknet") return "Ready";
-  return key || "Wallet";
-}
-
-export function listStarknetWindowKeys(win) {
-  const keys = new Set(INJECTED_WINDOW_KEYS);
-  if (!win) return [...keys];
-  try {
-    for (const name of Object.getOwnPropertyNames(win)) {
-      if (/starknet/i.test(name)) keys.add(name);
-    }
-  } catch (_) {
-    /* some browsers throw on getOwnPropertyNames(window) */
-  }
-  return [...keys];
-}
-
-export function looksLikeInjectedWallet(value) {
-  if (!value || typeof value !== "object") return false;
-  return typeof value.request === "function" || typeof value.enable === "function";
-}
-
-export function describeInjectedSlots(win) {
-  if (!win) return [];
-  const out = [];
-  for (const key of listStarknetWindowKeys(win)) {
-    let value;
-    try {
-      value = win[key];
-    } catch (_) {
-      continue;
-    }
-    if (value == null) continue;
-    if (looksLikeInjectedWallet(value)) {
-      out.push({
-        key,
-        status: "ready",
-        name: value.name || value.id || prettyInjectedName(key),
-      });
-    } else {
-      out.push({ key, status: "stub", name: prettyInjectedName(key) });
-    }
-  }
-  return out;
-}
-=======
-}
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
