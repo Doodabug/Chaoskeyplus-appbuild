@@ -96,11 +96,30 @@ export function sameAddress(a, b) {
   }
 }
 
-/** Human decimal string → base units as decimal-string FELT (per STRK20 spec). */
+/** Human decimal string → base units as decimal-string FELT (per STRK20 spec).
+ *  Accepts common human inputs: locale commas (0,5), unit suffixes ("0.5 STRK"),
+ *  leading zeros, and surrounding whitespace. Rejects negative/NaN/empty/multi-dot.
+ */
 export function humanToBaseHex(human, decimals = DEFAULT_TOKEN_DECIMALS) {
-  const raw = String(human ?? "").trim();
-  if (!raw || !/^\d+(\.\d+)?$/.test(raw)) {
-    throw new Error("Enter a positive amount.");
+  let raw = String(human ?? "").trim();
+  if (!raw) throw new Error("Enter an amount.");
+
+  // Strip common unit suffixes (STRK, ETH, USDC, etc.) — case-insensitive.
+  raw = raw.replace(/\s*(?:strk|eth|usdc|usdt|dai|token|tokens)\s*$/i, "").trim();
+  // Strip internal whitespace (e.g. "0. 5")
+  raw = raw.replace(/\s+/g, "");
+  // Locale decimal comma → dot. Only accept one separator.
+  if (raw.includes(",") && !raw.includes(".")) raw = raw.replace(",", ".");
+
+  if (raw.startsWith("-")) throw new Error("Amount cannot be negative.");
+  if (raw.includes("e") || raw.includes("E")) {
+    throw new Error("Scientific notation not supported — enter a plain decimal like 0.5.");
+  }
+  if ((raw.match(/\./g) || []).length > 1) {
+    throw new Error("Amount has too many decimal points.");
+  }
+  if (!/^\d+(\.\d+)?$/.test(raw)) {
+    throw new Error(`"${human}" is not a valid amount. Use digits and one dot (e.g. 0.5).`);
   }
   const [wholePart, fracPart = ""] = raw.split(".");
   if (fracPart.length > decimals) {
@@ -108,7 +127,7 @@ export function humanToBaseHex(human, decimals = DEFAULT_TOKEN_DECIMALS) {
   }
   const fracPadded = (fracPart + "0".repeat(decimals)).slice(0, decimals);
   const base = BigInt(wholePart || "0") * 10n ** BigInt(decimals) + BigInt(fracPadded || "0");
-  if (base <= 0n) throw new Error("Enter a positive amount.");
+  if (base <= 0n) throw new Error("Enter a positive amount greater than zero.");
   // FELT accepts both hex and decimal per STRK20 spec; use decimal string —
   // matches SDK examples and avoids wallets that reject unpadded hex felts.
   return base.toString();
