@@ -2,32 +2,23 @@
 // This module never reads viewing keys, notes, or proofs.
 
 import { createStore } from "@starknet-io/get-starknet-discovery";
-import { StarknetInjectedWallet } from "@starknet-io/get-starknet-wallet-standard";
 import { Contract, RpcProvider, WalletAccountV6, constants, walletV6 } from "starknet";
 import {
   DEFAULT_EXPLORER,
   DEFAULT_RPC,
   DEFAULT_TOKEN,
   DEFAULT_TOKEN_DECIMALS,
-<<<<<<< HEAD
-=======
   EXPECTED_CHAIN_ID,
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   NOTE_MATURITY_BLOCKS,
-  PLACEHOLDER_WALLET_ICON,
   TX_WAIT_MS,
   baseToHuman,
   classifyPoolError,
-  describeInjectedSlots,
   explorerTxUrl,
   humanToBaseHex,
   isFeltAddress,
-  isSepoliaChainId,
   isStrk20Capable,
-  listStarknetWindowKeys,
-  looksLikeInjectedWallet,
   maturityRemaining,
-  prettyInjectedName,
+  sameAddress,
   walletDisplayName,
 } from "./starknetWalletUtils";
 
@@ -60,13 +51,10 @@ const session = {
   changeUnsub: null,
   lastShieldBlock: null,
   currentBlock: null,
-  scanTimer: null,
-  focusUnsub: null,
-  injectedHints: [],
 };
 
 function emit() {
-  const snap = getSession();
+  Const snap = getSession();
   listeners.forEach((fn) => fn(snap));
 }
 
@@ -74,7 +62,7 @@ function nodeUrl() {
   return process.env.REACT_APP_STARKNET_RPC || DEFAULT_RPC;
 }
 
-/** Sepolia RPC URL used by WalletAccountV6 / RpcProvider. */
+/** RPC URL used by WalletAccountV6 / RpcProvider. */
 export function getRpcUrl() {
   return nodeUrl();
 }
@@ -83,8 +71,7 @@ export function getRpcUrl() {
 export function getProvider() {
   return session.account ?? new RpcProvider({ nodeUrl: nodeUrl() });
 }
-
-function tokenAddress() {
+&flush;function tokenAddress() {
   return process.env.REACT_APP_STRK20_TOKEN || DEFAULT_TOKEN;
 }
 
@@ -106,303 +93,31 @@ export function getSession() {
     capable: session.capable,
     apiVersions: session.apiVersions,
     walletName: walletDisplayName(session.wallet),
-    token: tokenAddress(),
-    pool: poolAddress(),
-    explorerBase: explorerBase(),
-    lastShieldBlock: session.lastShieldBlock,
-    currentBlock: session.currentBlock,
-    scanning: !!session.scanTimer,
-    injectedHints: session.injectedHints,
-    maturityLeft: maturityRemaining(
-      session.currentBlock,
-      session.lastShieldBlock,
-      NOTE_MATURITY_BLOCKS
-    ),
-  };
-}
-
-export function subscribeSession(fn) {
-  listeners.add(fn);
-  fn(getSession());
-  return () => listeners.delete(fn);
-}
-
-function walletIdentity(wallet) {
-  return String(wallet?.id || wallet?.name || "").toLowerCase();
-}
-
-function mergeWallets(primary, extra) {
-  const out = [];
-  const seen = new Set();
-  for (const wallet of [...primary, ...extra]) {
-    const id = walletIdentity(wallet);
-    if (id && seen.has(id)) continue;
-    if (id) seen.add(id);
-    if (wallet) out.push(wallet);
-  }
-  return out;
-}
-
-function wrapInjected(raw, key) {
-  if (!looksLikeInjectedWallet(raw) || typeof raw.request !== "function") return null;
-  const icon =
-    typeof raw.icon === "string" && raw.icon.startsWith("data:")
-      ? raw.icon
-      : raw.icon?.light && String(raw.icon.light).startsWith("data:")
-        ? raw.icon.light
-        : PLACEHOLDER_WALLET_ICON;
-  const swo = {
-    id: String(raw.id || key || "injected"),
-    name: String(raw.name || prettyInjectedName(key)),
-    version: String(raw.version || "0"),
-    icon,
-    request: (...args) => raw.request(...args),
-    on: typeof raw.on === "function" ? (...args) => raw.on(...args) : () => {},
-    off: typeof raw.off === "function" ? (...args) => raw.off(...args) : () => {},
-  };
-  try {
-    return new StarknetInjectedWallet(swo);
-  } catch (_) {
-    return null;
-  }
-}
-
-function collectInjectedWallets() {
-  if (typeof window === "undefined") return [];
-  const extras = [];
-  for (const key of listStarknetWindowKeys(window)) {
-    let value;
-    try {
-      value = window[key];
-    } catch (_) {
-      continue;
-    }
-    const wrapped = wrapInjected(value, key);
-    if (wrapped) extras.push(wrapped);
-  }
-  return extras;
-}
-
-function pullWallets() {
-  if (session.store) {
-    try {
-      session.store._refreshInjectedWallets();
-    } catch (_) {
-      /* ignore */
-    }
-  }
-  const fromStore = session.store ? session.store.getWallets() : [];
-  session.wallets = mergeWallets(fromStore, collectInjectedWallets());
-  session.injectedHints =
-    typeof window === "undefined" ? [] : describeInjectedSlots(window);
-  emit();
-}
-
-function startWalletScan(ms = 20000) {
-  if (typeof window === "undefined") return;
-  if (session.scanTimer) {
-    clearInterval(session.scanTimer);
-    session.scanTimer = null;
-  }
-  const started = Date.now();
-  session.scanTimer = setInterval(() => {
-    pullWallets();
-    if (session.wallets.length > 0 || Date.now() - started > ms) {
-      clearInterval(session.scanTimer);
-      session.scanTimer = null;
-      emit();
-    }
-  }, 500);
-  emit();
-}
-
-export function initWalletStore() {
-  if (session.store) return session.store;
-  session.store = createStore();
-  session.storeUnsub = session.store.subscribe(() => pullWallets());
-  pullWallets();
-  startWalletScan();
-  if (typeof window !== "undefined" && !session.focusUnsub) {
-    const onFocus = () => pullWallets();
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onFocus);
-    session.focusUnsub = () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onFocus);
-    };
-  }
-  return session.store;
-}
-
-async function wakeInjectedWallets() {
-  if (typeof window === "undefined") return;
-  for (const key of listStarknetWindowKeys(window)) {
-    let value;
-    try {
-      value = window[key];
-    } catch (_) {
-      continue;
-    }
-    if (!value || typeof value !== "object") continue;
-    try {
-      if (typeof value.enable === "function") {
-        await value.enable();
-      } else if (typeof value.request === "function") {
-        await value.request({
-          type: "wallet_requestAccounts",
-          params: { silent_mode: false },
-        });
-      }
-    } catch (_) {
-      /* locked, refused, or not a wallet */
-    }
-  }
-}
-
-/** Re-scan window.starknet* and ask Ready to inject/unlock if it is present. */
-export async function rescanWallets() {
-  initWalletStore();
-  startWalletScan(20000);
-  await wakeInjectedWallets();
-  pullWallets();
-  if (session.wallets.length === 0) startWalletScan(20000);
-  return getSession();
+    token: Ñ½­•¹‘‘É•ÍÌ ¤°(€€€Á½½°èÁ½½±‘‘É•ÍÌ ¤°(€€€•áÁ±½É•É	…Í”è•áÁ±½É•É	…Í” ¤°(€€€±…ÍÑM¡¥•±‘	±½¬èÍ•ÍÍ¥½¸¹±…ÍÑM¡¥•±‘	±½¬°(€€€ÕÉÉ•¹Ñ	±½¬èÍ•ÍÍ¥½¸¹ÕÉÉ•¹Ñ	±½¬°(€€€µ…ÑÕÉ¥Ñå1•™Ğèµ…ÑÕÉ¥ÑåI•µ…¥¹¥¹œ (€€€€€Í•ÍÍ¥½¸¹ÕÉÉ•¹Ñ	±½¬°(€€€€€Í•ÍÍ¥½¸¹±…ÍÑM¡¥•±‘	±½¬°(€€€€€9=Q}5QUI%Qe}	1=-L(€€€€¤°(€ôì)ô()•áÁ½ÉĞ™Õ¹Ñ¥½¸ÍÕ‰ÍÉ¥‰•M•ÍÍ¥½¸¡™¸¤ì(€±¥ÍÑ•¹•ÉÌ¹…‘¡™¸¤ì(€™¸¡•ÑM•ÍÍ¥½¸ ¤¤ì(€É•ÑÕÉ¸€ ¤€ôø±¥ÍÑ•¹•ÉÌ¹‘•±•Ñ”¡™¸¤ì)ô()•áÁ½ÉĞ™Õ¹Ñ¥½¸¥¹¥Ñ]…±±•ÑMÑ½É” ¤ì(€¥˜€¡Í•ÍÍ¥½¸¹ÍÑ½É”¤É•ÑÕÉ¸Í•ÍÍ¥½¸¹ÍÑ½É”ì(€Í•ÍÍ¥½¸¹ÍÑ½É”€ôÉ•…Ñ•MÑ½É” ¤ì(€½¹ÍĞÉ•™É•Í €ô€ ¤€ôøì(€€€Í•ÍÍ¥½¸¹İ…±±•ÑÌ€ôÍ•ÍÍ¥½¸¹ÍÑ½É”¹•Ñ]…±±•ÑÌ ¤ì(€€€•µ¥Ğ ¤ì(€ôì(€Í•ÍÍ¥½¸¹ÍÑ½É•U¹ÍÕˆ€ôÍ•ÍÍ¥½¸¹ÍÑ½É”¹ÍÕ‰ÍÉ¥‰”¡É•™É•Í ¤ì(€É•™É•Í  ¤ì(€É•ÑÕÉ¸ session.store;
 }
 
 export async function readWalletApiVersions(wallet) {
   if (!wallet) return [];
   try {
-    const versions = await walletV6.supportedWalletApi(wallet);
+    const versions = await walletU6.supportedWalletApi(wallet);
     return Array.isArray(versions) ? versions.map(String) : [];
   } catch (_) {
     try {
-      const specs = await walletV6.supportedSpecs(wallet);
+      const specs = await walletU6.supportedSpecs(wallet);
       return Array.isArray(specs) ? specs.map(String) : [];
     } catch (__) {
       return [];
-    }
-  }
-}
-
-function resolveWallet(wallet) {
-  if (wallet) return wallet;
-  if (session.wallet) return session.wallet;
-  const fromAccount = session.account?.walletProvider;
-  if (fromAccount) return fromAccount;
-  const list = session.wallets || [];
-  if (list.length === 1) return list[0];
-  return null;
-}
-
-async function readWriteChainId(wallet) {
-  if (!wallet) return "";
-  try {
-    return await walletV6.requestChainId(wallet);
-  } catch (_) {
-    return "";
-  }
-}
-
-async function applyConnected(wallet, account) {
-  if (session.changeUnsub) {
-    try {
-      session.changeUnsub();
-    } catch (_) {
-      /* ignore */
-    }
-    session.changeUnsub = null;
-  }
-  session.wallet = wallet;
-  session.account = account;
-  session.address = account?.address || "";
-  const writeId = await readWriteChainId(wallet);
-  if (writeId) {
-    session.chainId = writeId;
-  } else {
-    try {
-      session.chainId = account ? await account.getChainId() : "";
-    } catch (_) {
-      session.chainId = "";
-    }
-  }
-  session.apiVersions = await readWalletApiVersions(wallet);
-  session.capable = isStrk20Capable(session.apiVersions);
-  if (account?.onChange) {
-    session.changeUnsub = account.onChange(async () => {
-      try {
-        const next = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
-        await applyConnected(wallet, next);
-      } catch (_) {
-        await disconnectWallet();
+    }@(€ô)ô()…Íå¹Œ™Õ¹Ñ¥½¸…ÁÁ±å½¹¹•Ñ•¡İ…±±•Ğ°…½Õ¹Ğ¤ì(€¥˜€¡Í•ÍÍ¥½¸¹¡…¹•U¹ÍÕˆ¤ì(€€€ÑÉäì(€€€€€Í•ÍÍ¥½¸¹¡…¹•U¹ÍÕˆ ¤ì(€€€ô…Ñ €¡|¤ì(€€€€€€¼¨¥¹½É”€¨¼(€€€ô(€€€Í•ÍÍ¥½¸¹¡…¹•U¹ÍÕˆ€ô¹Õ±°ì(€ô(€Í•ÍÍ¥½¸¹İ…±±•Ğ€ôİ…±±•Ğì(€Í•ÍÍ¥½¸¹…½Õ¹Ğ€ô…½Õ¹Ğì(€Í•ÍÍ¥½¸¹…‘‘É•ÍÌ€ô…½Õ¹Ğü¹…½Õ¹Ğ¹…‘‘É•ÍÌñğ€ˆˆì(€ÑÉäì(€€€Í•ÍÍ¥½¸¹¡…¥¹%€ô…½Õ¹Ğ€ü…İ…¥Ğ…½Õ¹Ğ¹•Ñ¡…¥¹% ¤€è€ˆˆì(€ô…Ñ €¡|¤ì(€€€Í•ÍÍ¥½¸¹¡…¥¹%€ô€ˆˆì(€ô(€Í•ÍÍ¥½¸¹…Á¥Y•ÉÍ¥½¹Ì€ô…İ…¥ĞÉ•…‘]…±±•ÑÁ¥Y•ÉÍ¥½¹Ì¡İ…±±•Ğ¤ì(€Í•ÍÍ¥½¸¹…Á…‰±”€ô¥ÍMÑÉ¬ÈÁ…Á…‰±”¡Í•ÍÍ¥½¸¹…Á¥Y•ÉÍ¥½¹Ì¤ì(€¥˜€¡…½Õ¹Ğü¹½¹¡…¹”¤ì(€€€Í•ÍÍ¥½¸¹¡…¹•U¹ÍÕˆ€ô…½Õ¹Ğ¹½¹¡…¹”¡…Íå¹Œ€ ¤€ôøì(€€€€€ÑÉäì(€€€€€€€½¹ÍĞ¹•áĞ€ô…İ…¥Ğ]…±±•Ñ½Õ¹ÑXØ¹½¹¹•Ğ¡ì¹½‘•UÉ°è¹½‘•UÉ° ¤ô°İ…±±•Ğ¤ì(€€€€€€€…İ…¥Ğ…ÁÁ±å½¹¹•Ñ•¡İ…±±•Ğ°¹•áĞ¤ì(€€€€€ô…Ñ €¡|¤ì(€€€€€€€…İ…¥Ğ‘¥Í½¹¹•Ñ]…±±•Ğ ¤ì(€€€€€ô(€€€ô¤ì(€ô(€•µ¥Ğ ¤ì)ô()•áÁ½ÉĞ…Íå¹Œ™Õ¹Ñ¥½¸½¹¹•Ñ]…±±•Ğ¡İ…±±•Ğ¤ì(€¥˜€ …İ…±±•Ğ¤Ñ¡É½Ü¹•ÜÉÉ½È ‰A¥¬„İ…±±•Ğ¸ˆ¤ì(€¥¹¥Ñ]…±±•ÑMÑ½É” ¤ì(€½¹ÍĞ…½Õ¹Ğ€ô…İ…¥Ğ]…±±•Ñ½Õ¹ÑXØ¹½¹¹•Ğ¡ì¹½‘•UÉ°è¹½‘•UÉ° ¤ô°İ…±±•Ğ¤ì(€ÑÉäì(€€€½¹ÍĞİÉ¥Ñ•%€ô…İ…¥Ğİ…±±•ÑXØ¹É•ÅÕ•ÍÑ¡…¥¹%¡İ…±±•Ğ¤ì(€€€¥˜€ …Í…µ•‘‘É•ÍÌ¡İÉ¥Ñ•%°aAQ}!%9}%¤¤ì(€€€€€…İ…¥Ğ…½Õ¹Ğ¹Íİ¥Ñ¡MÑ…É­¹•Ñ¡…¥¸¡½¹ÍÑ…¹ÑÌ¹MÑ…É­¹•Ñ¡…¥¹%¹M9}5%8¤ì(€€€ô(€ô…Ñ €¡|¤ì(€€€€¼¨İ…±±•Ğµ…äÉ•™ÕÍ”Ñ¡”Íİ¥Ñ ìAÉ¥Ù…åMÉ••¸Í¡½İÌÑ¡”¡…¥¸€¨¼(€ô(€…İ…¥Ğ…ÁÁ±å½¹¹•Ñ•¡İ…±±•Ğ°…½Õ¹Ğ¤ì(€É•ÑÕÉ¸•ÑM•ÍÍ¥½¸ ¤ì)ô()•áÁ½ÉĞ…Íå¹Œ™Õ¹Ñ¥½¸‘¥Í½¹¹•Ñ]…±±•Ğ ¤ì(€¥˜€¡Í•ÍÍ¥½¸¹¡…¹•U¹ÍÕˆ¤ì(€€€ÑÉäì(€€€€€Í•ÍÍ¥½¸¹¡…¹•U¹ÍÕˆ ¤ì(€€€ô…Ñ €¡|¤ì(€€€€€€¼¨¥¹½É”€¨¼(€€€ô(€ô(€¥˜session.account?.unsubscribePïn disconnectWallet();
       }
     });
   }
   emit();
 }
 
-const SEPOLIA_SWITCH_IDS = [
-  constants.StarknetChainId.SN_SEPOLIA,
-  "SN_SEPOLIA",
-];
-
-async function requestSepoliaSwitch(wallet) {
-  let lastErr;
-  for (const id of SEPOLIA_SWITCH_IDS) {
-    try {
-      await walletV6.switchStarknetChain(wallet, id);
-      return;
-    } catch (err) {
-      lastErr = err;
-    }
-  }
-  if (session.account?.switchStarknetChain) {
-    try {
-      await session.account.switchStarknetChain(constants.StarknetChainId.SN_SEPOLIA);
-      return;
-    } catch (err) {
-      lastErr = err;
-    }
-  }
-  const detail = lastErr?.message || lastErr?.error?.message || "";
-  throw new Error(
-    detail
-      ? `Could not switch Ready to Sepolia. ${detail}`
-      : "Could not switch Ready to Sepolia. Approve the Ready popup, or open Ready â†’ Network â†’ Starknet Sepolia."
-  );
-}
-
-/** Ask Ready to write on Sepolia, then rebuild WalletAccountV6 on the new network. */
-export async function switchToSepolia(walletArg) {
-  const wallet = resolveWallet(walletArg);
-  if (!wallet) {
-    throw new Error("Connect Ready first, then switch to Sepolia.");
-  }
-  initWalletStore();
-  const current = await readWriteChainId(wallet);
-  if (!isSepoliaChainId(current)) {
-    await requestSepoliaSwitch(wallet);
-  }
-  const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
-  await applyConnected(wallet, account);
-  const writeId = await readWriteChainId(wallet);
-  if (writeId) {
-    session.chainId = writeId;
-    emit();
-  }
-  if (!isSepoliaChainId(session.chainId)) {
-    throw new Error(
-      "Ready is still not on Sepolia. Open Ready â†’ Network â†’ Starknet Sepolia, then tap Switch again."
-    );
-  }
-  return getSession();
-}
-
 export async function connectWallet(wallet) {
   if (!wallet) throw new Error("Pick a wallet.");
   initWalletStore();
   const account = await WalletAccountV6.connect({ nodeUrl: nodeUrl() }, wallet);
-<<<<<<< HEAD
-=======
   try {
     const writeId = await walletV6.requestChainId(wallet);
     if (!sameAddress(writeId, EXPECTED_CHAIN_ID)) {
@@ -411,11 +126,7 @@ export async function connectWallet(wallet) {
   } catch (_) {
     /* wallet may refuse the switch; PrivacyScreen shows the chain */
   }
->>>>>>> 4e368b48ee43aca05b6d080201b2b622bd8c5ec9
   await applyConnected(wallet, account);
-  if (!isSepoliaChainId(session.chainId)) {
-    return switchToSepolia(wallet);
-  }
   return getSession();
 }
 
@@ -429,16 +140,16 @@ export async function disconnectWallet() {
   }
   if (session.account?.unsubscribeChange) {
     try {
-      session.account.unsubscribeChange();
+      session.account.unsubscribeChange(i;
     } catch (_) {
       /* ignore */
     }
   }
   session.wallet = null;
-  session.account = null;
+  session.account: null;
   session.address = "";
   session.chainId = "";
-  session.capable = false;
+  session.capable = false,
   session.apiVersions = [];
   session.changeUnsub = null;
   session.lastShieldBlock = null;
@@ -462,7 +173,7 @@ export async function fetchPoolFee() {
           ? BigInt(raw.low) + (BigInt(raw.high || 0) << 128n)
           : null);
     if (value == null) return { available: false, human: null };
-    return { available: true, raw: value, human: baseToHuman(value, DEFAULT_TOKEN_DECIMALS) };
+    return { available: true, raw* value, human: baseToHuman(value, DEFAULT_TOKEN_DECIMALS) };
   } catch (_) {
     return { available: false, human: null };
   }
@@ -528,7 +239,7 @@ function receiptBlock(receipt) {
     null;
   if (raw == null) return null;
   const n = Number(raw);
-  return Number.isFinite(n) ? n : null;
+  return Number.isFinite(n) ? n  : null;
 }
 
 export async function refreshMaturity() {
@@ -556,15 +267,15 @@ export async function shieldAmount(humanAmount) {
     ]);
     const fromReceipt = receiptBlock(wait.receipt);
     session.lastShieldBlock = fromReceipt ?? (await readBlockNumber());
-    await readBlockNumber());
+    await readBlockNumber();
     emit();
-    return wait;
+  return wait;
   } catch (err) {
     throw wrapPoolError(err, "Shield failed.");
   }
 }
 
-export async function transfer Account(humanAmount, recipient) {
+export async function transferAmount(humanAmount, recipient) {
   assertReady();
   const to = String(recipient ?? "").trim();
   if (!isFeltAddress(to)) throw new Error("Recipient must be a 0x Starknet address.");
@@ -602,7 +313,7 @@ export async function unshieldAmount(humanAmount, recipient) {
   }
 }
 
-/** Consent-gated. Call only from the Pool tab after the user asks to see balances. */
+,** Consent-gated. Call only from the Pool tab after the user asks to see balances. */
 export async function fetchShieldedBalances() {
   assertReady();
   const entries = await session.account.strk20Balances([tokenAddress()]);
