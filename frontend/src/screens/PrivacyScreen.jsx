@@ -1,1 +1,504 @@
-aW1wb3J0IFJlYWN0LCB7IHVzZUVmZmVjdCwgdXNlU3RhdGUgfSBmcm9tICJyZWFjdCI7CmltcG9ydCB7IEFycm93VXBSaWdodCwgRXllLCBMaW5rU2ltcGxlLCBQbHVncywgU2hpZWxkQ2hlY2sgfSBmcm9tICJAcGhvc3Bob3ItaWNvbnMvcmVhY3QiOwppbXBvcnQgeyBCdG4sIEhhc2hMaW5lLCBPdmVybGluZSwgUGFuZWwsIFN0YXRMaW5lIH0gZnJvbSAiLi4vY29tcG9uZW50cy91aSI7CmltcG9ydCB7IHVzZVN0YXJrbmV0IH0gZnJvbSAiLi4vcHJvdmlkZXJzL1N0YXJrbmV0UHJvdmlkZXIiOwppbXBvcnQgewogIE5PVEVfTUFUVVJJVFlfQkxPQ0tTLAogIEVYUEVDVEVEX0NIQUlOX0lELAogIG1heFNwZW5kSHVtYW4sCn0gZnJvbSAiLi4vbGliL3N0YXJrbmV0V2FsbGV0VXRpbHMiOwoKY29uc3QgaW5wdXRDbGFzcyA9CiAgInctZnVsbCBiZy10cmFuc3BhcmVudCBib3JkZXIgYm9yZGVyLXdoaXRlLzE1IHB4LTMgcHktMiB0ZXh0LXNtIHRleHQtd2hpdGUgZm9udC1tb25vIGZvY3VzOmJvcmRlci1jeWFuLTQwMCBvdXRsaW5lLW5vbmUiOwoKZnVuY3Rpb24gc2hvcnRBZGRyKGFkZHIpIHsKICBpZiAoIWFkZHIpIHJldHVybiAi4oCUIjsKICByZXR1cm4gYWRkci5sZW5ndGggPiAxNiA/IGFkZHIuc2xpY2UoMCwgMTApICsgIuKApiIgKyBhZGRyLnNsaWNlKC02KSA6IGFkZHI7Cn0KCmZ1bmN0aW9uIG9uTWFpbm5ldChjaGFpbklkKSB7CiAgaWYgKCFjaGFpbklkKSByZXR1cm4gZmFsc2U7CiAgdHJ5IHsKICAgIHJldHVybiBCaWdJbnQoY2hhaW5JZCkgPT09IEJpZ0ludChFWFBFQ1RFRF9DSEFJTl9JRCk7CiAgfSBjYXRjaCAoXykgewogICAgcmV0dXJuIFN0cmluZyhjaGFpbklkKS50b0xvd2VyQ2FzZSgpLmluY2x1ZGVzKCJtYWlubmV0Iik7CiAgfQp9CgpleHBvcnQgZGVmYXVsdCBmdW5jdGlvbiBQcml2YWN5U2NyZWVuKCkgewogIGNvbnN0IHN0YXJrbmV0ID0gdXNlU3RhcmtuZXQoKTsKICBjb25zdCB7CiAgICBwb29sLAogICAgYWRkcmVzcywKICAgIGZldGNoRmVlLAogICAgcmVmcmVzaE1hdHVyaXR5LAogICAgbGFzdFNoaWVsZEJsb2NrLAogICAgbWF0dXJpdHlMZWZ0LAogIH0gPSBzdGFya25ldDsKICBjb25zdCBbc2hpZWxkQW10LCBzZXRTaGllbGRBbXRdID0gdXNlU3RhdGUoIiIpOwogIGNvbnN0IFt4ZmVyQW10LCBzZXRYZmVyQW10XSA9IHVzZVN0YXRlKCIiKTsKICBjb25zdCBbeGZlclRvLCBzZXRYZmVyVG9dID0gdXNlU3RhdGUoIiIpOwogIGNvbnN0IFt3aXRoZHJhd0FtdCwgc2V0V2l0aGRyYXdBbXRdID0gdXNlU3RhdGUoIiIpOwogIGNvbnN0IFt3aXRoZHJhd1RvLCBzZXRXaXRoZHJhd1RvXSA9IHVzZVN0YXRlKCIiKTsKICBjb25zdCBbYnVzeSwgc2V0QnVzeV0gPSB1c2VTdGF0ZSgiIik7CiAgY29uc3QgW2Vycm9yLCBzZXRFcnJvcl0gPSB1c2VTdGF0ZShudWxsKTsKICBjb25zdCBbcmVzdWx0LCBzZXRSZXN1bHRdID0gdXNlU3RhdGUobnVsbCk7CiAgY29uc3QgW2ZlZSwgc2V0RmVlXSA9IHVzZVN0YXRlKG51bGwpOwogIGNvbnN0IFtiYWxhbmNlLCBzZXRCYWxhbmNlXSA9IHVzZVN0YXRlKG51bGwpOwoKICB1c2VFZmZlY3QoKCkgPT4gewogICAgbGV0IGxpdmUgPSB0cnVlOwogICAgZmV0Y2hGZWUoKS50aGVuKChmKSA9PiB7CiAgICAgIGlmIChsaXZlKSBzZXRGZWUoZik7CiAgICB9KTsKICAgIHJldHVybiAoKSA9PiB7CiAgICAgIGxpdmUgPSBmYWxzZTsKICAgIH07CiAgfSwgW3Bvb2wsIGFkZHJlc3MsIGZldGNoRmVlXSk7CgogIHVzZUVmZmVjdCgoKSA9PiB7CiAgICBpZiAoIWxhc3RTaGllbGRCbG9jayB8fCBtYXR1cml0eUxlZnQgPD0gMCkgcmV0dXJuIHVuZGVmaW5lZDsKICAgIGxldCBsaXZlID0gdHJ1ZTsKICAgIGNvbnN0IHRpY2sgPSBhc3luYyAoKSA9PiB7CiAgICAgIGlmICghbGl2ZSkgcmV0dXJuOwogICAgICBhd2FpdCByZWZyZXNoTWF0dXJpdHkoKTsKICAgIH07CiAgICB0aWNrKCk7CiAgICBjb25zdCBpZCA9IHNldEludGVydmFsKHRpY2ssIDgwMDApOwogICAgcmV0dXJuICgpID0+IHsKICAgICAgbGl2ZSA9IGZhbHNlOwogICAgICBjbGVhckludGVydmFsKGlkKTsKICAgIH07CiAgfSwgW2xhc3RTaGllbGRCbG9jaywgbWF0dXJpdHlMZWZ0LCByZWZyZXNoTWF0dXJpdHldKTsKCiAgYXN5bmMgZnVuY3Rpb24gb25Db25uZWN0KHdhbGxldCkgewogICAgc2V0RXJyb3IobnVsbCk7CiAgICBzZXRCdXN5KCJjb25uZWN0Iik7CiAgICB0cnkgewogICAgICBhd2FpdCBzdGFya25ldC5jb25uZWN0KHdhbGxldCk7CiAgICB9IGNhdGNoIChlKSB7CiAgICAgIHNldEVycm9yKHsga2luZDogZT8ua2luZCB8fCAidW5rbm93biIsIG1lc3NhZ2U6IGU/Lm1lc3NhZ2UgfHwgIkNvbm5lY3QgZmFpbGVkLiIgfSk7CiAgICB9IGZpbmFsbHkgewogICAgICBzZXRCdXN5KCIiKTsKICAgIH0KICB9CgogIGFzeW5jIGZ1bmN0aW9uIG9uRGlzY29ubmVjdCgpIHsKICAgIHNldEVycm9yKG51bGwpOwogICAgc2V0UmVzdWx0KG51bGwpOwogICAgc2V0QmFsYW5jZShudWxsKTsKICAgIGF3YWl0IHN0YXJrbmV0LmRpc2Nvbm5lY3QoKTsKICB9CgogIGFzeW5jIGZ1bmN0aW9uIHJ1bkFjdGlvbihraW5kLCBmbikgewogICAgc2V0RXJyb3IobnVsbCk7CiAgICBzZXRSZXN1bHQobnVsbCk7CiAgICBzZXRCdXN5KGtpbmQpOwogICAgdHJ5IHsKICAgICAgY29uc3QgciA9IGF3YWl0IGZuKCk7CiAgICAgIHNldFJlc3VsdCh7IC4uLnIsIGtpbmQgfSk7CiAgICB9IGNhdGNoIChlKSB7CiAgICAgIHNldEVycm9yKHsga2luZDogZT8ua2luZCB8fCAidW5rbm93biIsIG1lc3NhZ2U6IGU/Lm1lc3NhZ2UgfHwgIkFjdGlvbiBmYWlsZWQuIiB9KTsKICAgIH0gZmluYWxseSB7CiAgICAgIHNldEJ1c3koIiIpOwogICAgfQogIH0KCiAgYXN5bmMgZnVuY3Rpb24gb25TaG93QmFsYW5jZSgpIHsKICAgIHNldEVycm9yKG51bGwpOwogICAgc2V0QnVzeSgiYmFsYW5jZSIpOwogICAgdHJ5IHsKICAgICAgY29uc3QgYiA9IGF3YWl0IHN0YXJrbmV0LmZldGNoQmFsYW5jZXMoKTsKICAgICAgc2V0QmFsYW5jZShiKTsKICAgIH0gY2F0Y2ggKGUpIHsKICAgICAgc2V0RXJyb3Iobsga2luZDogZT8ua2luZCB8fCAidW5rbm93biIsIG1lc3NhZ2U6IGU/Lm1lc3NhZ2UgfHwgIkJhbGFuY2UgcmVhZCBmYWlsZWQuIiB9KTsKICAgIH0gZmluYWxseSB7CiAgICAgIHNldEJ1c3koIiIpOwogICAgfQogIH0KCiAgZnVuY3Rpb24gYXBwbHlNYXgoc2V0dGVyKSB7CiAgICBpZiAoYmFsYW5jZT8ucmF3ID09IG51bGwpIHJldHVybjsKICAgIHNldHRlcihtYXhTcGVuZEh1bWFuKGJhbGFuY2UucmF3LCBmZWU/LnJhdyA/PyAwbikpOwogIH0KCiAgY29uc3QgY29ubmVjdGVkID0gISFzdGFya25ldC5hZGRyZXNzOwogIGNvbnN0IGNhcGFibGUgPSBzdGFya25ldC5jYXBhYmxlOwogIGNvbnN0IG1haW5uZXQgPSBvbk1haW5uZXQoc3RhcmtuZXQuY2hhaW5JZCk7CiAgY29uc3QgbG9ja2VkID0gc3RhcmtuZXQubWF0dXJpdHlMZWZ0ID4gMDsKICBjb25zdCBzcGVuZERpc2FibGVkID0gISFidXN5IHx8IGxvY2tlZDsKCiAgcmV0dXJuICgKICAgIDxkaXYgY2xhc3NOYW1lPSJzcGFjZS15LTQiPgogICAgICA8UGFuZWwKICAgICAgICB0aXRsZT0iV0FMTEVUIgogICAgICAgIHRlc3RpZD0icG9vbC13YWxsZXQtcGFuZWwiCiAgICAgICAgcmlnaHQ9ewogICAgICAgICAgY29ubmVjdGVkID8gKAogICAgICAgICAgICA8QnRuIGludGVudD0iZGVmYXVsdCIgdGVzdGlkPSJwb29sLWRpc2Nvbm5lY3QtYnRuIiBvbkNsaWNrPXtvbkRpc2Nvbm5lY3R9PgogICAgICAgICAgICAgIERpc2Nvbm5lY3QKICAgICAgICAgICAgPC9CdG4+CiAgICAgICAgICApIDogbnVsbAogICAgICAgIH0KICAgICAgPgogICAgICAgIHshY29ubmVjdGVkICYmICgKICAgICAgICAgIDw+CiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1bMTJweF0gZm9udC1tb25vIHRleHQtd2hpdGUvNjAgbGVhZGluZy1yZWxheGVkIG1iLTQiPgogICAgICAgICAgICAgIENvbm5lY3QgUmVhZHkgb24gU3RhcmtuZXQgTWFpbm5ldC4gVGhlIHdhbGxldCBob2xkcyBrZXlzLCBub3RlcywgYW5kCiAgICAgICAgICAgICAgcHJvb2ZzIOKAlCB0aGlzIGFwcCBuZXZlciBzZWVzIHRoZW0uCiAgICAgICAgICAgIDwvcD4KICAgICAgICAgICAge3N0YXJrbmV0LndhbGxldHMubGVuZ3RoID09PSAwICYmICgKICAgICAgICAgICAgICA8ZGl2CiAgICAgICAgICAgICAgICBkYXRhLXRlc3RpZD0icG9vbC1uby13YWxsZXRzIgogICAgICAgICAgICAgICAgY2xhc3NOYW1lPSJib3JkZXIgYm9yZGVyLXdoaXRlLzEwIHB4LTMgcHktNCB0ZXh0LWNlbnRlciBzcGFjZS15LTMiCiAgICAgICAgICAgICAgPgogICAgICAgICAgICAgICAgPHAgY2xhc3NOYW1lPSJ0ZXh0LVsxMXB4XSBmb250LW1vbm8gdGV4dC13aGl0ZS81NSBsZWFkaW5nLXJlbGF4ZWQiPgogICAgICAgICAgICAgICAgICBObyB3YWxsZXRzIGRldGVjdGVkIGluIHRoaXMgYnJvd3Nlci4gUG9vbCBuZWVkcyB0aGUgUmVhZHkgWAogICAgICAgICAgICAgICAgICBleHRlbnNpb24gb24gTWFpbm5ldC4KICAgICAgICAgICAgICAgIDwvcD4KICAgICAgICAgICAgICAgIDxhCiAgICAgICAgICAgICAgICAgIGRhdGEtdGVzdGlkPSJwb29sLWluc3RhbGwtcmVhZHkiCiAgICAgICAgICAgICAgICAgIGhyZWY9Imh0dHBzOi8vY2hyb21ld2Vic3RvcmUuZ29vZ2xlLmNvbS9kZXRhaWwvcmVhZHkteC9kbGNvYnBqaWlncGlrb29ib2htYWJlaGhtaGZvb2RiYiIKICAgICAgICAgICAgICAgICAgdGFyZ2V0PSJfYmxhbmsiCiAgICAgICAgICAgICAgICAgIHJlbD0ibm9yZWZlcnJlciIKICAgICAgICAgICAgICAgICAgY2xhc3NOYW1lPSJpbmxpbmUtZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1jZW50ZXIgYm9yZGVyIGJvcmRlci1jeWFuLTQwMC82MCB0ZXh0LWN5YW4tMzAwIGhvdmVyOmJvcmRlci1jeWFuLTIwMCBob3Zlcjp0ZXh0LWN5YW4tMTAwIGhvdmVyOmJnLWN5YW4tNDAwLzEwIHB4LTQgcHktMi41IGZvbnQtbW9ubyB0ZXh0LXhzIHVwcGVyY2FzZSB0cmFja2luZy1bMC4yZW1dIgogICAgICAgICAgICAgICAgPgogICAgICAgICAgICAgICAgICBJbnN0YWxsIFJlYWR5IFgKICAgICAgICAgICAgICAgIDwvYT4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgKX0KICAgICAgICAgICAgPHVsIGNsYXNzTmFtZT0ic3BhY2UteS0yIj4KICAgICAgICAgICAgICB7c3RhcmtuZXQud2FsbGV0cy5tYXAoKHcpID0+ICgKICAgICAgICAgICAgICAgIDxsaQogICAgICAgICAgICAgICAgICBrZXk9e3cuaWQgfHwgdy5uYW1lfQogICAgICAgICAgICAgICAgICBjbGFzc05hbWU9ImZsZXggaXRlbXMtY2VudGVyIGp1c3RpZnktYmV0d2VlbiBnYXAtMyBib3JkZXIgYm9yZGVyLXdoaXRlLzEwIHB4LTMgcHktMiIKICAgICAgICAgICAgICAgID4KICAgICAgICAgICAgICAgICAgPHNwYW4gY2xhc3NOYW1lPSJmb250LW1vbm8gdGV4dC14cyB0ZXh0LXdoaXRlLzgwIHRydW5jYXRlIj4KICAgICAgICAgICAgICAgICAgICB7dy5uYW1lIHx8IHcuaWQgfHwgIldhbGxldCJ9CiAgICAgICAgICAgICAgICAgIDwvc3Bhbj4KICAgICAgICAgICAgICAgICAgPEJ0bgogICAgICAgICAgICAgICAgICAgIGludGVudD0icHJpbWFyeSIKICAgICAgICAgICAgICAgICAgICB0ZXN0aWQ9eydwb29sLWNvbm5lY3QtJyArICh3LmlkIHx8IHcubmFtZSl9CiAgICAgICAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gb25Db25uZWN0KHcpfQogICAgICAgICAgICAgICAgICAgIGRpc2FibGVkPXshIWJ1c3l9CiAgICAgICAgICAgICAgICAgID4KICAgICAgICAgICAgICAgICAgICA8UGx1Z3Mgc2l6ZT17MTJ9IGNsYXNzTmFtZT0iaW5saW5lIG1yLTEuNSAtbXQtMC41IiAvPgogICAgICAgICAgICAgICAgICAgIHtidXN5ID09PSAiY29ubmVjdCIgPyAiQ29ubmVjdGluZyIgOiAiQ29ubmVjdCJ9CiAgICAgICAgICAgICAgICAgIDwvQnRuPgogICAgICAgICAgICAgICAgPC9saT4KICAgICAgICAgICAgICApKX0KICAgICAgICAgICAgPC91bD4KICAgICAgICAgIDwvPgogICAgICAgICl9CgogICAgICAgIHtjb25uZWN0ZWQgJiYgKAogICAgICAgICAgPD4KICAgICAgICAgICAgPFN0YXRMaW5lCiAgICAgICAgICAgICAglabelPSJXYWxsZXQiCiAgICAgICAgICAgICAgdmFsdWU9e3N0YXJrbmV0LndhbGxldE5hbWV9CiAgICAgICAgICAgICAgdmFsdWVDbGFzcz0idGV4dC1jeWFuLTMwMCIKICAgICAgICAgICAgICB0ZXN0aWQ9InBvb2wtd2FsbGV0LW5hbWUiCiAgICAgICAgICAgIC8+CiAgICAgICAgICAgIDxTdGF0TGluZQogICAgICAgICAgICAgIGxhYmVsPSJBZGRyZXNzIgogICAgICAgICAgICAgIHZhbHVlPXtzaG9ydEFkZHIoc3RhcmtuZXQuYWRkcmVzcyl9CiAgICAgICAgICAgICAgdGVzdGlkPSJwb29sLWFkZHJlc3MiCiAgICAgICAgICAgIC8+CiAgICAgICAgICAgIDxTdGF0TGluZQogICAgICAgICAgICAgIGxhYmVsPSJOZXR3b3JrIgogICAgICAgICAgICAgIHZhbHVlPXttYWlubmV0ID8gIk1haW5uZXQiIDogc3RhcmtuZXQuY2hhaW5JZCB8fCAi4oCUIn0KICAgICAgICAgICAgICB2YWx1ZUNsYXNzPXttYWlubmV0ID8gInRleHQtWyM3QUZGOUJdIiA6ICJ0ZXh0LVsjRkY2QjhBXSJ9CiAgICAgICAgICAgICAgdGVzdGlkPSJwb29sLW5ldHdvcmsiCiAgICAgICAgICAgIC8+CiAgICAgICAgICAgIDxTdGF0TGluZQogICAgICAgICAgICAgIGxhYmVsPSJTVFJLMjAgQVBJIgogICAgICAgICAgICAgIHZhbHVlPXtjYXBhYmxlID8gImNhcGFibGUiIDogInVuc3VwcG9ydGVkIn0KICAgICAgICAgICAgICB2YWx1ZUNsYXNzPXtjYXBhYmxlID8gInRleHQtWyM3QUZGOUJdIiA6ICJ0ZXh0LVsjRkY2QjhBXSJ9CiAgICAgICAgICAgICAgdGVzdGlkPSJwb29sLWNhcGFiaWxpdHkiCiAgICAgICAgICAgIC8+CiAgICAgICAgICAgIHshbWFpbm5ldCAmJiAoCiAgICAgICAgICAgICAgPGRpdiBjbGFzc05hbWU9Im10LTMgc3BhY2UteS0yIj4KICAgICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1bMTFweF0gZm9udC1tb25vIHRleHQtWyNGRjZCOEFdIGxlYWRpbmctcmVsYXhlZCI+CiAgICAgICAgICAgICAgICAgIFBvb2wgYWN0aW9ucyBhcmUgTWFpbm5ldC1vbmx5LiBTd2l0Y2ggdGhlIHdhbGxldCBuZXR3b3JrLCB0aGVuIHJldHJ5LgogICAgICAgICAgICAgICAgPC9wPgogICAgICAgICAgICAgICAgPEJ0bgogICAgICAgICAgICAgICAgICBpbnRlbnQ9InByaW1hcnkiCiAgICAgICAgICAgICAgICAgIHRlc3RpZD0icG9vbC1zd2l0Y2gtbWFpbm5ldC1idG4iCiAgICAgICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IG9uQ29ubmVjdChzdGFya25ldC53YWxsZXQpfQogICAgICAgICAgICAgICAgICBkaXNhYmxlZD17ISFidXN5IHx8ICFzdGFya25ldC53YWxsZXR9CiAgICAgICAgICAgICAgICA+CiAgICAgICAgICAgICAgICAgIFN3aXRjaCB0byBNYWlubmV0CiAgICAgICAgICAgICAgICA8L0J0bj4KICAgICAgICAgICAgICA8L2Rpdj4KICAgICAgICAgICAgKX0KICAgICAgICAgIDwvPgogICAgICAgICl9CiAgICAgIDwvUGFuZWw+CgogICAgICB7Y29ubmVjdGVkICYmICFjYXBhYmxlICYmICgKICAgICAgICA8UGFuZWwgdGl0bGU9IlVOU1VQUE9SVEVEIFdBTExFVCIgdGVzdGlkPSJwb29sLXVuc3VwcG9ydGVkIj4KICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1bMTJweF0gZm9udC1tb25vIHRleHQtd2hpdGUvNzAgbGVhZGluZy1yZWxheGVkIj4KICAgICAgICAgICAgTmVlZHMgYSBTVFJLMjAtY2FwYWJsZSB3YWxsZXQgKFJlYWR5KS4gQnJhYXZvcywgUHJpdnksIGFuZCBvdGhlcgogICAgICAgICAgICB3YWxsZXRzIGFyZSBub3QgcHJlcGFyZWQgZm9yIHBvb2wgYWN0aW9ucy4gU2hpZWxkLCB0cmFuc2ZlciwgYW5kCiAgICAgICAgICAgIHVuc2hpZWxkIGFyZSBoaWRkZW4uCiAgICAgICAgICA8L3A+CiAgICAgICAgPC9QYW5lbD4KICAgICAgKX0KCiAgICAgIHtjb25uZWN0ZWQgJiYgY2FwYWJsZSAmJiBtYWlubmV0ICYmICgKICAgICAgICA8PgogICAgICAgICAgPFBhbmVsIHRpdGxlPSJTSElFTERFRCBCQUxBTkNFIiB0ZXN0aWQ9InBvb2wtYmFsYW5jZS1wYW5lbCI+CiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1bMTJweF0gZm9udC1tb25vIHRleHQtd2hpdGUvNjAgbGVhZGluZy1yZWxheGVkIG1iLTQiPgogICAgICAgICAgICAgIFRoZSB3YWxsZXQgd2lsbCBhc2sgdG8gc2hhcmUgeW91ciBzaGllbGRlZCBTVFJLIGJhbGFuY2UuIFRoaXMgYXBwCiAgICAgICAgICAgICAgZG9lcyBub3QgcmVhZCBub3RlcyBvciBrZXlzOyBza2lwIHRoaXMgaWYgeW91IG9ubHkgd2FudCB0byBhY3QuCiAgICAgICAgICAgIDwvcD4KICAgICAgICAgICAge2JhbGFuY2UgPyAoCiAgICAgICAgICAgICAgPFN0YXRMaW5lCiAgICAgICAgICAgICAgICBsYWJlbD0iU2hpZWxkZWQgU1RSSyIKICAgICAgICAgICAgICAgIHZhbHVlPXtiYWxhbmNlLmh1bWFufQogICAgICAgICAgICAgICAgdmFsdWVDbGFzcz0idGV4dC1jeWFuLTMwMCIKICAgICAgICAgICAgICAgIHRlc3RpZD0icG9vbC1iYWxhbmNlLXZhbHVlIgogICAgICAgICAgICAgIC8+CiAgICAgICAgICAgICkgOiAoCiAgICAgICAgICAgICAgPEJ0bgogICAgICAgICAgICAgICAgaW50ZW50PSJkZWZhdWx0IgogICAgICAgICAgICAgICAgdGVzdGlkPSJwb29sLWJhbGFuY2UtYnRuIgogICAgICAgICAgICAgICAgb25DbGljaz17b25TaG93QmFsYW5jZX0KICAgICAgICAgICAgICAgIGRpc2FibGVkPXshIWJ1c3l9CiAgICAgICAgICAgICAgPgogICAgICAgICAgICAgICAgPEV5ZSBzaXplPXsxMn0gY2xhc3NOYW1lPSJpbmxpbmUgbXItMS41IC1tdC0wLjUiIC8+CiAgICAgICAgICAgICAgICB7YnVzeSA9PT0gImJhbGFuY2UiID8gIldhaXRpbmcgb24gd2FsbGV0IiA6ICJTaG93IHNoaWVsZGVkIGJhbGFuY2UifQogICAgICAgICAgICAgIDwvQnRuPgogICAgICAgICAgICApfQogICAgICAgICAgPC9QYW5lbD4KCiAgICAgICAgICA8UGFuZWwgdGl0bGU9IlNISUVMREwgOjogQU1PVU5UIFBVQkxJQyIgdGVzdGlkPSJwb29sLXNoaWVsZC1wYW5lbCI+CiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1bMTJweF0gZm9udC1tb25vIHRleHQtd2hpdGUvNjAgbGVhZGluZy1yZWxheGVkIG1iLTQiPgogICAgICAgICAgICAgIFB1YmxpYyBTVFJLIOKGkiBlbmNyeXB0ZWQgbm90ZS4gVGhlIGRlcG9zaXQgYW1vdW50IHN0YXlzIHB1YmxpYy4KICAgICAgICAgICAgICBEbyBub3QgYnVuZGxlIHRoaXMgd2l0aCBhIHByaXZhdGUgdHJhbnNmZXIuCiAgICAgICAgICAgIDwvcD4KICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT0iYmxvY2sgbWItNCI+CiAgICAgICAgICAgICAgPE92ZXJsaW5lIGNsYXNzTmFtZT0ibWItMSI+QW1vdW50IChTVFJLKTwvT3ZlcmxpbmU+CiAgICAgICAgICAgICAgPGlucHV0CiAgICAgICAgICAgICAgICBkYXRhLXRlc3RpZD0icG9vbC1hbW91bnQtaW5wdXQiCiAgICAgICAgICAgICAgICB0eXBlPSJ0ZXh0IgogICAgICAgICAgICAgICAgaW5wdXRNb2RlPSJkZWNpbWFsIgogICAgICAgICAgICAgICAgdmFsdWU9e3NoaWVsZEFtdH0KICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZSkgPT4gc2V0U2hpZWxkQW10KGUudGFyZ2V0LnZhbHVlKX0KICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17aW5wdXRDbGFzc30KICAgICAgICAgICAgICAvPgogICAgICAgICAgICA8L2xhYmVsPgogICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0iYm9yZGVyIGJvcmRlci13aGl0ZS8xMCBiZy13aGl0ZS9bMC4wM10gcHgtMyBweS0zIG1iLTQgc3BhY2UteS0yIj4KICAgICAgICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtWzExcHhdIGZvbnQtbW9ubyB0ZXh0LXdoaXRlLzU1IGxlYWRpbmctcmVsYXhlZCI+CiAgICAgICAgICAgICAgICBUaGUgd2FsbGV0IHdpbGwgcHJvbXB0IHR3aWNlOiBmaXJzdCBhIHB1YmxpYyBFUkMtMjAgYXBwcm92ZSwgdGhlbgogICAgICAgICAgICAgICAgdGhlIHByaXZhdGUgZGVwb3NpdC4gQm90aCBhcmUgcmVxdWlyZWQuCiAgICAgICAgICAgICAgPC9wPgogICAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1bMTFweF0gZm9udC1tb25vIHRleHQtd2hpdGUvNTUgbGVhZGluZy1yZWxheGVkIj4KICAgICAgICAgICAgICAgIHtmeWU/LmF2YWlsYWJsZQogICAgICAgICAgICAgICAgICA/ICJQb29sIGZlZSAiICsgZmVlLmh1bWFuICsgIiBTVFJLIHBlciBwcml2YXRlIG9wZXJhdGlvbi4gU3VidHJhY3RlZCBmcm9tIE1BWC4gU2VwYXJhdGUgZnJvbSBuZXR3b3JrIGdhcy4iCiAgICAgICAgICAgICAgICAgIDogIlBvb2wgZmVlIHVuYXZhaWxhYmxlIHVudGlsIFJFQUNUX0FQUF9TVFJLMjBfUE9PTCBpcyBzZXQuIFNlcGFyYXRlIGZyb20gbmV0d29yayBnYXMuIn0KICAgICAgICAgICAgICA8L3A+CiAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICA8QnRuCiAgICAgICAgICAgICAgaW50ZW50PSJwcmltYXJ5IgogICAgICAgICAgICAgIHRlc3RpZD0icG9vbC1zaGllbGQtYnRuIgogICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+IHJ1bkFjdGlvbigic2hpZWxkIiwgKCkgPT4gc3RhcmtuZXQuc2hpZWxkKHNoaWVsZEFtdCkpfQogICAgICAgICAgICAgIGRpc2FibGVkPXshIWJ1c3kgfHwgIXNoaWVsZEFtdH0KICAgICAgICAgICAgICBjbGFzc05hbWU9InctZnVsbCIKICAgICAgICAgICAgPgogICAgICAgICAgICAgIDxTaGllbGRDaGVjayBzaXplPXsxNH0gd2VpZ2h0PSJib2xkIiBjbGFzc05hbWU9ImlubGluZSBtci0xLjUgLW10LTAuNSIgLz4KICAgICAgICAgICAgICB7YnVzeSA9PT0gInNoaWVsZCIgPyAiQXdhaXRpbmcgd2FsbGV0IC8gcHJvb2YiIDogIlNoaWVsZCJ9CiAgICAgICAgICAgIDwvQnRuPgogICAgICAgICAgPC9QYW5lbD4KCiAgICAgICAgICB7bG9ja2VkICYmICgKICAgICAgICAgICAgPGRpdiAKICAgICAgICAgICAgICBkYXRhLXRlc3RpZD0icG9vbC1tYXR1cml0eSIKICAgICAgICAgICAgICBjbGFzc05hbWU9ImJvcmRlciBib3JkZXItY3lhbi00MDAvMzAgYmctY3lhbi00MDAvNSBweC0zIHB5LTIgdGV4dC1bMTFweF0gZm9udC1tb25vIHRleHQtY3lhbi0yMDAiPgogICAgICAgICAgICAgIEZyZXNobHkgc2hpZWxkZWQgbm90ZXMgbWF0dXJlIGluIH57Tk9URV9NQVRVUklUWV9CTE9DS1N9IGJsb2Nrcy4KICAgICAgICAgICAgICBUcmFuc2ZlciBhbmQgdW5zaGllbGQgbG9ja2VkIGZvciB7c3RhcmtuZXQubWF0dXJpdHlMZWZ0fSBtb3JlCiAgICAgICAgICAgICAge3N0YXJrbmV0Lm1hdHVyaXR5TGVmdCA9PT0gMSA/ICIgYmxvY2siIDogIiBibG9ja3MifS4KICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICApfQoKICAgICAgICAgIDxQYW5lbCB0aXRsZT0iUFJJVkFURSBUUkFOU0ZFUiA6OiBISURERU4iIHRlc3RpZD0icG9vbC10cmFuc2Zlci1wYW5lbCI+CiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1bMTJweF0gZm9udC1tb25vIHRleHQtd2hpdGUvNjAgbGVhZGluZy1yZWxheGVkIG1iLTQiPgogICAgICAgICAgICAgIFByaXZhdGUgdHJhbnNmZXIgKHNlbmRlciwgcmVjZWl2ZXIsIGFtb3VudCBoaWRkZW4pLiBSZWNpcGllbnQgbXVzdAogICAgICAgICAgICAgIGFscmVhZHkgYmUgcmVnaXN0ZXJlZC4gTm90IGNvbXBvc2VkIHdpdGggYSBzaGllbGQuCiAgICAgICAgICAgIDwvcD4KICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT0iYmxvY2sgbWItMyI+CiAgICAgICAgICAgICAgPE92ZXJsaW5lIGNsYXNzTmFtZT0ibWItMSI+UmVjaXBpZW50PC9PdmVybGluZT4KICAgICAgICAgICAgICA8aW5wdXQKICAgICAgICAgICAgICAgIGRhdGEtdGVzdGlkPSJwb29sLXRyYW5zZmVyLXRvIgogICAgICAgICAgICAgICAgdHlwZT0idGV4dCIKICAgICAgICAgICAgICAgIHZhbHVlPXt4ZmVyVG99CiAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGUpID0+IHNldFhmZXJUbyhlLnRhcmdldC52YWx1ZSl9CiAgICAgICAgICAgICAgICBwbGFjZWhvbGRlcj0iMHjigKYiCiAgICAgICAgICAgICAgICBjbGFzc05hbWU9e2lucHV0Q2xhc3N9CiAgICAgICAgICAgICAgICBkaXNhYmxlZD17c3BlbmREaXNhYmxlZH0KICAgICAgICAgICAgICAvPgogICAgICAgICAgICA8L2xhYmVsPgogICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPSJibG9jayBtYi00Ij4KICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0iZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIG1iLTEiPgogICAgICAgICAgICAgICAgPE92ZXJsaW5lPkFtb3VudCAoU1RSSyk8L092ZXJsaW5lPgogICAgICAgICAgICAgICAge2JhbGFuY2UgJiYgKAogICAgICAgICAgICAgICAgICA8YnV0dG9uCiAgICAgICAgICAgICAgICAgICAgdHlwZT0iYnV0dG9uIgogICAgICAgICAgICAgICAgICAgIGRhdGEtdGVzdGlkPSJwb29sLXRyYW5zZmVyLW1heCIKICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9InRleHQtWzEwcHhdIGZvbnQtbW9ubyB1cHBlcmNhc2UgdHJhY2tpbmctWzAuMThlbV0gdGV4dC1jeWFuLTMwMCIKICAgICAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBhcHBseU1heChzZXRYZmVyQW10KX0KICAgICAgICAgICAgICAgICAgPgogICAgICAgICAgICAgICAgICAgIE1heAogICAgICAgICAgICAgICAgICA8L2J1dHRvbj4KICAgICAgICAgICAgICAgICl9CiAgICAgICAgICAgICAgPC9kaXY+CiAgICAgICAgICAgICAgPGlucHV0CiAgICAgICAgICAgICAgICBkYXRhLXRlc3RpZD0icG9vbC10cmFuc2Zlci1hbW91bnQiCiAgICAgICAgICAgICAgICB0eXBlPSJ0ZXh0IgogICAgICAgICAgICAgICAgaW5wdXRNb2RlPSJkZWNpbWFsIgogICAgICAgICAgICAgICAgdmFsdWU9e3hmZXJBbXR9CiAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGUpID0+IHNldFhmZXJBbXQoZS50YXJnZXQudmFsdWUpfQogICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtpbnB1dENsYXNzfQogICAgICAgICAgICAgICAgZGlzYmxlZD17c3BlbmREaXNhYmxlZH0KICAgICAgICAgICAgICAvPgogICAgICAgICAgICA8L2xhYmVsPgogICAgICAgICAgICA8QnRuCiAgICAgICAgICAgICAgaW50ZW50PSJwcmltYXJ5IgogICAgICAgICAgICAgIHRlc3RpZD0icG9vbC10cmFuc2Zlci1idG4iCiAgICAgICAgICAgICAgb25DbGljaz17KCkgPT4gcnVuQWN0aW9uKCJ0cmFuc2ZlciIsICgpID0+IHN0YXJrbmV0LnRyYW5zZmVyKHhmZXJBbXQsIHhmZXJUbykpfQogICAgICAgICAgICAgIGRpc2FibGVkPXtzcGVuZERpc2FibGVkIHx8ICF4ZmVyQW10IHx8ICF4ZmVyVG99CiAgICAgICAgICAgICAgY2xhc3NOYW1lPSJ3LWZ1bGwiCiAgICAgICAgICAgID4KICAgICAgICAgICAgICA8QXJyb3dVcFJpZ2h0IHNpemU9ezE0fSBjbGFzc05hbWU9ImlubGluZSBtci0xLjUgLW10LTAuNSIgLz4KICAgICAgICAgICAgICB7YnVzeSA9PT0gInRyYW5zZmVyIiA/ICJBd2FpdGluZyB3YWxsZXQgLyBwcm9vZiIgOiAiUHJpdmF0ZSB0cmFuc2ZlciJ9CiAgICAgICAgICAgIDwvQnRuPgogICAgICAgICAgPC9QYW5lbD4KCiAgICAgICAgICA8UGFuZWwgdGl0bGU9IlVOU0hJRUxEIDo6IEFNT1VOVCBQVUJMSUMiIHRlc3RpZD0icG9vbC11bnNoaWVsZC1wYW5lbCI+CiAgICAgICAgICAgIDxwIGNsYXNzTmFtZT0idGV4dC1bMTJweF0gZm9udC1tb25vIHRleHQtd2hpdGUvNjAgbGVhZGluZy1yZWxheGVkIG1iLTQiPgogICAgICAgICAgICAgIFNoaWVsZCAvIHVuc2hpZWxkIChhbW91bnQgcHVibGljKS4gV2l0aGRyYXdzIFNUUksgdG8gYSBwdWJsaWMKICAgICAgICAgICAgICBhZGRyZXNzLiBEZWZhdWx0cyB0byB5b3VyIGNvbm5lY3RlZCB3YWxsZXQuCiAgICAgICAgICAgIDwvcD4KICAgICAgICAgICAgPGxhYmVsIGNsYXNzTmFtZT0iYmxvY2sgbWItMyI+CiAgICAgICAgICAgICAgPE92ZXJsaW5lIGNsYXNzTmFtZT0ibWItMSI+UHVibGljIHJlY2lwaWVudDwvT3ZlcmxpbmU+CiAgICAgICAgICAgICAgPGlucHV0CiAgICAgICAgICAgICAgICBkYXRhLXRlc3RpZD0icG9vbC11bnNoaWVsZC10byIKICAgICAgICAgICAgICAgIHRleHQ9InRleHQiCiAgICAgICAgICAgICAgICB2YWx1ZT17d2l0aGRyYXdUbyB8fCAicCJ9CiAgICAgICAgICAgICAgICBvbkNoYW5nZT17KGUpID0+IHNldFdpdGhkcmF3VG8oZS50YXJnZXQudmFsdWUpfQogICAgICAgICAgICAgICAgcGxhY2Vob2xkZXI9e3N0YXJrbmV0LmFkZHJlc3MgfHwgIjB44oCYIn0KICAgICAgICAgICAgICAgIGNsYXNzTmFtZT17aW5wdXRDbGFzc30KICAgICAgICAgICAgICAgIGRpc2FibGVkPXtzcGVuZERpc2FibGVkfQogICAgICAgICAgICAgIC8+CiAgICAgICAgICAgIDwvlabelPgogICAgICAgICAgICA8bGFiZWwgY2xhc3NOYW1lPSJibG9jayBtYi00Ij4KICAgICAgICAgICAgICA8ZGl2IGNsYXNzTmFtZT0iZmxleCBpdGVtcy1jZW50ZXIganVzdGlmeS1iZXR3ZWVuIG1iLTEiPgogICAgICAgICAgICAgICAgPE92ZXJsaW5lPkFtb3VudCAoU1RSSyk8L092ZXJsaW5lPgogICAgICAgICAgICAgICAge2JhbGFuY2UgJiYgKAogICAgICAgICAgICAgICAgICA8YnV0dG9uCiAgICAgICAgICAgICAgICAgICAgdHlwZT0iYnV0dG9uIgogICAgICAgICAgICAgICAgICAgIGRhdGEtdGVzdGlkPSJwb29sLXVuc3VwcG9ydGVkLW1heCIKICAgICAgICAgICAgICAgICAgICBjbGFzc05hbWU9InRleHQtWzEwcHhdIGZvbnQtbW9ubyB1cHBlcmNhc2UgdHJhY2tpbmctWzAuMThlbV0gdGV4dC1jeWFuLTMwMCIKICAgICAgICAgICAgICAgICAgICBvbkNsaWNrPXsoKSA9PiBhcHBseU1heChzZXRXaXRoZHJhd0FtdCl9CiAgICAgICAgICAgICAgICAgID4KICAgICAgICAgICAgICAgICAgICBNYXgKICAgICAgICAgICAgICAgICAgPC9idXR0b24+CiAgICAgICAgICAgICAgICApfQogICAgICAgICAgICAgIDwvZGl2PgogICAgICAgICAgICAgIDxpbnB1dAogICAgICAgICAgICAgICAgZGF0YS10ZXN0aWQ9InBvb2wtdW5zaGllbGQtYW1vdW50IgogICAgICAgICAgICAgICAgdHlwZT0idGV4dCIKICAgICAgICAgICAgICAgIGlucHV0TW9kZT0iZGVjaW1hbCIKICAgICAgICAgICAgICAgIHZhbHVlPXt3aXRoZHJhd0FtdH0KICAgICAgICAgICAgICAgIG9uQ2hhbmdlPXsoZSkgPT4gc2V0V2l0aGRyYXdBbXQoZS50YXJnZXQudmFsdWUpfQogICAgICAgICAgICAgICAgY2xhc3NOYW1lPXtpbnB1dENsYXNzfQogICAgICAgICAgICAgICAgZGlzYWJsZWQ9e3NwZW5kRGlzYWJsZWR9CiAgICAgICAgICAgICAgLz4KICAgICAgICAgICAgPC9sYWJlbD4KICAgICAgICAgICAgPEJ0bgogICAgICAgICAgICAgIGludGVudD0icHJpbWFyeSIKICAgICAgICAgICAgICB0ZXN0aWQ9InBvb2wtdW5zaGllbGQtYnRuIgogICAgICAgICAgICAgIG9uQ2xpY2s9eygpID0+CiAgICAgICAgICAgICAgICBydW5BY3Rpb24oInVuc2hpZWxkIiwgKCkgPT4KICAgICAgICAgICAgICAgICAgc3RhcmtuZXQudW5zaGllbGQod2l0aGRyYXdBbXQsIHdpdGhkcmF3VG8gfHwgc3RhcmtuZXQuYWRkcmVzcykKICAgICAgICAgICAgICAgICkKICAgICAgICAgICAgICB9CiAgICAgICAgICAgICAgZGlzYWJsZWQ9e3NwZW5kRGlzYWJsZWQgfHwgIXdpdGhkcmF3QW10fQogICAgICAgICAgICAgIGNsYXNzTmFtZT1idy1mdWxsIgogICAgICAgICAgICA+CiAgICAgICAgICAgICAge2J1c3kgPT09ICJ1bnNoaWVsZCIgPyAiQXdhaXRpbmcgd2FsbGV0IC8gcHJvb2YiIDogIlVuc2hpZWxkIn0KICAgICAgICAgICAgPC9CdG4+CiAgICAgICAgICA8L1BhbmVsPgogICAgICAgIDwvPgogICAgICApfQoKICAgICAge2Vycm9yICYmICgKICAgICAgICA8ZGl2CiAgICAgICAgICBkYXRhLXRlc3RpZD0icG9vbC1lcnJvciIKICAgICAgICAgIGRhdGEta2luZD17ZXJyb3Iua2luZH0KICAgICAgICAgIGNsYXNzTmFtZT0iYm9yZGVyIGJvcmRlci1bI0ZGMDAzQ10vNTAiIGJnLVsjRkYwMDNDXS81IHB4LTMgcHktMiB0ZXh0LVsxMXB4XSBmb250LW1vbm8gdGV4dC1bI0ZGNkI4QV0gbGVhZGluZy1yZWxheGVkIj4KICAgICAgICAgIHtlcnJvci5raW5kID09PSAic2NyZWVuaW5nIgogICAgICAgICAgICA/IGVycm9yLm1lc3NhZ2UKICAgICAgICAgICAgOiAiRVJSIDo6ICIgKyBlcnJvci5tZXNzYWdlfQogICAgICAgIDwvZGl2PgogICAgICApfQoKICAgICAge3Jlc3VsdCAmJiAoCiAgICAgICAgPFBhbmVsIHRpdGxlPXsocmVzdWx0LmtpbmQgfHwgImFjdGlvbiIpLnRvVcHBlckNhc2UoKSArICIgUkVTVUxUIiB0ZXN0aWQ9InBvb2wtcmVzdWx0LXBhbmVsIj4KICAgICAgICAgIDxTdGF0TGluZQogICAgICAgICAgICBsYWJlbD0iU3RhdHVzIgogICAgICAgICAgICB2YWx1ZT17cmVzdWx0LnN0YXR1cyA9PT0gImFjY2VwdGVkIiA/ICJhY2NlcHRlZCIgOiAic3VibWl0dGVkIn0KICAgICAgICAgICAgdmFsdWVDbGFzcz0idGV4dC1jeWFuLTMwMCIKICAgICAgICAgICAgdGVzdGlkPSJwb29sLXJlc3VsdC1zdGF0dXMiCiAgICAgICAgICAvPgogICAgICAgICAgPGRpdiBjbGFzc05hbWU9InB5LTIiPgogICAgICAgICAgICA8T3ZlcmxpbmUgY2xhc3NOYW1lPSJtYi0xIj5UcmFuc2FjdGlvbjwvT3ZlcmxpbmU+CiAgICAgICAgICAgIDxIYXNoTGluZSB0ZXN0aWQ9InBvb2wtdHgtaGFzaCIgdmFsdWU9e3Jlc3VsdC5oYXNoIHx8ICLigJUifSAvPgogICAgICAgICAgPC9kaXY+CiAgICAgICAgICB7cmVzdWx0LmV4cGxvcmVyICYmICgKICAgICAgICAgICAgPGEKICAgICAgICAgICAgICBkYXRhLXRlc3RpZD0icG9vbC1leHBsb3Jlci1saW5rIgogICAgICAgICAgICAgIGhyZWY9e3Jlc3VsdC5leHBsb3Jlcn0KICAgICAgICAgICAgICB0YXJnZXQ9Il9ibGFuayIKICAgICAgICAgICAgICByZWw9Im5vcmVmZXJyZXIiCiAgICAgICAgICAgICAgY2xhc3NOYW1lPSJpbmxpbmUtZmxleCBpdGVtcy1jZW50ZXIgZ2FwLTEuNSB0ZXh0LVsxMXB4XSBmb250LW1vbm8gdGV4dC1jeWFuLTMwMCBob3Zlcjp0ZXh0LWN5YW4tMTAwIHVwcGVyY2FzZSB0cmFja2luZy1bMC4xOGVtXSIKICAgICAgICAgICAgPgogICAgICAgICAgICAgIDxMaW5rU2ltcGxlIHNpemU9ezEyfSAvPgogICAgICAgICAgICAgIEV4cGxvcmVyCiAgICAgICAgICAgIDwvYT4KICAgICAgICAgICl9CiAgICAgICAgICB7cmVzdWx0LnN0YXR1cyA9PT0gInN1Ym1pdHRlZCIgJiYgKAogICAgICAgICAgICA8cCBjbGFzc05hbWU9Im10LTMgdGV4dC1bMTFweF0gZm9udC1tb25vIHRleHQtd2hpdGUvNDUgbGVhZGluZy1yZWxheGVkIj4KICAgICAgICAgICAgICBDb25maXJtYXRpb24gdGltZWQgb3V0LiBUaGUgdHJhbnNhY3Rpb24gd2FzIHN1Ym1pdHRlZCDihpIgY2hlY2sgdGhlCiAgICAgICAgICAgICAgZXhwbG9yZXIuCiAgICAgICAgICAgIDwvcD4KICAgICAgICAgICl9CiAgICAgICAgPC9QYW5lbD4KICAgICAgKX0KCiAgICAgIDxQYW5lbCB0aXRsZT0iV0hBVCBTVEFZUyBWSVNJQkxFIj4KICAgICAgICA8cCBjbGFzc05hbWU9InRleHQtWzEycHhdIGZvbnQtbW9ubyB0ZXh0LXdoaXRlLzU1IGxlYWRpbmctcmVsYXhlZCI+CiAgICAgICAgICBTaGllbGQgYW5kIHVuc2hpZWxkIGFtb3VudHMgYXJlIHB1YmxpYyBFUkMtMjAgYXBwcm92ZWQuIFRoZSBmYWN0IGFuZAogICAgICAgICAgdGltaW5nIG9mIGEgcG9vbCBpbnRlcmFjdGlvbiBhcmUgcHVibGljLiBQcml2YXRlIHRyYW5zZmVycyBoaWRlIHdobwogICAgICAgICAgcGF5cyB3aG9tIGFuZCBob3cgbXVjaC4gVGhpcyBpcyBub3QgYSBtaXhlci4gQWN0aXZpdHkgaXMgbmV2ZXIKICAgICAgICAgIGF0dHJpYnV0ZWQgZnJvbSB0aGUgdHJhbnNhY3Rpb24gc2VuZGVyIOKAlCB0aGF0IGFkZHJlc3MgaXMgdGhlIHJlbGF5ZXIuCiAgICAgICAgPC9wPgogICAgICA8L1BhbmVsPgogICAgPC9kaXY+CiAgKTsKfQo=
+import React, { useEffect, useState } from "react";
+import { ArrowSquareOut, ArrowUpRight, Eye, LinkSimple, Plugs, ShieldCheck } from "@phosphor-icons/react";
+import { Btn, HashLine, Overline, Panel, StatLine } from "../components/ui";
+import { useStarknet } from "../providers/StarknetProvider";
+import {
+  NOTE_MATURITY_BLOCKS,
+  EXPECTED_CHAIN_ID,
+  formatChainLabel,
+  isEmbeddedPreview,
+  maxSpendHuman,
+} from "../lib/starknetWalletUtils";
+
+const inputClass =
+  "w-full bg-transparent border border-white/15 px-3 py-2 text-sm text-white font-mono focus:border-cyan-400 outline-none";
+
+function shortAddr(addr) {
+  if (!addr) return "—";
+  return addr.length > 16 ? addr.slice(0, 10) + "…" + addr.slice(-6) : addr;
+}
+
+function onMainnet(chainId) {
+  if (!chainId) return false;
+  try {
+    return BigInt(chainId) === BigInt(EXPECTED_CHAIN_ID);
+  } catch (_) {
+    return String(chainId).toLowerCase().includes("mainnet");
+  }
+}
+
+function openOwnTab() {
+  window.open(window.location.href, "_blank", "noopener,noreferrer");
+}
+
+export default function PrivacyScreen() {
+  const starknet = useStarknet();
+  const { pool, address, fetchFee, fetchRegistration, refreshMaturity, lastShieldBlock, maturityLeft } =
+    starknet;
+  const [shieldAmt, setShieldAmt] = useState("");
+  const [xferAmt, setXferAmt] = useState("");
+  const [xferTo, setXferTo] = useState("");
+  const [withdrawAmt, setWithdrawAmt] = useState("");
+  const [withdrawTo, setWithdrawTo] = useState("");
+  const [busy, setBusy] = useState("");
+  const [error, setError] = useState(null);
+  const [result, setResult] = useState(null);
+  const [fee, setFee] = useState(null);
+  const [balance, setBalance] = useState(null);
+  const [registered, setRegistered] = useState(null);
+  const [embedded] = useState(() => isEmbeddedPreview());
+
+  useEffect(() => {
+    let live = true;
+    fetchFee().then((f) => {
+      if (live) setFee(f);
+    });
+    return () => {
+      live = false;
+    };
+  }, [pool, address, fetchFee]);
+
+  useEffect(() => {
+    if (!address) {
+      setRegistered(null);
+      return undefined;
+    }
+    let live = true;
+    fetchRegistration(address).then((r) => {
+      if (live) setRegistered(r.registered);
+    });
+    return () => {
+      live = false;
+    };
+  }, [address, fetchRegistration]);
+
+  useEffect(() => {
+    if (!lastShieldBlock || maturityLeft <= 0) return undefined;
+    let live = true;
+    const tick = async () => {
+      if (!live) return;
+      await refreshMaturity();
+    };
+    tick();
+    const id = setInterval(tick, 8000);
+    return () => {
+      live = false;
+      clearInterval(id);
+    };
+  }, [lastShieldBlock, maturityLeft, refreshMaturity]);
+
+  async function onConnect(wallet) {
+    setError(null);
+    setBusy("connect");
+    try {
+      await starknet.connect(wallet);
+    } catch (e) {
+      setError({ kind: e?.kind || "unknown", message: e?.message || "Connect failed." });
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function onDisconnect() {
+    setError(null);
+    setResult(null);
+    setBalance(null);
+    setRegistered(null);
+    await starknet.disconnect();
+  }
+
+  async function runAction(kind, fn) {
+    setError(null);
+    setResult(null);
+    setBusy(kind);
+    try {
+      const r = await fn();
+      setResult({ ...r, kind });
+      if (kind === "shield") setRegistered(true);
+    } catch (e) {
+      const kindErr = e?.kind || "unknown";
+      setError({ kind: kindErr, message: e?.message || "Action failed." });
+      if (kindErr === "not_registered") setRegistered(false);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  async function onShowBalance() {
+    setError(null);
+    setBusy("balance");
+    try {
+      const b = await starknet.fetchBalances();
+      setBalance(b);
+    } catch (e) {
+      const kindErr = e?.kind || "unknown";
+      setError({ kind: kindErr, message: e?.message || "Balance read failed." });
+      if (kindErr === "not_registered") setRegistered(false);
+    } finally {
+      setBusy("");
+    }
+  }
+
+  function applyMax(setter) {
+    if (balance?.raw == null) return;
+    setter(maxSpendHuman(balance.raw, fee?.raw ?? 0n));
+  }
+
+  const connected = !!starknet.address;
+  const capable = starknet.capable;
+  const mainnet = onMainnet(starknet.chainId);
+  const locked = starknet.maturityLeft > 0;
+  const spendDisabled = !!busy || locked || registered === false;
+  const inPool = registered === true;
+  const noWallets = starknet.wallets.length === 0;
+
+  return (
+    <div className="space-y-4">
+      <Panel
+        title="WALLET"
+        testid="pool-wallet-panel"
+        right={
+          connected ? (
+            <Btn intent="default" testid="pool-disconnect-btn" onClick={onDisconnect}>
+              Disconnect
+            </Btn>
+          ) : null
+        }
+      >
+        {!connected && (
+          <>
+            {embedded && noWallets ? (
+              <div data-testid="pool-embedded-block" className="space-y-3">
+                <p className="text-[12px] font-mono text-white/70 leading-relaxed">
+                  Ready cannot see this preview window. Open ChaosKey+ in its own browser tab,
+                  then connect. This site never asks for your viewing key.
+                </p>
+                <Btn intent="primary" testid="pool-open-tab" onClick={openOwnTab} className="w-full">
+                  <ArrowSquareOut size={14} className="inline mr-1.5 -mt-0.5" />
+                  Open in its own tab
+                </Btn>
+                <p className="text-[11px] font-mono text-white/45 leading-relaxed">
+                  Harvest still works here. Pool needs a full tab so the Ready extension can inject.
+                </p>
+              </div>
+            ) : (
+              <>
+                <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
+                  Connect Ready on Starknet Mainnet. The wallet holds keys, notes, and proofs — this
+                  app never sees them. RPC: Alchemy v0.10.
+                </p>
+                {noWallets && (
+                  <div
+                    data-testid="pool-no-wallets"
+                    className="border border-white/10 px-3 py-4 text-center space-y-3"
+                  >
+                    <p className="text-[11px] font-mono text-white/55 leading-relaxed">
+                      No wallets detected. Pool needs the Ready X extension on Mainnet.
+                    </p>
+                    <a
+                      data-testid="pool-install-ready"
+                      href="https://chromewebstore.google.com/detail/ready-x/dlcobpjiigpikoobohmabehhmhfoodbb"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center justify-center border border-cyan-400/60 text-cyan-300 hover:border-cyan-200 hover:text-cyan-100 hover:bg-cyan-400/10 px-4 py-2.5 font-mono text-xs uppercase tracking-[0.2em]"
+                    >
+                      Install Ready X
+                    </a>
+                  </div>
+                )}
+                <ul className="space-y-2 mt-3">
+                  {starknet.wallets.map((w) => (
+                    <li
+                      key={w.id || w.name}
+                      className="flex items-center justify-between gap-3 border border-white/10 px-3 py-2"
+                    >
+                      <span className="font-mono text-xs text-white/80 truncate">
+                        {w.name || w.id || "Wallet"}
+                      </span>
+                      <Btn
+                        intent="primary"
+                        testid={`pool-connect-${w.id || w.name}`}
+                        onClick={() => onConnect(w)}
+                        disabled={!!busy}
+                      >
+                        {busy === "connect" ? "…" : "Connect"}
+                      </Btn>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
+        )}
+        {connected && (
+          <div className="space-y-1">
+            <StatLine label="Address" value={shortAddr(starknet.address)} valueClass="text-cyan-300" testid="pool-address" />
+            <StatLine
+              label="Network"
+              value={formatChainLabel(starknet.chainId)}
+              valueClass={mainnet ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
+              testid="pool-network"
+            />
+            <StatLine
+              label="STRK20"
+              value={capable ? "READY" : "UNSUPPORTED"}
+              valueClass={capable ? "text-[#7AFF9B]" : "text-[#FF6B8A]"}
+            />
+            <StatLine
+              label="Pool"
+              value={registered == null ? "…" : inPool ? "IN" : "NOT YET"}
+              valueClass={inPool ? "text-[#7AFF9B]" : "text-[#FFC846]"}
+              testid="pool-membership"
+            />
+            <StatLine label="RPC" value="Alchemy · mainnet v0.10" valueClass="text-white/70" testid="pool-rpc" />
+            <StatLine label="Pool fee" value={fee?.human ? `${fee.human} STRK` : "—"} />
+            {balance && (
+              <StatLine
+                label="Shielded"
+                value={`${balance.human} STRK`}
+                valueClass="text-cyan-300"
+                testid="pool-shielded"
+              />
+            )}
+            {inPool && (
+              <div className="pt-3">
+                <Btn intent="default" testid="pool-balance-btn" onClick={onShowBalance} disabled={!!busy} className="w-full">
+                  <Eye size={14} className="inline mr-1.5 -mt-0.5" />
+                  {busy === "balance" ? "Reading…" : "Show shielded balance"}
+                </Btn>
+              </div>
+            )}
+            {!mainnet && (
+              <div className="mt-3 border border-[#FFB800]/40 bg-[#FFB800]/5 px-3 py-2 text-[11px] font-mono text-[#FFC846] leading-relaxed">
+                Switch Ready to Starknet Mainnet. STRK20 privacy is live on mainnet only.
+              </div>
+            )}
+          </div>
+        )}
+      </Panel>
+
+      {connected && capable && registered === false && (
+        <div
+          data-testid="pool-setup"
+          className="border border-[#FFB800]/40 bg-[#FFB800]/5 px-3 py-3 text-[12px] font-mono text-[#FFC846] leading-relaxed space-y-2"
+        >
+          <p>
+            This account is not in the pool yet. Ready must write the viewing key — that happens
+            inside the Ready app, not here. Shield a little STRK in Ready first, then come back.
+          </p>
+          <p className="text-white/50">
+            You can still try Shield below. If Ready says not registered, stop. Do not keep
+            approving. This site never asks for that key.
+          </p>
+        </div>
+      )}
+
+      {connected && capable && (
+        <>
+          {locked && (
+            <div className="border border-cyan-400/30 bg-cyan-400/5 px-3 py-2 text-[11px] font-mono text-cyan-200">
+              Freshly shielded notes mature in {NOTE_MATURITY_BLOCKS} blocks. Transfer and unshield
+              locked for {starknet.maturityLeft} more{" "}
+              {starknet.maturityLeft === 1 ? "block" : "blocks"}.
+            </div>
+          )}
+          <Panel title="SHIELD :: AMOUNT PUBLIC" testid="pool-shield-panel">
+            <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
+              Deposit public STRK into a private note. Amount is visible; ownership is not.
+              {inPool
+                ? " Ready already has this account in the pool."
+                : " If this is the first time, Ready may need to Shield once inside its own app."}
+            </p>
+            <label className="block mb-4">
+              <div className="flex items-center justify-between mb-1">
+                <Overline>Amount (STRK)</Overline>
+              </div>
+              <input
+                data-testid="pool-shield-amount"
+                type="text"
+                inputMode="decimal"
+                value={shieldAmt}
+                onChange={(e) => setShieldAmt(e.target.value)}
+                className={inputClass}
+                disabled={!!busy}
+              />
+            </label>
+            <Btn
+              intent="primary"
+              testid="pool-shield-btn"
+              onClick={() => runAction("shield", () => starknet.shield(shieldAmt))}
+              disabled={!!busy || !shieldAmt}
+              className="w-full"
+            >
+              <ShieldCheck size={14} className="inline mr-1.5 -mt-0.5" />
+              {busy === "shield" ? "Awaiting wallet / proof" : "Shield"}
+            </Btn>
+          </Panel>
+
+          {inPool && (
+            <>
+              <Panel title="PRIVATE TRANSFER :: HIDDEN" testid="pool-transfer-panel">
+                <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
+                  Private transfer (sender, receiver, amount hidden). Recipient must already be
+                  registered.
+                </p>
+                <label className="block mb-3">
+                  <Overline className="mb-1">Recipient</Overline>
+                  <input
+                    data-testid="pool-transfer-to"
+                    type="text"
+                    value={xferTo}
+                    onChange={(e) => setXferTo(e.target.value)}
+                    placeholder="0x…"
+                    className={inputClass}
+                    disabled={spendDisabled}
+                  />
+                </label>
+                <label className="block mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <Overline>Amount (STRK)</Overline>
+                    {balance && (
+                      <button
+                        type="button"
+                        data-testid="pool-transfer-max"
+                        className="text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300"
+                        onClick={() => applyMax(setXferAmt)}
+                      >
+                        Max
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    data-testid="pool-transfer-amount"
+                    type="text"
+                    inputMode="decimal"
+                    value={xferAmt}
+                    onChange={(e) => setXferAmt(e.target.value)}
+                    className={inputClass}
+                    disabled={spendDisabled}
+                  />
+                </label>
+                <Btn
+                  intent="primary"
+                  testid="pool-transfer-btn"
+                  onClick={() => runAction("transfer", () => starknet.transfer(xferAmt, xferTo))}
+                  disabled={spendDisabled || !xferAmt || !xferTo}
+                  className="w-full"
+                >
+                  <ArrowUpRight size={14} className="inline mr-1.5 -mt-0.5" />
+                  {busy === "transfer" ? "Awaiting wallet / proof" : "Private transfer"}
+                </Btn>
+              </Panel>
+
+              <Panel title="UNSHIELD :: AMOUNT PUBLIC" testid="pool-unshield-panel">
+                <p className="text-[12px] font-mono text-white/60 leading-relaxed mb-4">
+                  Withdraw STRK to a public address. Defaults to your connected wallet.
+                </p>
+                <label className="block mb-3">
+                  <Overline className="mb-1">Public recipient</Overline>
+                  <input
+                    data-testid="pool-unshield-to"
+                    type="text"
+                    value={withdrawTo}
+                    onChange={(e) => setWithdrawTo(e.target.value)}
+                    placeholder={starknet.address || "0x…"}
+                    className={inputClass}
+                    disabled={spendDisabled}
+                  />
+                </label>
+                <label className="block mb-4">
+                  <div className="flex items-center justify-between mb-1">
+                    <Overline>Amount (STRK)</Overline>
+                    {balance && (
+                      <button
+                        type="button"
+                        data-testid="pool-unshield-max"
+                        className="text-[10px] font-mono uppercase tracking-[0.18em] text-cyan-300"
+                        onClick={() => applyMax(setWithdrawAmt)}
+                      >
+                        Max
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    data-testid="pool-unshield-amount"
+                    type="text"
+                    inputMode="decimal"
+                    value={withdrawAmt}
+                    onChange={(e) => setWithdrawAmt(e.target.value)}
+                    className={inputClass}
+                    disabled={spendDisabled}
+                  />
+                </label>
+                <Btn
+                  intent="primary"
+                  testid="pool-unshield-btn"
+                  onClick={() =>
+                    runAction("unshield", () =>
+                      starknet.unshield(withdrawAmt, withdrawTo || starknet.address),
+                    )
+                  }
+                  disabled={spendDisabled || !withdrawAmt}
+                  className="w-full"
+                >
+                  <Plugs size={14} className="inline mr-1.5 -mt-0.5" />
+                  {busy === "unshield" ? "Awaiting wallet / proof" : "Unshield"}
+                </Btn>
+              </Panel>
+            </>
+          )}
+        </>
+      )}
+
+      {error && error.kind !== "not_registered" && (
+        <div
+          data-testid="pool-error"
+          data-kind={error.kind}
+          className={
+            error.kind === "screening"
+              ? "border border-[#FFB800]/40 bg-[#FFB800]/5 px-3 py-2 text-[11px] font-mono text-[#FFC846] leading-relaxed"
+              : "border border-[#FF003C]/50 bg-[#FF003C]/5 px-3 py-2 text-[11px] font-mono text-[#FF6B8A] leading-relaxed"
+          }
+        >
+          {error.kind === "screening" ? error.message : "ERR :: " + error.message}
+        </div>
+      )}
+
+      {result && (
+        <Panel title={`${(result.kind || "action").toUpperCase()} RESULT`} testid="pool-result-panel">
+          <StatLine
+            label="Status"
+            value={result.status === "accepted" ? "accepted" : "submitted"}
+            valueClass="text-cyan-300"
+            testid="pool-result-status"
+          />
+          <div className="py-2">
+            <Overline className="mb-1">Transaction</Overline>
+            <HashLine testid="pool-tx-hash" value={result.hash || "—"} />
+          </div>
+          {result.explorer && (
+            <a
+              data-testid="pool-explorer-link"
+              href={result.explorer}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-[11px] font-mono text-cyan-300 hover:text-cyan-100 uppercase tracking-[0.18em]"
+            >
+              <LinkSimple size={12} />
+              Explorer
+            </a>
+          )}
+        </Panel>
+      )}
+
+      <Panel title="WHAT STAYS VISIBLE">
+        <p className="text-[12px] font-mono text-white/55 leading-relaxed">
+          Shield and unshield amounts are public ERC-20 approvals. The fact and timing of a pool
+          interaction are public. Private transfers hide who pays whom and how much. This is not a
+          mixer. Activity is never attributed from the transaction sender — that address is the
+          relayer.
+        </p>
+      </Panel>
+    </div>
+  );
+}
