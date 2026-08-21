@@ -8,7 +8,15 @@ Chaoskey+ method is patent pending
 **Reviewer manifest:** [`strk20.json`](./strk20.json)  
 **Wallet API recipe:** [`docs/integration.md`](./docs/integration.md)
 
-STRK20 is a note-based pool for any ERC-20 — not a mixer and not a token ABI. This dapp never holds a viewing key. ChaosKey-generated tokens (bearer / TOTP / etc.) are **not** ERC-20s and are not sent to the pool.
+STRK20 is a note-based pool for any ERC-20 — not a mixer and not a token ABI. This dapp never holds a viewing key. 
+ChaosKey-generated tokens (bearer / TOTP / etc.) are **not** ERC-20s and are not sent to the pool.
+## STRK20 Integration Stack
+
+- Starknet mainnet (CHAIN_ID SN_MAIN)
+- STRK20 pool at 0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a
+- Alchemy Starknet mainnet RPC
+- CRA React frontend with Starknet wallet integration
+- ChaosKey+ hardware-attested entropy foundation
 
 ## Demo path
 
