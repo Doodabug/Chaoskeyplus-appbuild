@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+A
     defaults:
       run:
         working-directory: frontend
@@ -23,13 +23,15 @@ jobs:
       with:
         node-version: "lts/*"
         cache: "npm"
-        cache-dependency-path: frontend/package-lock.json
+        cache-dependency-path: package-lock.json
+
 
     - name: Install dependencies
       run: npm ci
 
     - name: Build project
       run: npm run build
-
+A
     - name: Run tests
       run: npm test
+AC
