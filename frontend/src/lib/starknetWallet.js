@@ -5,6 +5,7 @@ import { createStore } from "@starknet-io/get-starknet-discovery";
 import { Contract, RpcProvider, WalletAccountV6, constants, walletV6 } from "starknet";
 import {
   DEFAULT_EXPLORER,
+  DEFAULT_POOL,
   DEFAULT_RPC,
   DEFAULT_TOKEN,
   DEFAULT_TOKEN_DECIMALS,
@@ -14,6 +15,7 @@ import {
   baseToHuman,
   classifyPoolError,
   explorerTxUrl,
+  feltIsZero,
   humanToBaseHex,
   isFeltAddress,
   isStrk20Capable,
@@ -22,16 +24,19 @@ import {
   walletDisplayName,
 } from "./starknetWalletUtils";
 
-const FEE_ABI = [
+const POOL_ABI = [
   {
     type: "function",
     name: "get_fee_amount",
     inputs: [],
-    outputs: [
-      {
-        type: "core::integer::u256",
-      },
-    ],
+    outputs: [{ type: "core::integer::u256" }],
+    state_mutability: "view",
+  },
+  {
+    type: "function",
+    name: "get_public_key",
+    inputs: [{ name: "user_addr", type: "core::starknet::contract_address::ContractAddress" }],
+    outputs: [{ type: "core::felt252" }],
     state_mutability: "view",
   },
 ];
@@ -75,7 +80,7 @@ function tokenAddress() {
 }
 
 function poolAddress() {
-  return (process.env.REACT_APP_STRK20_POOL || "").trim();
+  return (process.env.REACT_APP_STRK20_POOL || DEFAULT_POOL).trim();
 }
 
 function explorerBase() {
@@ -218,7 +223,7 @@ export async function fetchPoolFee() {
   if (!address) return { available: false, human: null };
   try {
     const provider = session.account ?? new RpcProvider({ nodeUrl: nodeUrl() });
-    const pool = new Contract({ abi: FEE_ABI, address, providerOrAccount: provider });
+    const pool = new Contract({ abi: POOL_ABI, address, providerOrAccount: provider });
     const raw = await pool.get_fee_amount();
     const value =
       raw?.fee_amount ??
@@ -232,6 +237,25 @@ export async function fetchPoolFee() {
     return { available: true, raw: value, human: baseToHuman(value, DEFAULT_TOKEN_DECIMALS) };
   } catch (_) {
     return { available: false, human: null };
+  }
+}
+
+export async function fetchPoolRegistration(userAddress) {
+  const poolAddr = poolAddress();
+  const user = (userAddress || session.address || "").trim();
+  if (!poolAddr || !user) return { registered: false, publicKey: null };
+  try {
+    const provider = session.account ?? new RpcProvider({ nodeUrl: nodeUrl() });
+    const pool = new Contract({ abi: POOL_ABI, address: poolAddr, providerOrAccount: provider });
+    const raw = await pool.get_public_key(user);
+    const key =
+      raw?.public_key ??
+      raw?.[0] ??
+      (typeof raw === "bigint" || typeof raw === "string" || typeof raw === "number" ? raw : null);
+    if (key == null || feltIsZero(key)) return { registered: false, publicKey: null };
+    return { registered: true, publicKey: typeof key === "bigint" ? `0x${key.toString(16)}` : String(key) };
+  } catch (_) {
+    return { registered: false, publicKey: null };
   }
 }
 
@@ -372,17 +396,21 @@ export async function unshieldAmount(humanAmount, recipient) {
 
 export async function fetchShieldedBalances() {
   assertReady();
-  const entries = await session.account.strk20Balances([tokenAddress()]);
-  const list = Array.isArray(entries) ? entries : [];
-  const match =
-    list.find((e) => e && (e.token === tokenAddress() || sameToken(e.token))) ||
-    list[0];
-  const raw = match?.balance ?? "0x0";
-  return {
-    entries: list,
-    raw,
-    human: baseToHuman(raw, DEFAULT_TOKEN_DECIMALS),
-  };
+  try {
+    const entries = await session.account.strk20Balances([tokenAddress()]);
+    const list = Array.isArray(entries) ? entries : [];
+    const match =
+      list.find((e) => e && (e.token === tokenAddress() || sameToken(e.token))) ||
+      list[0];
+    const raw = match?.balance ?? "0x0";
+    return {
+      entries: list,
+      raw,
+      human: baseToHuman(raw, DEFAULT_TOKEN_DECIMALS),
+    };
+  } catch (err) {
+    throw wrapPoolError(err, "Balance read failed.");
+  }
 }
 
 function sameToken(addr) {
