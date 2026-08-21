@@ -3,6 +3,7 @@ import {
   connectWallet,
   disconnectWallet,
   fetchPoolFee,
+  fetchPoolRegistration,
   fetchShieldedBalances,
   getProvider,
   getRpcUrl,
@@ -26,7 +27,7 @@ export function StarknetProvider({ children }) {
     return subscribeSession(setSession);
   }, []);
 
-  const velue = useMemo(
+  const value = useMemo(
     () => ({
       ...session,
       provider: getProvider(),
@@ -38,6 +39,7 @@ export function StarknetProvider({ children }) {
       transfer: transferAmount,
       unshield: unshieldAmount,
       fetchFee: fetchPoolFee,
+      fetchRegistration: fetchPoolRegistration,
       fetchBalances: fetchShieldedBalances,
       refreshMaturity,
     }),
