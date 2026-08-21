@@ -31,6 +31,10 @@ This project implements the **Starknet Wallet API v0.10** (STRK20) using:
 - **Wallet Standard Adapter**: `@starknet-io/get-starknet-wallet-standard` (v6.0.3) — Wallet compatibility layer.
 
 - **Wallet API Types**: `@starknet-io/types-js` (v0.10.3) — Type-safe STRK20 actions (deposit, transfer, withdraw).
+- The ChaosKey+ Core: Minimal Integration, Maximum Reliability
+- 
+ChaosKey+ stands as a foundational attested‑entropy device. The physical entropy pipeline requires minimal compute and will continue improving with future development.
+ STRK20 is only a top‑layer integration used for visibility.
 
 ## Pins
 
