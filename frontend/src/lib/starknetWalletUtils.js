@@ -1,1 +1,250 @@
-Ly8gUHVyZSBoZWxwZXJzIGZvciB0aGUgV2FsbGV0IEFQSSByb3V0ZS4gTm8gd2FsbGV0IG9yIFJQQyBpbXBvcnRzIOKAlAovLyBrZWVwIHRoaXMgZmlsZSB1bml0LXRlc3RhYmxlIHdpdGhvdXQgYSBicm93c2VyIGV4dGVuc2lvbi4KCmV4cG9ydCBjb25zdCBTVFJLMjBfTUlOID0geyBtYWpvcjogMCwgbWlub3I6IDEwLCBwYXRjaDogMCB9OwoKZXhwb3J0IGNvbnN0IE1BSU5ORVRfUlBDID0gImh0dHBzOi8vZnJlZS1ycGMubmV0aGVybWluZC5pby9tYWlubmV0LWp1bm8vdjBfMTAiOwpleHBvcnQgY29uc3QgU0VQT0xJQV9SUEMgPSAiaHR0cHM6Ly9mcmVlLXJwYy5uZXRoZXJtaW5kLmlvL3NlcG9saWEtanVuby92MF8xMCI7CgpleHBvcnQgY29uc3QgREVGQVVMVF9SUEMgPSBNQUlOTkVUX1JQQzsKCi8vIE9mZmljaWFsIFNUUksgRVJDLTIwIOKAlCBzYW1lIGFkZHJlc3Mgb24gbWFpbm5ldCwgU2Vwb2xpYSwgYW5kIGRldm5ldC4KZXhwb3J0IGNvbnN0IERFRkFVTFRfVE9LRU4gPQogICIweDA0NzE4ZjVhMGZjMzRjYzFhZjE2YTFjZGVlOThmZmIyMGMzMWY1Y2Q2MWQ2YWIwNzIwMTg1OGY0Mjg3YzkzOGQiOwoKZXhwb3J0IGNvbnN0IERFRkFVTFRfVE9LRU5fREVDSU1BTFMgPSAxODsKZXhwb3J0IGNvbnN0IE1BSU5ORVRfRVhQTE9SRVIgPSAiaHR0cHM6Ly92b3lhZ2VyLm9ubGluZS90eCI7CmV4cG9ydCBjb25zdCBTRVBPTElBX0VYUExPUkVSID0gImh0dHBzOi8vc2Vwb2xpYS52b3lhZ2VyLm9ubGluZS90eCI7CmV4cG9ydCBjb25zdCBERUZBVUxUX0VYUExPUkVSID0gTUFJTk5FVF9FWFBMT1JFUjsKCmV4cG9ydCBjb25zdCBNQUlOTkVUX0NIQUlOX0lEID0gIjB4NTM0ZTVmNGQ0MTQ5NGUiOwpleHBvcnQgY29uc3QgU0VQT0xJQV9DSEFJTl9JRCA9ICIweDUzNGU1ZjUzNDU1MDRmNGM0OTQxIjsKZXhwb3J0IGNvbnN0IEVYUEVDVEVEX0NIQUlOX0lEID0gTUFJTk5FVF9DSEFJTl9JRDsKCmV4cG9ydCBjb25zdCBUWF9XQUlUX01TID0gMTIwMDAwOwpleHBvcnQgY29uc3QgTk9URV9NQVRVUklUWV9CTE9DS1MgPSAxMDsKCmV4cG9ydCBmdW5jdGlvbiBwYXJzZUFwaVZlcnNpb24odmFsdWUpIHsKICBjb25zdCBwYXJ0cyA9IFN0cmluZyh2YWx1ZSA/PyAiIikKICAgIC5zcGxpdCgiLiIpCiAgICAubWFwKChuKSA9PiB7CiAgICAgIGNvbnN0IHBhcnNlZCA9IHBhcnNlSW50KG4sIDEwKTsKICAgICAgcmV0dXJuIE51bWJlci5pc0Zpbml0ZShwYXJzZWQpID8gcGFyc2VkIDogMDsKICAgIH0pOwogIHJldHVybiB7CiAgICBtYWpvcjogcGFydHNbMF0gfHwgMCwKICAgIG1pbm9yOiBwYXJ0c1sxXSB8fCAwLAogICAgcGF0Y2g6IHBhcnRzWzJdIHx8IDAsCiAgfTsKfQoKZXhwb3J0IGZ1bmN0aW9uIGNvbXBhcmVBcGlWZXJzaW9uKGEsIGIpIHsKICBpZiAoYS5tYWpvciAhPT0gYi5tYWpvcikgcmV0dXJuIGEubWFqb3IgLSBiLm1ham9yOwogIGlmIChhLm1pbm9yICE9PSBiLm1pbm9yKSByZXR1cm4gYS5taW5vciAtIGIubWlub3I7CiAgcmV0dXJuIGEucGF0Y2ggLSBiLnBhdGNoOwp9CgovKiogVHJ1ZSBpZiBhbnkgYWR2ZXJ0aXNlZCBXYWxsZXQgQVBJIHZlcnNpb24gaXMgPj0gMC4xMCAoU1RSSzIwKS4gKi8KZXhwb3J0IGZ1bmN0aW9uIGlzU3RyazIwQ2FwYWJsZSh2ZXJzaW9ucykgewogIGlmICghQXJyYXkuaXNBcnJheSh2ZXJzaW9ucykgfHwgdmVyc2lvbnMubGVuZ3RoID09PSAwKSByZXR1cm4gZmFsc2U7CiAgcmV0dXJuIHZlcnNpb25zLnNvbWUoCiAgICAodikgPT4gY29tcGFyZUFwaVZlcnNpb24ocGFyc2VBcGlWZXJzaW9uKHYpLCBTVFJLMjBfTUlOKSA+PSAwCiAgKTsKfQoKZXhwb3J0IGZ1bmN0aW9uIHNhbWVBZGRyZXNzKGEsIGIpIHsKICBpZiAoYSA9PSBudWxsIHx8IGIgPT0gbnVsbCB8fCBhID09PSAiIiB8fCBiID09PSAiIikgcmV0dXJuIGZhbHNlOwogIHRyeSB7CiAgICByZXR1cm4gQmlnSW50KGEpID09PSBCaWdJbnQoYik7CiAgfSBjYXRjaCAoXykgewogICAgcmV0dXJuIFN0cmluZyhhKS50b0xvd2VyQ2FzZSgpID09PSBTdHJpbmcoYikudG9Mb3dlckNhc2UoKTsKICB9Cn0KCi8qKiBIdW1hbiBkZWNpbWFsIHN0cmluZyDihpIgYmFzZSB1bml0cyBhcyAweC1oZXggZmVsdC4gKi8KZXhwb3J0IGZ1bmN0aW9uIGh1bWFuVG9CYXNlSGV4KGh1bWFuLCBkZWNpbWFscyA9IERFRkFVTFRfVE9LRU5fREVDSU1BTFMpIHsKICBjb25zdCByYXcgPSBTdHJpbmcoaHVtYW4gPz8gIiIpLnRyaW0oKTsKICBpZiAoIXJhdyB8fCAhL15cZCsoXC5cZCspPyQvLnRlc3QocmF3KSkgewogICAgdGhyb3cgbmV3IEVycm9yKCJFbnRlciBhIHBvc2l0aXZlIGFtb3VudC4iKTsKICB9CiAgY29uc3QgW3dob2xlUGFydCwgZnJhY1BhcnQgPSAiIl0gPSByYXcuc3BsaXQoIi4iKTsKICBpZiAoZnJhY1BhcnQubGVuZ3RoID4gZGVjaW1hbHMpIHsKICAgIHRocm93IG5ldyBFcnJvcihgQXQgbW9zdCAke2RlY2ltYWxzfSBkZWNpbWFsIHBsYWNlcy5gKTsKICB9CiAgY29uc3QgZnJhY1BhZGRlZCA9IChmcmFjUGFydCArICIwIi5yZXBlYXQoZGVjaW1hbHMpKS5zbGljZSgwLCBkZWNpbWFscyk7CiAgY29uc3QgYmFzZSA9IEJpZ0ludCh3aG9sZVBhcnQgfHwgIjAiKSAqIDEwbiAqKiBCaWdJbnQoZGVjaW1hbHMpICsgQmlnSW50KGZyYWNQYWRkZWQgfHwgIjAiKTsKICBpZiAoYmFzZSA8PSAwbikgdGhyb3cgbmV3IEVycm9yKCJFbnRlciBhIHBvc2l0aXZlIGFtb3VudC4iKTsKICByZXR1cm4gYDB4JHtiYXNlLnRvU3RyaW5nKDE2KX1gOwp9CgpleHBvcnQgZnVuY3Rpb24gYmFzZVRvSHVtYW4oYmFzZSwgZGVjaW1hbHMgPSBERUZBVUxUX1RPS0VOX0RFQ0lNQUxTKSB7CiAgbGV0IHZhbHVlOwogIHRyeSB7CiAgICB2YWx1ZSA9IHR5cGVvZiBiYXNlID09PSAiYmlnaW50IiA/IGJhc2UgOiBCaWdJbnQoYmFzZSk7CiAgfSBjYXRjaCAoXykgewogICAgcmV0dXJuICLigJQiOwogIH0KICBjb25zdCBuZWcgPSB2YWx1ZSA8IDBuOwogIGlmIChuZWcpIHZhbHVlID0gLXZhbHVlOwogIGNvbnN0IHNjYWxlID0gMTBuICoqIEJpZ0ludChkZWNpbWFscyk7CiAgY29uc3Qgd2hvbGUgPSB2YWx1ZSAvIHNjYWxlOwogIGNvbnN0IGZyYWMgPSAodmFsdWUgJSBzY2FsZSkudG9TdHJpbmcoKS5wYWRTdGFydChkZWNpbWFscywgIjAiKS5yZXBsYWNlKC8wKyQvLCAiIik7CiAgcmV0dXJuIGAke25lZyA/ICItIiA6ICIifSR7d2hvbGUudG9TdHJpbmcoKX0ke2ZyYWMgPyBgLiR7ZnJhY31gIDogIiJ9YDsKfQoKZXhwb3J0IGZ1bmN0aW9uIGNsYXNzaWZ5UG9vbEVycm9yKGVyciwgZmFsbGJhY2sgPSAiUG9vbCBhY3Rpb24gZmFpbGVkLiIpIHsKICBjb25zdCBjb2RlID0gZXJyPy5jb2RlID8/IGVycj8uZXJyb3I/LmNvZGU7CiAgY29uc3QgbXNnID0gU3RyaW5nKGVycj8ubWVzc2FnZSB8fCBlcnI/LmVycm9yPy5tZXNzYWdlIHx8IGVyciB8fCAiIik7CiAgaWYgKGNvZGUgPT09IDExMyB8fCAvVVNFUl9SRUZVU0VEL2kudGVzdChtc2cpKSB7CiAgICByZXR1cm4geyBraW5kOiAicmVmdXNlZCIsIG1lc3NhZ2U6ICJXYWxsZXQgZGVjbGluZWQgdGhlIHJlcXVlc3QuIiB9OwogIH0KICBpZiAoY29kZSA9PT0gMTE4IHx8IC9OT1RfUkVHSVNURVJFRC9pLnRlc3QobXNnKSkgewogICAgcmV0dXJuIHsKICAgICAga2luZDogIm5vdF9yZWdpc3RlcmVkIiwKICAgICAgbWVzc2FnZToKICAgICAgICAiVGhpcyBhY2NvdW50IGlzIG5vdCByZWdpc3RlcmVkIGluIHRoZSBwb29sLiBSZWFkeSByZWdpc3RlcnMgb24gZmlyc3QgdXNlIOKAlCByZXRyeSBhZnRlciB0aGUgd2FsbGV0IGZpbmlzaGVzIHJlZ2lzdHJhdGlvbi4iLAogICAgfTsKICB9CiAgaWYgKGNvZGUgPT09IDExOSB8fCAvSU5TVUZGSUNJRU5UX1BSSVZBVEVfQkFMQU5DRS9pLnRlc3QobXNnKSkgewogICAgcmV0dXJuIHsKICAgICAga2luZDogImluc3VmZmljaWVudCIsCiAgICAgIG1lc3NhZ2U6ICJTaGllbGRlZCBiYWxhbmNlIGlzIHRvbyBzbWFsbCBmb3IgdGhpcyBhbW91bnQgcGx1cyB0aGUgcG9vbCBmZWUuIiwKICAgIH07CiAgfQogIGlmICgKICAgIC9hZGRyZXNzX2Jsb2NrZWQvaS50ZXN0KG1zZykgfHwKICAgIC9zY3JlZW5pbmcvaS50ZXN0KG1zZykgfHwKICAgIC9zYW5jdGlvbi9pLnRlc3QobXNnKQogICkgewogICAgcmV0dXJuIHsKICAgICAga2luZDogInNjcmVlbmluZyIsCiAgICAgIG1lc3NhZ2U6CiAgICAgICAgIkRlcG9zaXQgZGVjbGluZWQgYnkgcHJvdG9jb2wgc2NyZWVuaW5nLiBUaGF0IGlzIGEgcG9vbCBvdXRjb21lLCBub3QgYW4gYXBwIGVycm9yLiIsCiAgICB9OwogIH0KICByZXR1cm4geyBraW5kOiAidW5rbm93biIsIG1lc3NhZ2U6IG1zZyB8fCAmZmx1c2g7ZmFsbGJhY2sgfTsKfQoKLyoqIEBkZXByZWNhdGVkIHVzZSBjbGFzc2lmeVBvb2xFcnJvciAqLwpleHBvcnQgZnVuY3Rpb24gY2xhc3NpZnlTaGllbGRFcnJvcihlcnIpIHsKICByZXR1cm4gY2xhc3NpZnlQb29sRXJyb3IoZXJyLCAiU2hpZWxkIGZhaWxlZC4iKTsKfQoKZXhwb3J0IGZ1bmN0aW9uIGlzRmVsdEFkZHJlc3ModmFsdWUpIHsKICBjb25zdCByYXcgPSBTdHJpbmcodmFsdWUgPz8gIiIpLnRyaW0oKTsKICBpZiAoIXIvXjB4WzAtOWEtZkEtRl0rJC8udGVzdChyYXcpKSByZXR1cm4gZmFsc2U7CiAgIHRyeSB7CiAgICByZXR1cm4gQmlnSW50KHJhdykgPj0gMG47CiAgfSBjYXRjaCAoXykgewogICAgcmV0dXJuIGZhbHNlOwogIH0KfQoKZXhwb3J0IGZ1bmN0aW9uIG1hdHVyaXR5UmVtYWluaW5nKGN1cnJlbnRCbG9jaywgY3JlYXRlZEJsb2NrLCB3aW5kb3cgPSBOT1RFX01BVFVSSVRZX0JMT0NLUykgewogIGlmIChjcmVhdGVkQmxvY2sgPT0gbnVsbCB8fCBjdXJyZW50QmxvY2sgPT0gbnVsbCkgcmV0dXJuIDA7CiAgY29uc3QgZWxhcHNlZCA9IE51bWJlcihjdXJyZW50QmxvY2spIC0gTnVtYmVyKGNyZWF0ZWRCbG9jayk7CiAgaWYgKCFOdW1iZXIuaXNGaW5pdGUoZWxhcHNlZCkpIHJldHVybiAwOwogIHJldHVybiBNYXRoLm1heCgwLCB3aW5kb3cgLSBlbGFwc2VkKTsKfQoKZXhwb3J0IGZ1bmN0aW9uIG1heFNwZW5kSHVtYW4oYmFsYW5jZUJhc2UsIGZlZUJhc2UsIGRlY2ltYWxzID0gREVGQVVMVF9UT0tFTl9ERUNJTUFMUykgewogIGxldCBiYWw7CiAgbGV0IGZlZSA9IDBuOwogIHRyeSB7CiAgICBiYWwgPSB0eXBlb2YgYmFsYW5jZUJhc2UgPT09ICJiaWdpbnQiID8gYmFsYW5jZUJhc2UgOiBCaWdJbnQ(YmFsYW5jZUJhc2UgPz8gMCk7CiAgfSBjYXRjaCAoXykgewogICAgcmV0dXJuICIwIjsKICB9CiAgdHJ5IHsKICAgIGZlZSA9IHR5cGVvZiBmZWVCYXNlID09PSAiYmlnaW50IiA/IGZlZUJhc2UgOiBCaWdJbnQoZmVlQmFzZSA/PyAwKTsKICB9IGNhdGNoIChfKSB7CiAgICBmZWUgPSAwbjsKICB9CiAgY29uc3Qgc3BlbmRhYmxlID0gYmFsIC0gZmVlOwogIGlmIChzcGVuZGFibGUgPD0gMG4pIHJldHVybiAiMCI7CiAgcmV0dXJuIGJhc2VUb0h1bWFuKHNwZW5kYWJsZSwgZGVjaW1hbHMpOwp9CgpleHBvcnQgZnVuY3Rpb24gZXhwbG9yZXJUeFVybChiYXNlLCBoYXNoKSB7CiAgaWYgKCFoYXNoKSByZXR1cm4gIiI7CiAgY29uc3Qgcm9vdCA9IChiYXNlIHx8IERFRkFVTFRfRVhQTE9SRVIpLnJlcGxhY2UoL1wvJC8sICIiKTsKICByZXR1cm4gYCR7cm9vdH0vJHtoYXNofWA7Cn0KCmV4cG9ydCBmdW5jdGlvbiB3YWxsZXREaXNwbGF5TmFtZSh3YWxsZXQpIHsKICByZXR1cm4gd2FsbGV0Py5uYW1lIHx8IHdhbGxldD8uaWQgfHwgIlVua25vd24gd2FsbGV0IjsKfQo=
+/** Pure helpers for the Wallet API route. No wallet or RPC imports. */
+
+export const STRK20_MIN = { major: 0, minor: 10, patch: 0 };
+
+/** Alchemy Starknet mainnet JSON-RPC v0.10 — replaces the dead Blast / free Nethermind endpoints. */
+export const ALCHEMY_STARKNET_RPC =
+  "https://starknet-mainnet.g.alchemy.com/starknet/version/rpc/v0_10/alch_b-QRxZht79RwEiSAGer0q";
+
+export const MAINNET_RPC = ALCHEMY_STARKNET_RPC;
+export const DEFAULT_RPC = ALCHEMY_STARKNET_RPC;
+
+export const DEFAULT_TOKEN =
+  "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d";
+
+export const DEFAULT_POOL =
+  "0x040337b1af3c663e86e333bab5a4b28da8d4652a15a69beee2b677776ffe812a";
+
+export const DEFAULT_TOKEN_DECIMALS = 18;
+export const MAINNET_EXPLORER = "https://voyager.online/tx";
+export const DEFAULT_EXPLORER = MAINNET_EXPLORER;
+
+export const MAINNET_CHAIN_ID = "0x534e5f4d41494e";
+export const SEPOLIA_CHAIN_ID = "0x534e5f5345504f4c4941";
+export const EXPECTED_CHAIN_ID = MAINNET_CHAIN_ID;
+
+export const TX_WAIT_MS = 120000;
+export const NOTE_MATURITY_BLOCKS = 10;
+
+export function parseApiVersion(value) {
+  const parts = String(value ?? "")
+    .split(".")
+    .map((n) => {
+      const parsed = parseInt(n, 10);
+      return Number.isFinite(parsed) ? parsed : 0;
+    });
+  return {
+    major: parts[0] || 0,
+    minor: parts[1] || 0,
+    patch: parts[2] || 0,
+  };
+}
+
+export function compareApiVersion(a, b) {
+  if (a.major !== b.major) return a.major - b.major;
+  if (a.minor !== b.minor) return a.minor - b.minor;
+  return a.patch - b.patch;
+}
+
+export function isStrk20Capable(versions) {
+  if (!Array.isArray(versions) || versions.length === 0) return false;
+  return versions.some(
+    (v) => compareApiVersion(parseApiVersion(v), STRK20_MIN) >= 0,
+  );
+}
+
+export function sameAddress(a, b) {
+  if (a == null || b == null || a === "" || b === "") return false;
+  try {
+    return BigInt(a) === BigInt(b);
+  } catch (_) {
+    return String(a).toLowerCase() === String(b).toLowerCase();
+  }
+}
+
+export function humanToBaseHex(human, decimals = DEFAULT_TOKEN_DECIMALS) {
+  const raw = String(human ?? "").trim();
+  if (!raw || !/^\d+(\.\d+)?$/.test(raw)) {
+    throw new Error("Enter a positive amount.");
+  }
+  const [wholePart, fracPart = ""] = raw.split(".");
+  if (fracPart.length > decimals) {
+    throw new Error(`At most ${decimals} decimal places.`);
+  }
+  const fracPadded = (fracPart + "0".repeat(decimals)).slice(0, decimals);
+  const base =
+    BigInt(wholePart || "0") * 10n ** BigInt(decimals) + BigInt(fracPadded || "0");
+  if (base <= 0n) throw new Error("Enter a positive amount.");
+  return `0x${base.toString(16)}`;
+}
+
+export function baseToHuman(base, decimals = DEFAULT_TOKEN_DECIMALS) {
+  let value;
+  try {
+    value = typeof base === "bigint" ? base : BigInt(base);
+  } catch (_) {
+    return "\u2014";
+  }
+  const neg = value < 0n;
+  if (neg) value = -value;
+  const scale = 10n ** BigInt(decimals);
+  const whole = value / scale;
+  const frac = (value % scale).toString().padStart(decimals, "0").replace(/0+$/, "");
+  return `${neg ? "-" : ""}${whole.toString()}${frac ? `.${frac}` : ""}`;
+}
+
+export function classifyPoolError(err, fallback = "Pool action failed.") {
+  const e = err;
+  const code = e?.code ?? e?.error?.code;
+  const msg = String(e?.message || e?.error?.message || err || "");
+  if (code === 113 || /USER_REFUSED/i.test(msg)) {
+    return { kind: "refused", message: "Wallet declined the request." };
+  }
+  if (code === 118 || /NOT_REGISTERED/i.test(msg)) {
+    return {
+      kind: "not_registered",
+      message:
+        "Ready has not written this account\u2019s viewing key on-chain yet. Shield a little STRK inside the Ready app first, then come back. This site never asks for that key.",
+    };
+  }
+  if (code === 119 || /INSUFFICIENT_PRIVATE_BALANCE/i.test(msg)) {
+    return {
+      kind: "insufficient",
+      message: "Shielded balance is too small for this amount plus the pool fee.",
+    };
+  }
+  if (/address_blocked/i.test(msg) || /screening/i.test(msg) || /sanction/i.test(msg)) {
+    return {
+      kind: "screening",
+      message:
+        "Deposit declined by protocol screening. That is a pool outcome, not an app error.",
+    };
+  }
+  return { kind: "unknown", message: msg || fallback };
+}
+
+export function classifyShieldError(err) {
+  return classifyPoolError(err, "Shield failed.");
+}
+
+export function isFeltAddress(value) {
+  const raw = String(value ?? "").trim();
+  if (!/^0x[0-9a-fA-F]+$/.test(raw)) return false;
+  try {
+    return BigInt(raw) >= 0n;
+  } catch (_) {
+    return false;
+  }
+}
+
+export function maturityRemaining(currentBlock, createdBlock, window = NOTE_MATURITY_BLOCKS) {
+  if (createdBlock == null || currentBlock == null) return 0;
+  const elapsed = Number(currentBlock) - Number(createdBlock);
+  if (!Number.isFinite(elapsed)) return 0;
+  return Math.max(0, window - elapsed);
+}
+
+export function maxSpendHuman(balanceBase, feeBase, decimals = DEFAULT_TOKEN_DECIMALS) {
+  let bal;
+  let fee = 0n;
+  try {
+    bal = typeof balanceBase === "bigint" ? balanceBase : BigInt(balanceBase ?? 0);
+  } catch (_) {
+    return "0";
+  }
+  try {
+    fee = typeof feeBase === "bigint" ? feeBase : BigInt(feeBase ?? 0);
+  } catch (_) {
+    fee = 0n;
+  }
+  const spendable = bal - fee;
+  if (spendable <= 0n) return "0";
+  return baseToHuman(spendable, decimals);
+}
+
+export function explorerTxUrl(base, hash) {
+  if (!hash) return "";
+  const root = (base || DEFAULT_EXPLORER).replace(/\/$/, "");
+  return `${root}/${hash}`;
+}
+
+export function walletDisplayName(wallet) {
+  return wallet?.name || wallet?.id || "Unknown wallet";
+}
+
+export function stripChainPrefix(value) {
+  const raw = String(value ?? "");
+  return raw.replace(/^starknet:/i, "");
+}
+
+export function isSepoliaChainId(value) {
+  if (value == null || value === "") return false;
+  const raw = stripChainPrefix(value).toLowerCase();
+  if (raw.includes("sepolia")) return true;
+  try {
+    return BigInt(raw.startsWith("0x") ? raw : `0x${raw}`) === BigInt(SEPOLIA_CHAIN_ID);
+  } catch (_) {
+    return false;
+  }
+}
+
+export function formatChainLabel(value) {
+  if (value == null || value === "") return "\u2014";
+  const raw = stripChainPrefix(value);
+  if (isSepoliaChainId(raw)) return "Sepolia";
+  const lower = raw.toLowerCase();
+  if (lower.includes("main") || lower === "sn_main") return "Mainnet";
+  try {
+    if (BigInt(raw.startsWith("0x") ? raw : `0x${raw}`) === BigInt(MAINNET_CHAIN_ID)) {
+      return "Mainnet";
+    }
+  } catch (_) {
+    /* ignore */
+  }
+  return raw;
+}
+
+export function looksLikeInjectedWallet(obj) {
+  if (!obj || typeof obj !== "object") return false;
+  const w = obj;
+  return typeof w.request === "function" || typeof w.enable === "function";
+}
+
+export function prettyInjectedName(key) {
+  if (/argent/i.test(key) || key === "starknet") return "Ready";
+  if (/braavos/i.test(key)) return "Braavos";
+  return key;
+}
+
+export function describeInjectedSlots(win) {
+  const out = [];
+  for (const key of Object.keys(win)) {
+    if (!/^starknet/i.test(key)) continue;
+    const val = win[key];
+    if (!val || typeof val !== "object") continue;
+    const ready = looksLikeInjectedWallet(val);
+    const name =
+      val.name || prettyInjectedName(key);
+    out.push({ key, status: ready ? "ready" : "stub", name });
+  }
+  return out;
+}
+
+/** True when the app is boxed inside another page (Grok live preview). Extensions cannot inject there. */
+export function isEmbeddedPreview() {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.self !== window.top;
+  } catch (_) {
+    return true;
+  }
+}
+
+export function feltIsZero(value) {
+  if (value == null || value === "") return true;
+  try {
+    return BigInt(value) === 0n;
+  } catch (_) {
+    return true;
+  }
+}
