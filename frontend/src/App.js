@@ -8,7 +8,10 @@ import {
   ShieldCheck,
   Key,
   DotsThree,
-} from "@phosphor-icons/react";
+ } from "phosphor-icons/react";
+
+const MORE_IDS = CHAOS_IDS;
+
 import HarvestScreen from "./screens/HarvestScreen";
 import LedgerScreen from "./screens/LedgerScreen";
 import UniverseScreen from "./screens/UniverseScreen";
