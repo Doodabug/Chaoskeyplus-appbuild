@@ -4,6 +4,8 @@ Physical-chaos entropy device (Harvest / Tokens / Ledger) plus a **Pool** tab th
 
 Chaoskey+ method is patent pending
 
+ChaosKey+ is a personal sovereignty device that generates unpredictable entropy from a chaotic phenomenon and anchors a user’s identity across chains, clouds, agents, and applications. It provides a hardware‑rooted identity, offline randomness, and secure authentication that cannot be predicted, replicated, or reverse‑engineered. ChaosKey+ works outside any blockchain or platform, acting as a universal trust primitive that apps, agents, and protocols can depend on for secure actions, privacy, and identity continuity.
+
 **Authoritative privacy plan:** [`STRK20_INTEGRATION_PLAN.md`](./STRK20_INTEGRATION_PLAN.md)  
 **Reviewer manifest:** [`strk20.json`](./strk20.json)  
 **Wallet API recipe:** [`docs/integration.md`](./docs/integration.md)
