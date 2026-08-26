@@ -1,10 +1,17 @@
-# ChaosKey+ M3 — STRK20 hackathon sprint
+ChaosKey+ M3 — STRK20 Hackathon Sprint
 
-Physical-chaos entropy device (Harvest / Tokens / Ledger) plus a **Pool** tab that talks to the Starknet STRK20 privacy pool through the user's Ready wallet.
+ChaosKey+ is a physical-chaos entropy device (Harvest / Tokens / Ledger) paired with a Pool tab that communicates with the Starknet STRK20 privacy pool through the user’s Ready wallet.
+ChaosKey+ method is patent pending.
 
-Chaoskey+ method is patent pending
+ChaosKey+ is a personal sovereignty device that generates unpredictable entropy from a chaotic phenomenon and anchors a user’s identity across chains, clouds, agents, and applications. It provides hardware‑rooted identity, offline randomness, and secure authentication that cannot be predicted, replicated, or reverse‑engineered. ChaosKey+ operates outside any blockchain or platform, acting as a universal trust primitive that apps, agents, and protocols can depend on for secure actions, privacy, and identity continuity.
 
-ChaosKey+ is a personal sovereignty device that generates unpredictable entropy from a chaotic phenomenon and anchors a user’s identity across chains, clouds, agents, and applications. It provides a hardware‑rooted identity, offline randomness, and secure authentication that cannot be predicted, replicated, or reverse‑engineered. ChaosKey+ works outside any blockchain or platform, acting as a universal trust primitive that apps, agents, and protocols can depend on for secure actions, privacy, and identity continuity.
+ChaosKey+ is fundamentally a hardware‑rooted chaotic entropy and identity primitive.  
+The physical device is the true security boundary — producing non‑replicable, sensor‑driven chaotic entropy that cannot be forged or cloned.
+
+For the sprint demo, a mobile wrapper is used only to expose ChaosKey+ identity and entropy to STRK20 in a way compatible with the sprint format.  
+The app is not the primary trust anchor; it is a temporary interface layer.
+
+After the sprint, ChaosKey+ will be exposed directly as a hardware‑first primitive for STRK20 private identity, shielded execution, and quantum‑safe randomness.
 
 **Authoritative privacy plan:** [`STRK20_INTEGRATION_PLAN.md`](./STRK20_INTEGRATION_PLAN.md)  
 **Reviewer manifest:** [`strk20.json`](./strk20.json)  
