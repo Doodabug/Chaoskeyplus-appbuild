@@ -33,6 +33,7 @@ ChaosKey+ entropy has now been successfully used to sign and broadcast a Bitcoin
 This demonstrates that ChaosKey+ is not limited to Starknet or STRK20 — it can also strengthen Bitcoin’s entropy layer without requiring QSB, Slipstream, or GPU‑heavy proofs.
 The transaction was fully standard, propagated normally, and required zero GPU grinding, unlike StarkWare’s QSB demo.
 This confirms ChaosKey+ as a scalable, cross‑chain entropy primitive.
+>
 <img width="900" height="450" alt="image" src="https://github.com/user-attachments/assets/54c1ee87-53d3-44ab-936b-175bc4932cfb" />
 
 ## Demo path
