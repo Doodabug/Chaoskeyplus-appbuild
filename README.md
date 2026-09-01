@@ -28,6 +28,7 @@ ChaosKey-generated tokens (bearer / TOTP / etc.) are **not** ERC-20s and are not
 - ChaosKey+ hardware-attested entropy foundation
 - 
 - https://github.com/Doodabug/ChaosKeyPlus-BitcoinDemo
+- 
 Recent Developments (August 2026)
 
 ChaosKey+ entropy has now been successfully used to sign and broadcast a Bitcoin Testnet4 transaction.
