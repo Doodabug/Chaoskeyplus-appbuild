@@ -27,9 +27,10 @@ ChaosKey-generated tokens (bearer / TOTP / etc.) are **not** ERC-20s and are not
 - CRA React frontend with Starknet wallet integration
 - ChaosKey+ hardware-attested entropy foundation
 - 
-- https://github.com/Doodabug/ChaosKeyPlus-BitcoinDemo
 - 
 Recent Developments (August 2026)
+
+ https://github.com/Doodabug/ChaosKeyPlus-BitcoinDemo
 
 ChaosKey+ entropy has now been successfully used to sign and broadcast a Bitcoin Testnet4 transaction.
 This demonstrates that ChaosKey+ is not limited to Starknet or STRK20 — it can also strengthen Bitcoin’s entropy layer without requiring QSB, Slipstream, or GPU‑heavy proofs.
